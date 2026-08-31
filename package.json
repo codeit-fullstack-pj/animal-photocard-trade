@@ -1,0 +1,28 @@
+{
+  "name": "animal-photocard-trade",
+  "private": true,
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "npm --prefix apps/web run lint && npm --prefix apps/api run lint",
+    "build": "npm --prefix apps/web run build && npm --prefix apps/api run build",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{json,css,md,yml,yaml,mjs}": "prettier --write",
+    "apps/web/**/*.{ts,tsx,js,jsx}": [
+      "prettier --write",
+      "npm --prefix apps/web run lint:fix --"
+    ],
+    "apps/api/**/*.{ts,tsx,js,jsx}": [
+      "prettier --write",
+      "npm --prefix apps/api run lint:fix --"
+    ]
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.4.1",
+    "prettier": "3.9.6",
+    "typescript": "^5.9.3"
+  }
+}

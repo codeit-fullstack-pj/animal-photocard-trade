@@ -1,0 +1,46 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            apps/web/package-lock.json
+            apps/api/package-lock.json
+      - run: npm ci
+      - name: 포맷 검사
+        run: npm run format:check
+      - name: web 의존성 설치
+        run: npm ci
+        working-directory: apps/web
+      - name: web 린트
+        run: npm run lint
+        working-directory: apps/web
+      - name: web 빌드
+        run: npm run build
+        working-directory: apps/web
+      - name: api 의존성 설치
+        run: npm ci
+        working-directory: apps/api
+      - name: api 린트
+        run: npm run lint
+        working-directory: apps/api
+      - name: api 빌드
+        run: npm run build
+        working-directory: apps/api
