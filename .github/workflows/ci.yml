@@ -41,6 +41,3 @@ jobs:
       - name: api 린트
         run: npm run lint
         working-directory: apps/api
-      - name: api 빌드
-        run: npm run build
-        working-directory: apps/api
