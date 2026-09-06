@@ -66,7 +66,6 @@ export default function CategorySelect({
           height="28"
           viewBox="0 0 28 28"
           fill="none"
-          xmlns="http://www.w3.org/2000/svg"
           className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
         >
           <path d="M14.2 16.2L10 12H18.4L14.2 16.2Z" fill="white" />

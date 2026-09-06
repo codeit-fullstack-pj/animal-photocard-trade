@@ -16,10 +16,7 @@ const DOT_BLOCKS = 72; // 도트: 긴 변 분할 칸 수
 const OUTPUT_TYPE = "image/png";
 
 function drawVariant(img, filter) {
-  const scale = Math.min(
-    1,
-    MAX_SIZE / Math.max(img.naturalWidth, img.naturalHeight),
-  );
+  const scale = Math.min(1, MAX_SIZE / Math.max(img.naturalWidth, img.naturalHeight));
   const w = Math.max(1, Math.round(img.naturalWidth * scale));
   const h = Math.max(1, Math.round(img.naturalHeight * scale));
 
@@ -32,9 +29,16 @@ function drawVariant(img, filter) {
     const block = Math.max(2, Math.round(Math.max(w, h) / DOT_BLOCKS));
     const sw = Math.max(1, Math.round(w / block));
     const sh = Math.max(1, Math.round(h / block));
+
+    const small = document.createElement("canvas");
+    small.width = sw;
+    small.height = sh;
+    const smallCtx = small.getContext("2d");
+    smallCtx.imageSmoothingEnabled = false;
+    smallCtx.drawImage(img, 0, 0, sw, sh);
+
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img, 0, 0, sw, sh);
-    ctx.drawImage(canvas, 0, 0, sw, sh, 0, 0, w, h);
+    ctx.drawImage(small, 0, 0, sw, sh, 0, 0, w, h);
   } else {
     if (filter) ctx.filter = filter;
     ctx.drawImage(img, 0, 0, w, h);
@@ -47,10 +51,6 @@ function canvasToBlob(canvas) {
   return new Promise((resolve) => canvas.toBlob(resolve, OUTPUT_TYPE));
 }
 
-/**
- * 업로드된 File을 받아 원본 + 필터 3종의 캔버스 변형본을 만든다.
- * 각 변형본은 { blob, url } — url은 미리보기용 blob URL, blob은 업로드용.
- */
 export function useImageVariants(file) {
   const [variants, setVariants] = useState(null);
 
