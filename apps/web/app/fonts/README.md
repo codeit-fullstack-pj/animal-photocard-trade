@@ -4,14 +4,14 @@
 
 ## 사용 폰트 — 배스킨라빈스체 (BR)
 
-| 용도 | 파일 | weight | 토큰 |
-| --- | --- | --- | --- |
-| 제목(heading) | `BaskinRobbins-Regular.otf` | 400 | `--font-heading` |
-| 제목(heading, "BR B") | `BaskinRobbins-Bold.otf` | 700 | `--font-heading` |
+| 용도                  | 파일                          | weight | 토큰                    |
+| --------------------- | ----------------------------- | ------ | ----------------------- |
+| 제목(heading)         | `BaskinRobbins-Regular.woff2` | 400    | `--font-baskin-robbins` |
+| 제목(heading, "BR B") | `BaskinRobbins-Bold.woff2`    | 700    | `--font-baskin-robbins` |
 
-- `apps/web/app/layout.jsx`에서 `next/font/local`로 등록, `--font-heading` 변수에 매핑
-- 컴포넌트에서 `font-(family-name:--font-heading)`로 참조
-- "BR B"(볼드)를 쓰려면 `font-bold`, 레귤러는 `font-normal`
+- `apps/web/app/layout.jsx`에서 `next/font/local`로 등록, `--font-baskin-robbins` 변수에 매핑
+- 컴포넌트에서는 `globals.css`의 유틸리티 `font-primary`(400) / `font-primary-bold`(700)로 참조
+- 본문 서체(Noto Sans KR)는 `font-sans-400 ~ font-sans-700`
 
 ## 라이선스
 

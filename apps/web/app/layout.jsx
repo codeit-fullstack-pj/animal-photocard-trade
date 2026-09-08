@@ -1,38 +1,26 @@
-import { Geist, Geist_Mono, Noto_Sans_KR } from "next/font/google";
+import { Noto_Sans_KR } from "next/font/google";
 import localFont from "next/font/local";
+
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Noto Sans KR — 본문용 토큰 (--font-body). 전역 적용은 별도 작업
 const notoSansKr = Noto_Sans_KR({
-  variable: "--font-body",
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-noto-sans-kr",
   display: "swap",
-  preload: false,
 });
 
-// 배스킨라빈스체 (BR) — 제목용
 const baskinRobbins = localFont({
   src: [
-    { path: "./fonts/BaskinRobbins-Regular.otf", weight: "400", style: "normal" },
-    { path: "./fonts/BaskinRobbins-Bold.otf", weight: "700", style: "normal" },
+    { path: "./fonts/BaskinRobbins-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/BaskinRobbins-Bold.woff2", weight: "700", style: "normal" },
   ],
-  variable: "--font-heading",
+  variable: "--font-baskin-robbins",
   display: "swap",
 });
 
 export const metadata = {
-  title: "animal-photocard-trade",
+  title: "최애멍냥",
   description: "동물 관상 평가 + 포토카드 거래",
 };
 
@@ -40,9 +28,12 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} ${baskinRobbins.variable} ${notoSansKr.variable} h-full antialiased`}
+      className={`${notoSansKr.variable} ${baskinRobbins.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

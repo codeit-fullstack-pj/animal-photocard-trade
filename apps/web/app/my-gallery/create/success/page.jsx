@@ -14,7 +14,7 @@ export default function CreateSuccessPage() {
 
 function Loading() {
   return (
-    <main className="flex w-full flex-1 items-center justify-center font-(family-name:--font-body) text-white">
+    <main className="flex w-full flex-1 items-center justify-center font-sans-400 text-white">
       불러오는 중...
     </main>
   );
@@ -57,10 +57,8 @@ function SuccessContent() {
   }, [cardId]);
 
   return (
-    <main className="flex w-full flex-1 flex-col items-center justify-center gap-10 py-20 font-(family-name:--font-body)">
-      <h2 className="text-center text-[46px] font-bold font-(family-name:--font-heading) text-white">
-        포토카드 완성
-      </h2>
+    <main className="flex w-full flex-1 flex-col items-center justify-center gap-10 py-20 font-sans-400">
+      <h2 className="text-center text-[46px] font-primary-bold text-white">포토카드 완성</h2>
       {card ? <PhotoCard card={card} /> : <Loading />}
     </main>
   );

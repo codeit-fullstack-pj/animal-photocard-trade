@@ -91,10 +91,10 @@ export default function CreatePage() {
   }
 
   return (
-    <main className="flex w-full justify-center pt-20 font-(family-name:--font-body)">
+    <main className="flex w-full justify-center pt-20 font-sans-400">
       <div className="mb-15 flex h-full w-310 flex-col items-center gap-20">
         <div className="flex w-full flex-col gap-5">
-          <h2 className="text-left text-[62px] font-(family-name:--font-heading)">포토카드 생성</h2>
+          <h2 className="text-left text-[62px] font-primary">포토카드 생성</h2>
           <div className="h-0.5 w-full bg-[#EEEEEE]" />
           <span className="text-right text-xl">남은 생성 횟수 : {count}</span>
         </div>
@@ -209,11 +209,11 @@ export default function CreatePage() {
       {isSubmitting && (
         <div className="fixed inset-0 z-50 flex w-full flex-col items-center justify-center gap-10 bg-black">
           <h2
-            className={`${styles.loadingDots} w-full text-center text-[46px] font-bold leading-[normal] tracking-[-1.38px] font-(family-name:--font-heading) text-white`}
+            className={`${styles.loadingDots} w-full text-center text-[46px] leading-[normal] tracking-[-1.38px] font-primary-bold text-white`}
           >
             포토카드 <span className="text-yellow-300">생성 중</span>
           </h2>
-          <span className="block w-full text-center text-xl font-bold leading-[normal] font-(family-name:--font-body) text-white">
+          <span className="block w-full text-center text-xl leading-[normal] font-sans-700 text-white">
             <span className="text-[#A656F5]">{name}</span>의 포토카드를 만드는 중 입니다
           </span>
         </div>
