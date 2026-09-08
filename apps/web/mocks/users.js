@@ -1,0 +1,42 @@
+export const mockUsers = [
+  {
+    id: "user-001",
+    nickname: "냥냥이",
+    point: 12500,
+    lastDrawAt: "2026-09-05T09:30:00.000Z",
+    unreadCount: 3,
+    createdAt: "2026-08-20T10:00:00.000Z",
+  },
+  {
+    id: "user-002",
+    nickname: "멍멍이",
+    point: 8300,
+    lastDrawAt: "2026-09-06T11:20:00.000Z",
+    unreadCount: 1,
+    createdAt: "2026-08-21T14:30:00.000Z",
+  },
+  {
+    id: "user-003",
+    nickname: "초코집사",
+    point: 24500,
+    lastDrawAt: "2026-09-04T08:45:00.000Z",
+    unreadCount: 5,
+    createdAt: "2026-08-22T09:15:00.000Z",
+  },
+  {
+    id: "user-004",
+    nickname: "구름이",
+    point: 6700,
+    lastDrawAt: "2026-09-06T15:10:00.000Z",
+    unreadCount: 0,
+    createdAt: "2026-08-24T16:20:00.000Z",
+  },
+  {
+    id: "user-005",
+    nickname: "복실이",
+    point: 18200,
+    lastDrawAt: "2026-09-05T13:00:00.000Z",
+    unreadCount: 2,
+    createdAt: "2026-08-26T11:40:00.000Z",
+  },
+];
