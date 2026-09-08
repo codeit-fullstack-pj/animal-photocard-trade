@@ -12,6 +12,8 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env.DATABASE_URL,
+    // 마이그레이션은 트랜잭션 풀러(6543)를 거치면 멈추므로 직접 연결(DIRECT_URL, 5432)을 쓴다.
+    // 앱(src/lib/prisma.js)은 그대로 DATABASE_URL(풀러)을 쓴다
+    url: process.env.DIRECT_URL ?? process.env.DATABASE_URL,
   },
 });
