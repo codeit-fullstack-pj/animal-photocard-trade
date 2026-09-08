@@ -1,13 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import CategorySelect from "./CategorySelect";
 import { VARIANTS, useImageVariants } from "./useImageVariants";
 import styles from "./create.module.css";
+import LandingHeader from "@/components/landing/LandingHeader";
 
 // TODO: API 연동 시 실제 생성 응답으로 교체 (지금은 이 시간만큼 로딩 후 완료 페이지로 이동)
 const SUBMIT_DELAY_MS = 10000;
+
+const CATEGORIES = [
+  { value: "dog", label: "강아지", image: "/dog.png" },
+  { value: "cat", label: "고양이", image: "/cat.png" },
+];
 
 export default function CreatePage() {
   const router = useRouter();
@@ -29,8 +35,8 @@ export default function CreatePage() {
   const canSubmit =
     Boolean(imageFile) && name.trim() !== "" && category !== "" && description.trim() !== "";
 
-  // 카테고리 선택 후에만 이미지 영역 노출. 이름·설명·생성 버튼은 처음부터 함께 표시
-  const showImageStep = category !== "";
+  // 카테고리 선택 전에는 카테고리만 노출. 선택하면 나머지 입력(이미지·이름·설명·생성 버튼)을 한 번에 표시
+  const showDetails = category !== "";
 
   useEffect(() => {
     let ignore = false;
@@ -91,133 +97,197 @@ export default function CreatePage() {
   }
 
   return (
-    <main className="flex w-full justify-center pt-20 font-sans-400">
-      <div className="mb-15 flex h-full w-310 flex-col items-center gap-20">
-        <div className="flex w-full flex-col gap-5">
-          <h2 className="text-left text-[62px] font-primary">포토카드 생성</h2>
-          <div className="h-0.5 w-full bg-[#EEEEEE]" />
-          <span className="text-right text-xl">남은 생성 횟수 : {count}</span>
-        </div>
-        <form onSubmit={(e) => e.preventDefault()} className="flex h-auto w-130 flex-col gap-16.25">
-          <div className="flex flex-col gap-2.5">
-            <span className="text-xl font-bold leading-[normal] text-white">카테고리</span>
-            <CategorySelect value={category} onChange={setCategory} />
+    <>
+      <LandingHeader />
+      <main className="flex w-full justify-center px-4 pt-10 font-sans-400 tablet:px-6 pc:px-0 pc:pt-20">
+        <div className="mb-10 flex h-full w-84.25 flex-col items-center gap-8 tablet:w-full tablet:max-w-[680px] pc:mb-15 pc:max-w-none pc:w-310 pc:gap-20">
+          <div className="flex w-full flex-col gap-3 pc:gap-5">
+            <h2 className="text-left text-3xl font-primary tablet:text-4xl pc:text-[62px]">
+              포토카드 생성
+            </h2>
+            <div className="h-0.5 w-full bg-[#EEEEEE]" />
+            <span className="text-right text-sm pc:text-xl">남은 생성 횟수 : {count}</span>
           </div>
-
-          {showImageStep && (
-            <div className={`${styles.stepIn} flex flex-col gap-16.25`}>
-              <div className="flex h-auto w-full flex-col gap-7.5">
-                <div
-                  role="img"
-                  aria-label={selectedUrl ? "선택한 이미지 미리보기" : undefined}
-                  style={selectedUrl ? { backgroundImage: `url(${selectedUrl})` } : undefined}
-                  className="flex aspect-square w-full items-center justify-center overflow-hidden bg-[#535353] bg-cover bg-center"
-                >
-                  {!selectedUrl && (
-                    <span className="text-base font-light leading-[normal] text-white">
-                      이미지 미리보기
-                    </span>
-                  )}
-                </div>
-                <div className="flex h-auto w-full gap-3.75">
-                  {VARIANTS.map(({ key, label }) => {
-                    const url = variants?.[key]?.url;
-                    const isSelected = selectedKey === key;
-
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setSelectedKey(key)}
-                        aria-pressed={isSelected}
-                        aria-label={label}
-                        style={url ? { backgroundImage: `url(${url})` } : undefined}
-                        className={`flex aspect-square flex-1 items-center justify-center overflow-hidden bg-[#535353] bg-cover bg-center ${
-                          isSelected ? "ring-2 ring-[#A656F5]" : ""
-                        }`}
-                      >
-                        {!url && (
-                          <span className="text-base font-light leading-[normal] text-white">
-                            {label}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="flex h-auto w-full flex-col justify-center gap-8 pc:flex-row pc:gap-16.25"
+          >
+            {!showDetails && (
+              <div className="flex w-full flex-row justify-center gap-2.5">
+                {CATEGORIES.map(({ value, label, image }) => (
+                  <div
+                    key={value}
+                    onClick={() => setCategory(value)}
+                    className={`relative flex aspect-[74/94] w-full max-w-[220px] cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-lg transition pc:aspect-auto pc:h-94 pc:w-74 pc:max-w-none pc:gap-5 ${
+                      category === value
+                        ? "bg-[#A656F5] opacity-100"
+                        : "bg-[#535353] opacity-70 hover:bg-[#A656F5] hover:opacity-100"
+                    }`}
+                  >
+                    <Image
+                      src={image}
+                      alt={label}
+                      width={199}
+                      height={224}
+                      priority
+                      className="h-auto w-1/2 object-cover pc:h-56 pc:w-49.75"
+                    />
+                    <span className="relative z-10 font-sans-600 text-lg pc:text-2xl">{label}</span>
+                  </div>
+                ))}
               </div>
-              <div className="flex flex-col gap-2.5">
-                <span className="text-xl font-bold leading-[normal] text-white">사진 업로드</span>
-                <div className="flex w-full gap-2.5">
-                  <input
-                    readOnly
-                    value={imageFile ? imageFile.name : ""}
-                    placeholder="사진 업로드"
-                    className="flex h-15 w-97.5 items-center gap-2.5 rounded-xs border border-[#DDD] bg-[#0F0F0F] px-5 py-4.5"
-                  />
-                  <label className="flex h-15 w-30 cursor-pointer items-center justify-center gap-2.5 overflow-hidden rounded-xs border border-[#A656F5] bg-[#A656F5] px-7 py-4.5">
-                    <span className="whitespace-nowrap text-center text-base font-normal leading-[normal] text-white">
-                      파일 선택
+            )}
+
+            {showDetails && (
+              <>
+                <div
+                  className={`${styles.stepIn} flex h-auto w-full flex-col gap-4 pc:w-188 pc:gap-7.5`}
+                >
+                  <div
+                    role="img"
+                    aria-label={selectedUrl ? "선택한 이미지 미리보기" : undefined}
+                    style={selectedUrl ? { backgroundImage: `url(${selectedUrl})` } : undefined}
+                    className="flex aspect-[188/125] w-full items-center justify-center overflow-hidden bg-[#535353] bg-cover bg-center pc:aspect-auto pc:h-125"
+                  >
+                    {!selectedUrl && (
+                      <span className="text-base font-light leading-[normal] text-white">
+                        이미지 미리보기
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex h-auto w-full gap-2 pc:gap-3.75">
+                    {VARIANTS.map(({ key, label }) => {
+                      const url = variants?.[key]?.url;
+                      const isSelected = selectedKey === key;
+
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setSelectedKey(key)}
+                          aria-pressed={isSelected}
+                          aria-label={label}
+                          style={url ? { backgroundImage: `url(${url})` } : undefined}
+                          className={`flex aspect-[188/125] flex-1 items-center justify-center overflow-hidden bg-[#535353] bg-cover bg-center ${
+                            isSelected ? "ring-2 ring-[#A656F5]" : ""
+                          }`}
+                        >
+                          {!url && (
+                            <span className="text-sm font-light leading-[normal] text-white pc:text-base">
+                              {label}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className={`${styles.stepIn} flex w-full flex-col gap-5 pc:w-112 pc:gap-6.25`}>
+                  <div className="flex flex-col gap-2 pc:gap-2.5">
+                    <span className="text-base font-bold leading-[normal] text-white pc:text-xl">
+                      사진 업로드
+                    </span>
+                    <div className="flex w-full gap-2.5">
+                      <input
+                        readOnly
+                        value={imageFile ? imageFile.name : ""}
+                        placeholder="사진 업로드"
+                        className="flex h-15 min-w-0 flex-1 items-center gap-2.5 rounded-xs border border-[#DDD] bg-[#0F0F0F] px-5 py-4.5"
+                      />
+                      <label className="flex h-15 w-30 shrink-0 cursor-pointer items-center justify-center gap-2.5 overflow-hidden rounded-xs border border-[#A656F5] bg-[#A656F5]">
+                        <span className="whitespace-nowrap text-center text-base font-normal leading-[normal] text-white">
+                          파일 선택
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 pc:gap-2.5">
+                    <span className="text-base font-bold leading-[normal] text-white pc:text-xl">
+                      포토카드 이름
                     </span>
                     <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="포토카드 이름을 입력해 주세요"
+                      className="flex h-15 w-full items-center gap-2.5 rounded-xs border border-[#DDD] bg-[#0F0F0F] px-5 py-4.5"
                     />
-                  </label>
+                  </div>
+
+                  <div className="flex flex-col gap-2 pc:gap-2.5">
+                    <span className="text-base font-bold leading-[normal] text-white pc:text-xl">
+                      카테고리
+                    </span>
+                    <div className="flex gap-2.5">
+                      {CATEGORIES.map(({ value, label }) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setCategory(value)}
+                          className={`flex h-15 flex-1 items-center justify-center rounded-xs font-sans-600 text-white transition ${
+                            category === value
+                              ? "bg-[#A656F5]"
+                              : "bg-[#535353] opacity-70 hover:opacity-100"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 pc:gap-2.5">
+                    <span className="text-base font-bold leading-[normal] text-white pc:text-xl">
+                      포토카드 설명
+                    </span>
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="카드 설명을 입력해 주세요"
+                      className="flex h-36 w-full resize-none items-center gap-2.5 rounded-xs border border-[#DDD] bg-[#0F0F0F] px-5 py-4.5 pc:h-45"
+                    />
+                  </div>
+
+                  <div className="w-full">
+                    <button
+                      type="button"
+                      onClick={handleSubmit}
+                      disabled={!canSubmit}
+                      className={`flex h-15 w-full items-center justify-center rounded-xs text-base font-bold text-white transition-opacity ${
+                        canSubmit
+                          ? "bg-[#A656F5] hover:opacity-90"
+                          : "cursor-not-allowed bg-[#535353]"
+                      }`}
+                    >
+                      생성하기
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-2.5">
-            <span className="text-xl font-bold leading-[normal] text-white">포토카드 이름</span>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="포토카드 이름을 입력해 주세요"
-              className="flex h-15 w-full items-center gap-2.5 rounded-xs border border-[#DDD] bg-[#0F0F0F] px-5 py-4.5"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2.5">
-            <span className="text-xl font-bold leading-[normal] text-white">포토카드 설명</span>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="카드 설명을 입력해 주세요"
-              className="flex h-45 w-full resize-none items-center gap-2.5 rounded-xs border border-[#DDD] bg-[#0F0F0F] px-5 py-4.5"
-            />
-          </div>
-
-          <div className="w-full">
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              className={`flex h-15 w-full items-center justify-center rounded-xs text-base font-bold text-white transition-opacity ${
-                canSubmit ? "bg-[#A656F5] hover:opacity-90" : "cursor-not-allowed bg-[#535353]"
-              }`}
-            >
-              생성하기
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {isSubmitting && (
-        <div className="fixed inset-0 z-50 flex w-full flex-col items-center justify-center gap-10 bg-black">
-          <h2
-            className={`${styles.loadingDots} w-full text-center text-[46px] leading-[normal] tracking-[-1.38px] font-primary-bold text-white`}
-          >
-            포토카드 <span className="text-yellow-300">생성 중</span>
-          </h2>
-          <span className="block w-full text-center text-xl leading-[normal] font-sans-700 text-white">
-            <span className="text-[#A656F5]">{name}</span>의 포토카드를 만드는 중 입니다
-          </span>
+              </>
+            )}
+          </form>
         </div>
-      )}
-    </main>
+
+        {isSubmitting && (
+          <div className="fixed inset-0 z-50 flex w-full flex-col items-center justify-center gap-10 bg-black px-6">
+            <h2
+              className={`${styles.loadingDots} w-full text-center text-2xl leading-[normal] tracking-[-1.38px] font-primary-bold text-white pc:text-[46px]`}
+            >
+              포토카드 <span className="text-yellow-300">생성 중</span>
+            </h2>
+            <span className="block w-full text-center text-base leading-[normal] font-sans-700 text-white pc:text-xl">
+              <span className="text-[#A656F5]">{name}</span>의 포토카드를 만드는 중 입니다
+            </span>
+          </div>
+        )}
+      </main>
+    </>
   );
 }

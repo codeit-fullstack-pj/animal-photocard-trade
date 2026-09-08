@@ -17,6 +17,11 @@
   --color-main: #efff04;
   --color-purple-button: #a656f5;
   --font-sans: var(--font-noto-sans-kr), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+
+  /* 반응형 breakpoint — Figma 프레임: mobile 375 / tablet 744 / pc 1920
+     (프레임 폭이 아니라 레이아웃 전환 지점. pc는 데스크톱 콘텐츠 폭 기준 1280) */
+  --breakpoint-tablet: 744px;
+  --breakpoint-pc: 1280px;
 }
 
 /* 본문 서체: Noto Sans KR (font-sans-400 ~ font-sans-700) */
