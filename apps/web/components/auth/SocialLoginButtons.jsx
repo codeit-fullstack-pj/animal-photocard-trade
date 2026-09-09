@@ -1,31 +1,24 @@
-"use client";
+import { API_BASE_URL } from "@/lib/api-client";
 
-// Google / Kakao 로그인 버튼.
-// TODO: 소셜 로그인은 Supabase OAuth(supabase-js)로 로그인한 뒤 받은 토큰을 POST /auth/social/callback에 보내야 한다.
-//       아직 Supabase 설정이 없어서 지금은 버튼 모양만 있고 눌러도 동작하지 않는다.
+// Google / Kakao 로그인 버튼. OAuth는 전부 API 서버가 처리하므로 웹은 서버 주소로 이동만 한다.
+// (서버 → Supabase → 서버 콜백에서 로그인 쿠키를 심고 → 웹 홈으로 돌아온다)
 export default function SocialLoginButtons({ className = "" }) {
-  function handleClick(provider) {
-    console.info(`[소셜 로그인] ${provider}: 아직 연결되지 않았어요.`);
-  }
-
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
-      <button
-        type="button"
-        onClick={() => handleClick("google")}
+      <a
+        href={`${API_BASE_URL}/auth/social/google`}
         className="flex h-14 w-full items-center justify-center gap-3 rounded-[0.25rem] bg-white font-sans-500 text-sm text-black hover:bg-gray-100"
       >
         <GoogleIcon />
         Google로 로그인하기
-      </button>
-      <button
-        type="button"
-        onClick={() => handleClick("kakao")}
+      </a>
+      <a
+        href={`${API_BASE_URL}/auth/social/kakao`}
         className="flex h-14 w-full items-center justify-center gap-3 rounded-[0.25rem] bg-[#FEE500] font-sans-500 text-sm text-black hover:bg-[#f5dc00]"
       >
         <KakaoIcon />
         Kakao로 로그인하기
-      </button>
+      </a>
     </div>
   );
 }

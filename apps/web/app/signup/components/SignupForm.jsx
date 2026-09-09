@@ -6,7 +6,7 @@ import { useState } from "react";
 import { ApiError } from "@/lib/api-client";
 import { signup } from "@/lib/auth/api";
 
-import FormField from "./FormField";
+import FormField from "@/components/auth/FormField";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
