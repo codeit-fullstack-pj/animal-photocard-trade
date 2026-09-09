@@ -11,3 +11,11 @@ export function findUserByNickname(nickname) {
 export function createUser({ email, nickname, provider, providerUid }) {
   return prisma.user.create({ data: { email, nickname, provider, providerUid } });
 }
+
+export function updateProviderUid(id, providerUid) {
+  return prisma.user.update({ where: { id }, data: { providerUid } });
+}
+
+export function deleteUser(id) {
+  return prisma.user.delete({ where: { id } });
+}

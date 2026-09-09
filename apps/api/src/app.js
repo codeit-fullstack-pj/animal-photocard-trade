@@ -2,8 +2,8 @@ import cors from "cors";
 import express from "express";
 
 import { errorHandler, notFoundHandler } from "./middlewares/error-handler.js";
-import { authRouter } from "./routes/auth/index.js";
-import { healthRouter } from "./routes/health.js";
+import { authRouter } from "./routes/auth.routes.js";
+import { healthRouter } from "./routes/health.routes.js";
 
 export const app = express();
 

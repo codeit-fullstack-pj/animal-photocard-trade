@@ -8,15 +8,15 @@
 src/
 ├─ server.js          # 포트 열기
 ├─ app.js             # express 설정, /api/v1 라우터 등록, 에러 핸들러
-├─ routes/            # URL → 컨트롤러 연결 (auth/index.js가 auth/signup.js 등을 묶는다)
-├─ controllers/       # 요청 검사, 응답 형태 결정 (auth/signup.js)
-├─ services/          # 비즈니스 로직, Supabase·DB 조합 (auth/signup.js)
+├─ routes/            # URL → 컨트롤러 연결 (auth.routes.js, health.routes.js)
+├─ controllers/       # 요청 본문 검사(superstruct), 응답 형태 결정 (auth.controller.js)
+├─ services/          # 비즈니스 로직, Supabase·DB 조합 (auth.service.js)
 ├─ repositories/      # Prisma 쿼리 (user.repository.js)
 ├─ middlewares/       # error-handler
 └─ lib/               # prisma, supabase 클라이언트, ApiError
 ```
 
-기능 하나는 `routes/auth/signup.js → controllers/auth/signup.js → services/auth/signup.js`로 이어진다. signin, signout도 같은 이름으로 나란히 추가한다.
+파일 이름은 `{도메인}.{계층}.js`로 통일한다 (`auth.routes.js`, `auth.controller.js`, `auth.service.js`, `user.repository.js`). 새 도메인은 같은 규칙으로 파일을 추가한다.
 
 ## 응답 규약
 
