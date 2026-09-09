@@ -12,7 +12,7 @@ import {
 } from "../repositories/user.repository.js";
 
 const ACCESS_TOKEN_EXPIRES_IN = 60 * 60;
-const SOCIAL_PROVIDERS = ["google", "kakao"];
+const SOCIAL_PROVIDERS = ["google"];
 
 export async function signup({ email, nickname, password }) {
   if (await findUserByEmail(email)) {

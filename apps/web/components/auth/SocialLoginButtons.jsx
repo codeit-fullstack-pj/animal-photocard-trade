@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "@/lib/api-client";
 
-// Google / Kakao 로그인 버튼. OAuth는 전부 API 서버가 처리하므로 웹은 서버 주소로 이동만 한다.
+// Google 로그인 버튼. OAuth는 전부 API 서버가 처리하므로 웹은 서버 주소로 이동만 한다.
 // (서버 → Supabase → 서버 콜백에서 로그인 쿠키를 심고 → 웹 홈으로 돌아온다)
 export default function SocialLoginButtons({ className = "" }) {
   return (
@@ -11,13 +11,6 @@ export default function SocialLoginButtons({ className = "" }) {
       >
         <GoogleIcon />
         Google로 로그인하기
-      </a>
-      <a
-        href={`${API_BASE_URL}/auth/social/kakao`}
-        className="flex h-14 w-full items-center justify-center gap-3 rounded-[0.25rem] bg-[#FEE500] font-sans-500 text-sm text-black hover:bg-[#f5dc00]"
-      >
-        <KakaoIcon />
-        Kakao로 로그인하기
       </a>
     </div>
   );
@@ -41,17 +34,6 @@ function GoogleIcon() {
       <path
         fill="#EA4335"
         d="M12 6.37c1.47 0 2.78.5 3.82 1.5l2.86-2.86A9.96 9.96 0 0 0 12 2.4a10 10 0 0 0-8.93 5.51l3.33 2.58c.8-2.36 3-4.12 5.6-4.12Z"
-      />
-    </svg>
-  );
-}
-
-function KakaoIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
-      <path
-        fill="#191919"
-        d="M12 3C6.48 3 2 6.5 2 10.8c0 2.72 1.8 5.1 4.5 6.48l-1 3.7c-.08.3.26.55.52.38l4.4-2.94c.51.06 1.04.1 1.58.1 5.52 0 10-3.5 10-7.72S17.52 3 12 3Z"
       />
     </svg>
   );
