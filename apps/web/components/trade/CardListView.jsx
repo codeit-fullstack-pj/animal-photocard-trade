@@ -87,7 +87,11 @@ const CardListView = ({ onSelectCard }) => {
                 onClick={() => onSelectCard(card)}
                 className="bg-[#1a1a1f] rounded-xl overflow-hidden cursor-pointer hover:opacity-80 w-[400px] h-[586.5px]"
               >
-                <div className="w-[352px] h-[232px] bg-gray-500 mx-6 mt-8 rounded-lg" />
+                <img
+                  src={card.imageUrl}
+                  alt={card.name}
+                  className="w-[352px] h-[232px] object-cover mx-6 mt-8 rounded-lg"
+                />
 
                 <p className="text-sm text-white ml-6 mt-3">
                   {card.tag} {card.name}

@@ -1,4 +1,3 @@
-// SaleFormView.jsx
 "use client";
 import { useState } from "react";
 
@@ -43,23 +42,33 @@ const SaleFormView = ({ card, onClose, onBack }) => {
         ←
       </button>
 
-      <h2 className="text-[46px] font-bold mb-4">나의 포토카드 판매하기</h2>
-      <div className="w-full h-[2px] bg-white mb-5 shrink-0" />
+      <h2 className="text-[23px] font-bold mb-4 top-[30px]">나의 포토카드 판매하기</h2>
 
       <div className="flex gap-6">
-        <div className="w-[300px]">
+        <div className="flex-1">
           <img
-            src={`https://picsum.photos/seed/${card.id}/400/300`}
+            src={card.imageUrl}
             alt={card.name}
             className="w-full h-[240px] object-cover rounded-lg mb-2"
           />
-          <h3 className="font-semibold mb-2">{card.name}</h3>
+          <h3 className="font-semibold mb-2">
+            {card.tag} {card.name}
+          </h3>
+
           {card.score.axes.map((axis) => (
-            <p key={axis.field} className="text-xs text-gray-400">
-              {axis.field}: {axis.value}%
-            </p>
+            <div key={axis.field} className="flex items-center gap-2 text-xs mb-2">
+              <span className="w-20 text-gray-400">{axis.field}</span>
+              <div className="flex-1 h-1.5 bg-white rounded-full">
+                <div
+                  className="h-1.5 bg-[#a656f5] rounded-full"
+                  style={{ width: `${axis.value}%` }}
+                />
+              </div>
+              <span className="text-gray-400">{axis.value}%</span>
+            </div>
           ))}
-          <p className="text-xs text-gray-400 mt-2">{card.tag}</p>
+
+          <p className="text-xs text-gray-400 mt-2">{card.description}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col gap-3">
