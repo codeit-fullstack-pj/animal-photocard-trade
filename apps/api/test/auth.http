@@ -1,0 +1,101 @@
+# VS Code "REST Client" 확장으로 실행: 요청 위의 "Send Request"를 누른다.
+# 준비: apps/api/.env에 DATABASE_URL·SUPABASE_URL·SUPABASE_ANON_KEY를 채우고 `npm run dev` (포트 4000)
+# {{$randomInt 1000 9999}}는 요청마다 새 숫자가 들어가서 이메일·닉네임이 겹치지 않는다.
+# Supabase는 example.com 같은 예약 도메인 이메일을 거절하므로 실제 도메인(gmail.com)을 쓴다.
+
+@baseUrl = http://localhost:4000/api/v1
+@dupEmail = dup-test@gmail.com
+@dupNickname = 중복테스트닉
+
+### 회원가입 성공 → 201 { "data": { "user": { "id", "nickname", "createdAt" } } }
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "user{{$randomInt 1000 9999}}@gmail.com",
+  "nickname": "멍냥이{{$randomInt 1000 9999}}",
+  "password": "password123",
+  "passwordConfirm": "password123"
+}
+
+### 중복 이메일 준비: 한 번 가입해 둔다 (처음엔 201, 두 번째부터 409)
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "{{dupEmail}}",
+  "nickname": "{{dupNickname}}",
+  "password": "password123",
+  "passwordConfirm": "password123"
+}
+
+### 중복 이메일 → 409 { "code": "EMAIL_ALREADY_EXISTS" }
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "{{dupEmail}}",
+  "nickname": "다른닉네임{{$randomInt 1000 9999}}",
+  "password": "password123",
+  "passwordConfirm": "password123"
+}
+
+### 중복 닉네임 → 409 { "code": "NICKNAME_ALREADY_EXISTS" }
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "other{{$randomInt 1000 9999}}@gmail.com",
+  "nickname": "{{dupNickname}}",
+  "password": "password123",
+  "passwordConfirm": "password123"
+}
+
+### 검증 실패: 이메일 형식 → 400 { "code": "VALIDATION_ERROR" }
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "not-an-email",
+  "nickname": "멍냥이",
+  "password": "password123",
+  "passwordConfirm": "password123"
+}
+
+### 검증 실패: 비밀번호 8자 미만 → 400
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "short@gmail.com",
+  "nickname": "멍냥이",
+  "password": "short",
+  "passwordConfirm": "short"
+}
+
+### 검증 실패: 비밀번호 확인 불일치 → 400
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "mismatch@gmail.com",
+  "nickname": "멍냥이",
+  "password": "password123",
+  "passwordConfirm": "password124"
+}
+
+### 검증 실패: 필수값 누락(닉네임) → 400
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "missing@gmail.com",
+  "password": "password123",
+  "passwordConfirm": "password123"
+}
+
+### 검증 실패: 본문이 JSON이 아님 → 400
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{ this is not json

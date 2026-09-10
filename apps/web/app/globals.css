@@ -26,6 +26,14 @@
 }
 
 /* 본문 서체: Noto Sans KR (font-sans-400 ~ font-sans-700) */
+@utility font-sans-200 {
+  font-family: var(--font-sans);
+  font-weight: 200;
+}
+@utility font-sans-300 {
+  font-family: var(--font-sans);
+  font-weight: 300;
+}
 @utility font-sans-400 {
   font-family: var(--font-sans);
   font-weight: 400;
