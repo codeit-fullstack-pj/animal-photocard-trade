@@ -1,6 +1,8 @@
+// SaleFormView.jsx
+"use client";
 import { useState } from "react";
 
-const SaleFormView = ({ card, onClose }) => {
+const SaleFormView = ({ card, onClose, onBack }) => {
   const [formData, setFormData] = useState({
     description: "",
     price: "",
@@ -33,14 +35,16 @@ const SaleFormView = ({ card, onClose }) => {
   };
 
   return (
-    <div className="relative bg-[#0b0b0f] text-white rounded-3xl p-8 w-[760px]">
+    <>
       <button
-        onClick={onClose}
-        className="absolute top-6 right-6 text-white text-2xl leading-none hover:text-gray-400"
+        onClick={onBack}
+        className="absolute top-12 left-12 text-white text-2xl leading-none hover:text-gray-400"
       >
-        ✕
+        ←
       </button>
+
       <h2 className="text-[46px] font-bold mb-4">나의 포토카드 판매하기</h2>
+      <div className="w-full h-[2px] bg-white mb-5 shrink-0" />
 
       <div className="flex gap-6">
         <div className="w-[300px]">
@@ -99,7 +103,7 @@ const SaleFormView = ({ card, onClose }) => {
           </div>
         </form>
       </div>
-    </div>
+    </>
   );
 };
 

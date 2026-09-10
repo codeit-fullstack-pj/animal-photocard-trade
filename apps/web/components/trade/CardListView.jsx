@@ -1,7 +1,8 @@
+"use client";
 import { useState } from "react";
 import { mockCards } from "@/mocks/cards.js";
 
-const CardListView = ({ onSelectCard, onClose }) => {
+const CardListView = ({ onSelectCard }) => {
   const [keyword, setKeyword] = useState("");
   const [category, setCategory] = useState(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -17,14 +18,7 @@ const CardListView = ({ onSelectCard, onClose }) => {
   });
 
   return (
-    <div className="bg-[#161616] w-[940px] h-[772px] p-[60px] flex flex-col rounded-3xl relative">
-      <button
-        onClick={onClose}
-        className="absolute top-12 right-12 text-white text-2xl leading-none hover:text-gray-400"
-      >
-        ✕
-      </button>
-
+    <>
       <p className="text-gray-300 text-2xl mb-11 shrink-0">마이갤러리</p>
       <h2 className="text-[46px] font-bold text-[#eeeeee] mb-5 shrink-0">나의 포토카드 판매하기</h2>
       <div className="w-full h-[2px] bg-white mb-5 shrink-0" />
@@ -93,10 +87,8 @@ const CardListView = ({ onSelectCard, onClose }) => {
                 onClick={() => onSelectCard(card)}
                 className="bg-[#1a1a1f] rounded-xl overflow-hidden cursor-pointer hover:opacity-80 w-[400px] h-[586.5px]"
               >
-                {/* 이미지 자리: 회색 처리, 위 32px / 좌우 24px 여백 */}
                 <div className="w-[352px] h-[232px] bg-gray-500 mx-6 mt-8 rounded-lg" />
 
-                {/* 태그 + 이름 한 줄, 이미지와 12px 간격, 왼쪽 24px 여백 */}
                 <p className="text-sm text-white ml-6 mt-3">
                   {card.tag} {card.name}
                 </p>
@@ -115,12 +107,14 @@ const CardListView = ({ onSelectCard, onClose }) => {
                     </div>
                   ))}
                 </div>
+
+                <p className="text-xs text-gray-400 px-6 mt-3">{card.description}</p>
               </div>
             ))}
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 };
 
