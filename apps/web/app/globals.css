@@ -1,26 +1,68 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* 디자인 시스템 팔레트 (Figma color 페이지 기준) */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-gray-*: initial;
+  --color-black: #0f0f0f;
+  --color-gray-500: #161616;
+  --color-gray-400: #5a5a5a;
+  --color-gray-300: #a4a4a4;
+  --color-gray-200: #dddddd;
+  --color-gray-100: #eeeeee;
+  --color-white: #ffffff;
+  --color-red: #ff483d;
+  --color-blue: #29c9f9;
+  --color-purple: #a77eff;
+  --color-pink: #ff2a6a;
+  --color-main: #efff04;
+  --color-purple-button: #a656f5;
+  --font-sans: var(--font-noto-sans-kr), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* 본문 서체: Noto Sans KR (font-sans-400 ~ font-sans-700) */
+@utility font-sans-200 {
+  font-family: var(--font-sans);
+  font-weight: 200;
+}
+@utility font-sans-300 {
+  font-family: var(--font-sans);
+  font-weight: 300;
+}
+@utility font-sans-400 {
+  font-family: var(--font-sans);
+  font-weight: 400;
+}
+@utility font-sans-500 {
+  font-family: var(--font-sans);
+  font-weight: 500;
+}
+@utility font-sans-600 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+@utility font-sans-700 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
+
+/* 제목 서체: 배스킨라빈스 (font-primary / font-primary-bold) */
+@utility font-primary {
+  font-family: var(--font-baskin-robbins), var(--font-sans);
+  font-weight: 400;
+}
+@utility font-primary-bold {
+  font-family: var(--font-baskin-robbins), var(--font-sans);
+  font-weight: 700;
+}
+
+/* 랜딩 페이지(/)에서만 쓰는 화면 비례 글자 크기·font-emoji·content-auto는 app/landing.css에 있다 */
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-black);
+  color: var(--color-white);
+  font-family: var(--font-sans);
+  word-break: keep-all;
 }

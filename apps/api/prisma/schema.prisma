@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CardCategory {
+  CAT
+  DOG
+}
+
+enum SaleStatus {
+  ON_SALE
+  SOLD_OUT
+  CANCELED
+}
+
+enum ExchangeStatus {
+  ACCEPTED
+  REJECTED
+  PENDING
+  CANCELED
+}
+
+enum NotificationType {
+  SALE_CANCELED_EXCHANGE
+  SALE_SOLD
+  SALE_SOLDOUT_EXCHANGE
+  EXCHANGE_ACCEPTED
+  EXCHANGE_REJECTED_BY_ACCEPT
+  EXCHANGE_REJECTED
+  EXCHANGE_CANCELED_BY_OFFERER
+}
+
+model User {
+  id          String    @id @default(uuid())
+  nickname    String    @unique
+  email       String    @unique
+  provider    String
+  providerUid String
+  point       BigInt    @default(0)
+  lastDrawAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  notifications Notification[]
+  uploads       ImageData[]
+  ownedCards    Card[]     @relation("CardOwner")
+  createdCards  Card[]     @relation("CardCreator")
+  sales         Sale[]
+
+  @@unique([provider, providerUid])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  content   String
+  targetId  String
+  isRead    Boolean          @default(false)
+  deletedAt DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model ImageData {
+  id         String       @id @default(uuid())
+  uploaderId String
+  imageUrl   String
+  category   CardCategory
+  score      Json?
+  createdAt  DateTime     @default(now())
+
+  card     Card?
+  uploader User @relation(fields: [uploaderId], references: [id])
+}
+
+model Card {
+  id          String   @id @default(uuid())
+  ownerId     String
+  createdById String
+  name        String
+  filterType  Int
+  tag         String
+  topScore    Int
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  imageId     String   @unique
+
+  owner   User      @relation("CardOwner", fields: [ownerId], references: [id])
+  creator User      @relation("CardCreator", fields: [createdById], references: [id])
+  image   ImageData @relation(fields: [imageId], references: [id])
+
+  sales            Sale[]
+  offeredExchanges Exchange[] @relation("OfferedCard")
+}
+
+model Sale {
+  id          String     @id @default(uuid())
+  cardId      String
+  sellerId    String
+  description String?
+  canExchange Boolean    @default(false)
+  status      SaleStatus @default(ON_SALE)
+  price       BigInt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  closedAt    DateTime?
+
+  card      Card       @relation(fields: [cardId], references: [id])
+  seller    User       @relation(fields: [sellerId], references: [id])
+  exchanges Exchange[]
+}
+
+model Exchange {
+  id          String         @id @default(uuid())
+  saleId      String
+  offerCardId String
+  message     String?
+  status      ExchangeStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  respondedAt DateTime?
+
+  sale      Sale @relation(fields: [saleId], references: [id])
+  offerCard Card @relation("OfferedCard", fields: [offerCardId], references: [id])
+}
+
+// 추후 고려사항 (지금 당장 필요하진 않으나, 데이터가 쌓인 뒤 조회가 느려지면 검토)
+// @@index([cardId, status])              on Sale
+// @@index([userId, deletedAt])           on Notification
+// @@index([category])                    on ImageData
