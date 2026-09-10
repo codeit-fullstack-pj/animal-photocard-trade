@@ -1,6 +1,7 @@
 "use client";
 
 import PhotoCard from "@/components/card/PhotoCard";
+import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 import TradeFilter from "@/components/trade/TradeFilter";
 import TradeSearchBar from "@/components/trade/TradeSearchBar";
 import { mockCards } from "@/mocks/cards";
@@ -66,12 +67,7 @@ export default function OfferCardPicker({ onSelect }) {
                   onClick={() => onSelect(card)}
                   className="block w-full text-left"
                 >
-                  <PhotoCard
-                    title={card.name}
-                    imageUrl={card.imageUrl}
-                    category={card.category}
-                    score={card.score}
-                  />
+                  <PhotoCard {...cardToPhotoCardProps(card)} variant="owned" />
                 </button>
               </li>
             ))}
