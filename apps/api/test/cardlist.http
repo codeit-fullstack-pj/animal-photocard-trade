@@ -1,0 +1,93 @@
+# VS Code "REST Client" 확장으로 실행: 요청 위의 "Send Request"를 누른다.
+# 준비: apps/api 에서 `npm run dev` (포트 4000), 시드 완료 (node --env-file=.env prisma/seed.js)
+#
+# 마이갤러리 = 로그인 유저가 "보유(ownerId)" 한 카드 목록.
+#   GET /cards
+#   ?ownerId=   ★ 인증 연동 전 임시 파라미터 (auth 붙으면 제거, req.user.id 사용)
+#   ?keyword=   이름 부분검색 (대소문자 무시)
+#   ?category=  dog | cat  (다중이면 반복: ?category=dog&category=cat → OR 필터)
+#   ?orderBy=   highestScore | lowestScore | latest | oldest   (기본 latest)
+#   ?page=      1부터, 기본 1
+#   ?pageSize=  기본 12
+#
+# 성공: { "data": { "items": [ { id, ownerId, createdById, name, category, imageUrl,
+#                               filterType, tag, score, topScore, description,
+#                               createdAt, updatedAt } ],
+#                    "totalCount", "totalPages" } }
+# 실패: { "code": "UPPER_SNAKE", "message": "..." }  (docs/conventions.md §3)
+#
+# 시드 기준: user-001(냥냥이) 보유 3장
+#   card-001 나비 / CAT / topScore 35 / 2026-08-20  (가장 오래됨)
+#   card-006 두부 / DOG / topScore 39 / 2026-08-25
+#   card-011 호두 / DOG / topScore 40 / 2026-08-30  (가장 최근)
+
+@baseUrl = http://localhost:4000/api/v1
+@ownerId = user-001
+@emptyOwnerId = user-003
+@noSuchOwnerId = no-such-user
+
+### 1. 기본 목록 → 200, items 3개, totalCount 3, totalPages 1, 기본 정렬(latest): 호두→두부→나비
+GET {{baseUrl}}/cards?ownerId={{ownerId}}
+
+### 2. 이름 검색 (미매칭) → 200, items []
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&keyword=존재하지않는이름
+
+### 3. 이름 검색 (매칭) → 200, "두부" 1개
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&keyword=두부
+
+### 4. 카테고리: cat → 200, 나비 1개
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=cat
+
+### 5. 카테고리: dog → 200, 호두·두부 2개
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=dog
+
+### 6. 카테고리: dog + cat (다중) → 200, 3개 (필터 없음과 동일)
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=dog&category=cat
+
+### 7. 정렬: highestScore → 200, 40 → 39 → 35 (호두→두부→나비)
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&orderBy=highestScore
+
+### 8. 정렬: lowestScore → 200, 35 → 39 → 40 (나비→두부→호두)
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&orderBy=lowestScore
+
+### 9. 정렬: latest → 200, 호두 → 두부 → 나비
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&orderBy=latest
+
+### 10. 정렬: oldest → 200, 나비 → 두부 → 호두
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&orderBy=oldest
+
+### 11. 검색 + 카테고리 + 정렬 조합 → 200, dog 카드 중 관상지수 높은 순
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=dog&orderBy=highestScore&keyword=
+
+### 12. 페이지네이션: pageSize 2, page 1 → 200, items 2개, totalCount 3, totalPages 2
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&pageSize=2&page=1
+
+### 13. 페이지네이션: pageSize 2, page 2 → 200, items 1개
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&pageSize=2&page=2
+
+### 14. 페이지네이션: 범위 밖 page → 200, items []
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&pageSize=2&page=99
+
+### 15. 카드 없는 유저 → 200, items [], totalCount 0, totalPages 0
+GET {{baseUrl}}/cards?ownerId={{emptyOwnerId}}&keyword=zzz
+
+### 16. 없는 유저 → 404 { "code": "USER_NOT_FOUND" }
+GET {{baseUrl}}/cards?ownerId={{noSuchOwnerId}}
+
+### 17. ownerId 누락 → 400 { "code": "VALIDATION_ERROR" }
+GET {{baseUrl}}/cards
+
+### 18. 잘못된 orderBy → 400 "orderBy 는 highestScore / lowestScore / latest / oldest 중 하나여야 합니다"
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&orderBy=weird
+
+### 19. 잘못된 category → 400 "category 는 dog / cat 만 가능합니다"
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=bird
+
+### 20. 잘못된 page (0) → 400 "page 는 1 이상의 정수여야 합니다"
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&page=0
+
+### 21. 잘못된 pageSize (음수) → 400
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&pageSize=-5
+
+### 22. 잘못된 page (정수 아님) → 400
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&page=abc

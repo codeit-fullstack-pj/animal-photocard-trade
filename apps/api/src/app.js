@@ -3,6 +3,7 @@ import express from "express";
 
 import { errorHandler, notFoundHandler } from "./middlewares/error-handler.js";
 import { authRouter } from "./routes/auth.routes.js";
+import { cardRouter } from "./routes/card.routes.js";
 import { healthRouter } from "./routes/health.routes.js";
 
 export const app = express();
@@ -14,6 +15,7 @@ app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(express.json());
 
 app.use("/api/v1", healthRouter);
+app.use("/api/v1", cardRouter);
 app.use("/api/v1/auth", authRouter);
 
 app.use(notFoundHandler);
