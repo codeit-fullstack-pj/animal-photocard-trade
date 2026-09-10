@@ -74,10 +74,10 @@ export default function Dropdown({
         aria-haspopup={multiple ? "true" : "listbox"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-2 rounded-xs border bg-[#0F0F0F] text-left ${
+        className={`flex items-center gap-2 rounded-xs border bg-black text-left ${
           triggerImage
             ? "size-8.75 justify-center border-white px-0 tablet:h-12 tablet:w-full tablet:justify-between tablet:border-0 tablet:px-4"
-            : "h-12 w-full justify-between border-[#DDD] px-4"
+            : "h-12 w-full justify-between border-gray-200 px-4"
         } ${className}`}
       >
         {triggerImage && (
@@ -113,7 +113,7 @@ export default function Dropdown({
         <div
           role="group"
           aria-label={placeholder}
-          className="absolute top-full left-0 z-10 mt-1 w-full min-w-40 overflow-hidden rounded-xs border border-[#DDD] bg-[#0F0F0F] tablet:min-w-0"
+          className="absolute top-full left-0 z-10 mt-1 w-full min-w-40 overflow-hidden rounded-xs border border-gray-200 bg-black tablet:min-w-0"
         >
           {options.map((o) => (
             <label
@@ -125,7 +125,7 @@ export default function Dropdown({
                 type="checkbox"
                 checked={isSelected(o.value)}
                 onChange={() => select(o.value)}
-                className="size-4 shrink-0 accent-[#A656F5]"
+                className="size-4 shrink-0 accent-purple-button"
               />
             </label>
           ))}
@@ -135,7 +135,7 @@ export default function Dropdown({
       {open && !multiple && (
         <ul
           role="listbox"
-          className="absolute top-full left-0 z-10 mt-1 w-full overflow-hidden rounded-xs border border-[#DDD] bg-[#0F0F0F]"
+          className="absolute top-full left-0 z-10 mt-1 w-full overflow-hidden rounded-xs border border-gray-200 bg-black"
         >
           {options.map((o) => (
             <li key={o.value}>
@@ -145,7 +145,7 @@ export default function Dropdown({
                 aria-selected={isSelected(o.value)}
                 onClick={() => select(o.value)}
                 className={`flex h-12 w-full items-center px-4 text-left hover:bg-white/10 ${
-                  isSelected(o.value) ? "bg-[#A656F5] text-white" : "text-white"
+                  isSelected(o.value) ? "bg-purple-button text-white" : "text-white"
                 }`}
               >
                 {o.label}

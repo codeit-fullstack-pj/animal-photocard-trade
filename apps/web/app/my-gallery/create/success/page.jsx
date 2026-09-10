@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import PhotoCard from "@/components/card/PhotoCard";
+import PhotoCard from "@/components/gallery/PhotoCard";
 import LandingHeader from "@/components/landing/LandingHeader";
 
 export default function CreateSuccessPage() {
@@ -65,7 +65,7 @@ function SuccessContent() {
     <main className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-4 py-12 font-sans-400 pc:flex-row pc:gap-16 pc:py-20">
       <div className="flex flex-col items-center gap-6 pc:order-2">
         <h2 className="text-center text-[32px] font-primary-bold text-white pc:text-[46px]">
-          포토카드 생성 <span className="text-[#A656F5]">성공</span>
+          포토카드 생성 <span className="text-purple-button">성공</span>
         </h2>
         {card && (
           <span className="text-center font-sans-400 text-base text-white">
@@ -74,7 +74,7 @@ function SuccessContent() {
         )}
         <Link
           href="/my-gallery"
-          className="flex h-13.75 w-56.5 items-center justify-center rounded-xs bg-[#A656F5] font-sans-400 text-base text-white pc:h-15 pc:w-110"
+          className="flex h-13.75 w-56.5 items-center justify-center rounded-xs bg-purple-button font-sans-400 text-base text-white pc:h-15 pc:w-110"
         >
           마이갤러리에서 확인하기
         </Link>

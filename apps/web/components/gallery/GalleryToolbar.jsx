@@ -26,7 +26,7 @@ export default function GalleryToolbar() {
   // 모바일: 검색 1줄 / 카테고리·정렬 2줄. tablet+ : 검색·카테고리 왼쪽 묶음, 정렬 우측(ml-auto)
   return (
     <div className="flex w-full flex-wrap items-center justify-between gap-3 tablet:flex-nowrap tablet:justify-start">
-      <div className="flex h-12.5 w-full shrink-0 items-center gap-2 rounded-xs border border-[#DDD] bg-[#0F0F0F] px-4 tablet:w-50 pc:w-80">
+      <div className="flex h-12.5 w-full shrink-0 items-center gap-2 rounded-xs border border-gray-200 bg-black px-4 tablet:w-50 pc:w-80">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}

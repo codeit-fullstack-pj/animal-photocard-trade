@@ -21,12 +21,12 @@ export default function MyGalleryPage() {
               </h2>
               <Link
                 href="/my-gallery/create"
-                className="hidden h-15.25 items-center justify-center rounded-xs bg-[#A656F5] font-sans-400 text-base text-white tablet:flex tablet:w-85.5 pc:w-110"
+                className="hidden h-15.25 items-center justify-center rounded-xs bg-purple-button font-sans-400 text-base text-white tablet:flex tablet:w-85.5 pc:w-110"
               >
                 포토카드 생성하기 {remainingCount}/5
               </Link>
             </div>
-            <div className="h-0.5 w-full bg-[#EEEEEE]" />
+            <div className="h-0.5 w-full bg-gray-100" />
             <span>
               <span className="font-sans-700 text-2xl text-gray-200">
                 {userName}님이 보유한 포토카드

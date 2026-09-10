@@ -105,7 +105,7 @@ export default function CreatePage() {
             <h2 className="text-left text-3xl font-primary tablet:text-4xl pc:text-[62px]">
               포토카드 생성
             </h2>
-            <div className="h-0.5 w-full bg-[#EEEEEE]" />
+            <div className="h-0.5 w-full bg-gray-100" />
             <span className="text-right text-sm pc:text-xl">남은 생성 횟수 : {count}</span>
           </div>
           <form
@@ -120,8 +120,8 @@ export default function CreatePage() {
                     onClick={() => setCategory(value)}
                     className={`relative flex aspect-[74/94] w-full max-w-[220px] cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-lg transition pc:aspect-auto pc:h-94 pc:w-74 pc:max-w-none pc:gap-5 ${
                       category === value
-                        ? "bg-[#A656F5] opacity-100"
-                        : "bg-[#535353] opacity-70 hover:bg-[#A656F5] hover:opacity-100"
+                        ? "bg-purple-button opacity-100"
+                        : "bg-[#535353] opacity-70 hover:bg-purple-button hover:opacity-100"
                     }`}
                   >
                     <Image
@@ -169,7 +169,7 @@ export default function CreatePage() {
                           aria-label={label}
                           style={url ? { backgroundImage: `url(${url})` } : undefined}
                           className={`flex aspect-[188/125] flex-1 items-center justify-center overflow-hidden bg-[#535353] bg-cover bg-center ${
-                            isSelected ? "ring-2 ring-[#A656F5]" : ""
+                            isSelected ? "ring-2 ring-purple-button" : ""
                           }`}
                         >
                           {!url && (
@@ -193,9 +193,9 @@ export default function CreatePage() {
                         readOnly
                         value={imageFile ? imageFile.name : ""}
                         placeholder="사진 업로드"
-                        className="flex h-15 min-w-0 flex-1 items-center gap-2.5 rounded-xs border border-[#DDD] bg-[#0F0F0F] px-5 py-4.5"
+                        className="flex h-15 min-w-0 flex-1 items-center gap-2.5 rounded-xs border border-gray-200 bg-black px-5 py-4.5"
                       />
-                      <label className="flex h-15 w-30 shrink-0 cursor-pointer items-center justify-center gap-2.5 overflow-hidden rounded-xs border border-[#A656F5] bg-[#A656F5]">
+                      <label className="flex h-15 w-30 shrink-0 cursor-pointer items-center justify-center gap-2.5 overflow-hidden rounded-xs border border-purple-button bg-purple-button">
                         <span className="whitespace-nowrap text-center text-base font-normal leading-[normal] text-white">
                           파일 선택
                         </span>
@@ -217,7 +217,7 @@ export default function CreatePage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="포토카드 이름을 입력해 주세요"
-                      className="flex h-15 w-full items-center gap-2.5 rounded-xs border border-[#DDD] bg-[#0F0F0F] px-5 py-4.5"
+                      className="flex h-15 w-full items-center gap-2.5 rounded-xs border border-gray-200 bg-black px-5 py-4.5"
                     />
                   </div>
 
@@ -233,7 +233,7 @@ export default function CreatePage() {
                           onClick={() => setCategory(value)}
                           className={`flex h-15 flex-1 items-center justify-center rounded-xs font-sans-600 text-white transition ${
                             category === value
-                              ? "bg-[#A656F5]"
+                              ? "bg-purple-button"
                               : "bg-[#535353] opacity-70 hover:opacity-100"
                           }`}
                         >
@@ -251,7 +251,7 @@ export default function CreatePage() {
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="카드 설명을 입력해 주세요"
-                      className="flex h-36 w-full resize-none items-center gap-2.5 rounded-xs border border-[#DDD] bg-[#0F0F0F] px-5 py-4.5 pc:h-45"
+                      className="flex h-36 w-full resize-none items-center gap-2.5 rounded-xs border border-gray-200 bg-black px-5 py-4.5 pc:h-45"
                     />
                   </div>
 
@@ -262,7 +262,7 @@ export default function CreatePage() {
                       disabled={!canSubmit}
                       className={`flex h-15 w-full items-center justify-center rounded-xs text-base font-bold text-white transition-opacity ${
                         canSubmit
-                          ? "bg-[#A656F5] hover:opacity-90"
+                          ? "bg-purple-button hover:opacity-90"
                           : "cursor-not-allowed bg-[#535353]"
                       }`}
                     >
@@ -283,7 +283,7 @@ export default function CreatePage() {
               포토카드 <span className="text-yellow-300">생성 중</span>
             </h2>
             <span className="block w-full text-center text-base leading-[normal] font-sans-700 text-white pc:text-xl">
-              <span className="text-[#A656F5]">{name}</span>의 포토카드를 만드는 중 입니다
+              <span className="text-purple-button">{name}</span>의 포토카드를 만드는 중 입니다
             </span>
           </div>
         )}
