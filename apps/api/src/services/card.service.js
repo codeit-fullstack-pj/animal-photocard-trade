@@ -2,9 +2,6 @@ import { ApiError } from "../lib/api-error.js";
 import { findCardsAndCount } from "../repositories/card.repository.js";
 import { findUserById } from "../repositories/user.repository.js";
 
-// 요청 category(dog/cat) → Prisma enum(CardCategory)
-const CATEGORY_ENUM = { dog: "DOG", cat: "CAT" };
-
 // orderBy 파라미터 → Prisma orderBy
 const ORDER_BY_CLAUSE = {
   highestScore: [{ topScore: "desc" }, { createdAt: "desc" }],
@@ -21,7 +18,7 @@ const ORDER_BY_CLAUSE = {
  *   pageSize: number,
  *   orderBy: keyof typeof ORDER_BY_CLAUSE,
  *   keyword: string,
- *   categories: ("dog" | "cat")[],
+ *   categories: ("DOG" | "CAT")[],
  * }} params
  */
 export async function listCards({ ownerId, page, pageSize, orderBy, keyword, categories }) {
@@ -33,9 +30,7 @@ export async function listCards({ ownerId, page, pageSize, orderBy, keyword, cat
   const where = {
     ownerId,
     ...(keyword ? { name: { contains: keyword, mode: "insensitive" } } : {}),
-    ...(categories.length > 0
-      ? { image: { category: { in: categories.map((c) => CATEGORY_ENUM[c]) } } }
-      : {}),
+    ...(categories.length > 0 ? { image: { category: { in: categories } } } : {}),
   };
 
   const [cards, totalCount] = await findCardsAndCount({

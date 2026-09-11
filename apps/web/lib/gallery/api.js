@@ -20,7 +20,7 @@ const DEV_OWNER_ID = "user-001";
  *   pageSize: number,
  *   sort: string,          // GalleryToolbar 값 (score_desc 등)
  *   keyword: string,
- *   categories: string[],  // ["dog", "cat"]
+ *   categories: string[],  // ["DOG", "CAT"]
  * }} params
  * @returns {Promise<{ items: object[], totalCount: number, totalPages: number }>}
  */

@@ -5,7 +5,7 @@
 #   GET /cards
 #   ?ownerId=   ★ 인증 연동 전 임시 파라미터 (auth 붙으면 제거, req.user.id 사용)
 #   ?keyword=   이름 부분검색 (대소문자 무시)
-#   ?category=  dog | cat  (다중이면 반복: ?category=dog&category=cat → OR 필터)
+#   ?category=  DOG | CAT  (다중이면 반복: ?category=DOG&category=CAT → OR 필터)
 #   ?orderBy=   highestScore | lowestScore | latest | oldest   (기본 latest)
 #   ?page=      1부터, 기본 1
 #   ?pageSize=  기본 12
@@ -35,14 +35,14 @@ GET {{baseUrl}}/cards?ownerId={{ownerId}}&keyword=존재하지않는이름
 ### 3. 이름 검색 (매칭) → 200, "두부" 1개
 GET {{baseUrl}}/cards?ownerId={{ownerId}}&keyword=두부
 
-### 4. 카테고리: cat → 200, 나비 1개
-GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=cat
+### 4. 카테고리: CAT → 200, 나비 1개
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=CAT
 
-### 5. 카테고리: dog → 200, 호두·두부 2개
-GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=dog
+### 5. 카테고리: DOG → 200, 호두·두부 2개
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=DOG
 
-### 6. 카테고리: dog + cat (다중) → 200, 3개 (필터 없음과 동일)
-GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=dog&category=cat
+### 6. 카테고리: DOG + CAT (다중) → 200, 3개 (필터 없음과 동일)
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=DOG&category=CAT
 
 ### 7. 정렬: highestScore → 200, 40 → 39 → 35 (호두→두부→나비)
 GET {{baseUrl}}/cards?ownerId={{ownerId}}&orderBy=highestScore
@@ -56,8 +56,8 @@ GET {{baseUrl}}/cards?ownerId={{ownerId}}&orderBy=latest
 ### 10. 정렬: oldest → 200, 나비 → 두부 → 호두
 GET {{baseUrl}}/cards?ownerId={{ownerId}}&orderBy=oldest
 
-### 11. 검색 + 카테고리 + 정렬 조합 → 200, dog 카드 중 관상지수 높은 순
-GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=dog&orderBy=highestScore&keyword=
+### 11. 검색 + 카테고리 + 정렬 조합 → 200, DOG 카드 중 관상지수 높은 순
+GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=DOG&orderBy=highestScore&keyword=
 
 ### 12. 페이지네이션: pageSize 2, page 1 → 200, items 2개, totalCount 3, totalPages 2
 GET {{baseUrl}}/cards?ownerId={{ownerId}}&pageSize=2&page=1
@@ -80,7 +80,7 @@ GET {{baseUrl}}/cards
 ### 18. 잘못된 orderBy → 400 "orderBy 는 highestScore / lowestScore / latest / oldest 중 하나여야 합니다"
 GET {{baseUrl}}/cards?ownerId={{ownerId}}&orderBy=weird
 
-### 19. 잘못된 category → 400 "category 는 dog / cat 만 가능합니다"
+### 19. 잘못된 category → 400 "category 는 DOG / CAT 만 가능합니다"
 GET {{baseUrl}}/cards?ownerId={{ownerId}}&category=bird
 
 ### 20. 잘못된 page (0) → 400 "page 는 1 이상의 정수여야 합니다"

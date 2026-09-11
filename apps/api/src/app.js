@@ -1,3 +1,4 @@
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 
@@ -13,6 +14,7 @@ const allowedOrigin =
   process.env.CORS_ENABLED === "true" ? (process.env.CORS_ORIGIN ?? "http://localhost:3000") : true;
 app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/api/v1", healthRouter);
 app.use("/api/v1", cardRouter);

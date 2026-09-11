@@ -5,8 +5,8 @@ import Image from "next/image";
 import Dropdown from "./Dropdown";
 
 const CATEGORY_OPTIONS = [
-  { value: "dog", label: "강아지" },
-  { value: "cat", label: "고양이" },
+  { value: "DOG", label: "강아지" },
+  { value: "CAT", label: "고양이" },
 ];
 
 const SORT_OPTIONS = [

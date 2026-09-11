@@ -15,7 +15,7 @@ import { ApiError } from "../lib/api-error.js";
 import * as cardService from "../services/card.service.js";
 
 const ORDER_BY = ["highestScore", "lowestScore", "latest", "oldest"];
-const CATEGORY = ["dog", "cat"];
+const CATEGORY = ["DOG", "CAT"];
 
 // 쿼리 문자열 "12" → 정수 12 (1 이상). 정수가 아니면 원본을 그대로 넘겨 검증에서 걸리게 한다
 const queryPositiveInt = coerce(min(integer(), 1), string(), (value) => {
@@ -71,7 +71,7 @@ export async function list(req, res) {
   res.json({ data: result });
 }
 
-// ?category=dog → "dog", ?category=dog&category=cat → ["dog", "cat"], 없으면 []
+// ?category=DOG → "DOG", ?category=DOG&category=CAT → ["DOG", "CAT"], 없으면 []
 function toArray(value) {
   if (value === undefined) return [];
   return Array.isArray(value) ? value : [value];
