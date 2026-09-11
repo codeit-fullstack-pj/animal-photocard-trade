@@ -11,8 +11,8 @@ import LandingHeader from "@/components/landing/LandingHeader";
 const SUBMIT_DELAY_MS = 10000;
 
 const CATEGORIES = [
-  { value: "dog", label: "강아지", image: "/dog.png" },
-  { value: "cat", label: "고양이", image: "/cat.png" },
+  { value: "DOG", label: "강아지", image: "/dog.png" },
+  { value: "CAT", label: "고양이", image: "/cat.png" },
 ];
 
 export default function CreatePage() {
