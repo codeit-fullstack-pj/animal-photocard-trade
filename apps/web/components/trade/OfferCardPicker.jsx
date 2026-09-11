@@ -15,7 +15,6 @@ const CATEGORY_OPTIONS = [
 const WHITESPACE_PATTERN = /\s+/g;
 
 export default function OfferCardPicker({ onSelect }) {
-  //카드 목록을 불러올 API를 주석처리(nextjs fetch로 처리)
   const [keyword, setKeyword] = useState("");
   const [debounceKeyword, setDebouncedKeyword] = useState("");
   const [selectedCategory, setSelectedCategory] = useState([]);
@@ -41,9 +40,7 @@ export default function OfferCardPicker({ onSelect }) {
       <h3 className="font-primary-bold mt-10 text-[46px] leading-none text-white">
         교환할 포토카드 선택하기
       </h3>
-
       <div className="mt-5 border-t-2 border-gray-100" />
-
       <div className="mt-6 flex items-center justify-start gap-7">
         <TradeSearchBar value={keyword} onChange={setKeyword} />
         <TradeFilter
@@ -52,7 +49,6 @@ export default function OfferCardPicker({ onSelect }) {
           options={CATEGORY_OPTIONS}
         />
       </div>
-
       <div className="mt-10 h-117.5">
         {filteredCards.length === 0 ? (
           <p className="font-sans-400 flex h-full items-center justify-center text-sm text-gray-300">
@@ -67,7 +63,7 @@ export default function OfferCardPicker({ onSelect }) {
                   onClick={() => onSelect(card)}
                   className="block w-full text-left"
                 >
-                  <PhotoCard {...cardToPhotoCardProps(card)} variant="owned" />
+                  <PhotoCard {...cardToPhotoCardProps(card)} />
                 </button>
               </li>
             ))}

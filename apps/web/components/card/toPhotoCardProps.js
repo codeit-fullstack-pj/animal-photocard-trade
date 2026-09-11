@@ -5,9 +5,10 @@ function getSaleStatusLabel(sale, hasPendingExchange) {
   return undefined;
 }
 
-// 소유 카드(Card) -> PhotoCard props. variant="owned"와 함께 쓴다
+// 소유 카드(Card) -> PhotoCard props
 export function cardToPhotoCardProps(card) {
   return {
+    variant: "owned",
     title: card.name,
     tag: card.tag,
     description: card.description,
@@ -18,9 +19,10 @@ export function cardToPhotoCardProps(card) {
   };
 }
 
-// 판매글(Sale) -> PhotoCard props. variant="sale"와 함께 쓴다
+// 판매글(Sale) -> PhotoCard props
 export function saleToPhotoCardProps(sale, hasPendingExchange) {
   return {
+    variant: "sale",
     title: sale.card.name,
     tag: sale.card.tag,
     imageUrl: sale.card.image,
