@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 // 썸네일 순서 · 라벨 · 캔버스 필터 정의
 export const VARIANTS = [
   { key: "original", label: "원본", filter: null },
-  { key: "sepia", label: "세피아", filter: "sepia(0.7)" }
+  { key: "sepia", label: "세피아", filter: "sepia(0.7)" },
   { key: "mono", label: "모노", filter: "grayscale(1)" },
   { key: "dot", label: "도트", filter: "dot" },
 ];
