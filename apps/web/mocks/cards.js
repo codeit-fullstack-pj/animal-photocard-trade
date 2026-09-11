@@ -4,11 +4,9 @@ export const mockCards = [
     ownerId: "user-001",
     createdById: "user-001",
     imageId: "image-001",
-
     name: "나비",
     category: "CAT",
-    imageUrl: "https://picsum.photos/seed/card-001/400/300",
-
+    imageUrl: "https://cdn.example.com/cards/card-001.webp",
     filterType: 1,
     tag: "우주를 정복하는 마에스트로",
 
@@ -33,7 +31,6 @@ export const mockCards = [
     ownerId: "user-002",
     createdById: "user-002",
     imageId: "image-002",
-
     name: "초코",
     category: "DOG",
     imageUrl: "https://picsum.photos/seed/card-002/400/300",
