@@ -100,7 +100,7 @@ export default function CreatePage() {
     <>
       <LandingHeader />
       <main className="flex w-full justify-center px-4 pt-10 font-sans-400 tablet:px-6 pc:px-0 pc:pt-20">
-        <div className="mb-10 flex h-full w-84.25 flex-col items-center gap-8 tablet:w-full tablet:max-w-[680px] pc:mb-15 pc:max-w-none pc:w-310 pc:gap-20">
+        <div className="mb-10 flex h-full w-84.25 flex-col items-center gap-8 tablet:w-full tablet:max-w-170 pc:mb-15 pc:max-w-none pc:w-310 pc:gap-20">
           <div className="flex w-full flex-col gap-3 pc:gap-5">
             <h2 className="text-left text-3xl font-primary tablet:text-4xl pc:text-[62px]">
               포토카드 생성
@@ -118,7 +118,7 @@ export default function CreatePage() {
                   <div
                     key={value}
                     onClick={() => setCategory(value)}
-                    className={`relative flex aspect-[74/94] w-full max-w-[220px] cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-lg transition pc:aspect-auto pc:h-94 pc:w-74 pc:max-w-none pc:gap-5 ${
+                    className={`relative flex aspect-74/94 w-full max-w-55 cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-lg transition pc:aspect-auto pc:h-94 pc:w-74 pc:max-w-none pc:gap-5 ${
                       category === value
                         ? "bg-purple-button opacity-100"
                         : "bg-[#535353] opacity-70 hover:bg-purple-button hover:opacity-100"
@@ -147,10 +147,10 @@ export default function CreatePage() {
                     role="img"
                     aria-label={selectedUrl ? "선택한 이미지 미리보기" : undefined}
                     style={selectedUrl ? { backgroundImage: `url(${selectedUrl})` } : undefined}
-                    className="flex aspect-[188/125] w-full items-center justify-center overflow-hidden bg-[#535353] bg-cover bg-center pc:aspect-auto pc:h-125"
+                    className="flex aspect-188/125 w-full items-center justify-center overflow-hidden bg-[#535353] bg-cover bg-center pc:aspect-auto pc:h-125"
                   >
                     {!selectedUrl && (
-                      <span className="text-base font-light leading-[normal] text-white">
+                      <span className="text-base font-light leading-normal text-white">
                         이미지 미리보기
                       </span>
                     )}
@@ -168,12 +168,12 @@ export default function CreatePage() {
                           aria-pressed={isSelected}
                           aria-label={label}
                           style={url ? { backgroundImage: `url(${url})` } : undefined}
-                          className={`flex aspect-[188/125] flex-1 items-center justify-center overflow-hidden bg-[#535353] bg-cover bg-center ${
+                          className={`flex aspect-188/125 flex-1 items-center justify-center overflow-hidden bg-[#535353] bg-cover bg-center ${
                             isSelected ? "ring-2 ring-purple-button" : ""
                           }`}
                         >
                           {!url && (
-                            <span className="text-sm font-light leading-[normal] text-white pc:text-base">
+                            <span className="text-sm font-light leading-normal text-white pc:text-base">
                               {label}
                             </span>
                           )}
@@ -183,9 +183,9 @@ export default function CreatePage() {
                   </div>
                 </div>
 
-                <div className={`${styles.stepIn} flex w-full flex-col gap-5 pc:w-112 pc:gap-6.25`}>
+                <div className={`${styles.stepIn} flex w-full flex-col gap-5 pc:w-md pc:gap-6.25`}>
                   <div className="flex flex-col gap-2 pc:gap-2.5">
-                    <span className="text-base font-bold leading-[normal] text-white pc:text-xl">
+                    <span className="text-base font-bold leading-normal text-white pc:text-xl">
                       사진 업로드
                     </span>
                     <div className="flex w-full gap-2.5">
@@ -196,7 +196,7 @@ export default function CreatePage() {
                         className="flex h-15 min-w-0 flex-1 items-center gap-2.5 rounded-xs border border-gray-200 bg-black px-5 py-4.5"
                       />
                       <label className="flex h-15 w-30 shrink-0 cursor-pointer items-center justify-center gap-2.5 overflow-hidden rounded-xs border border-purple-button bg-purple-button">
-                        <span className="whitespace-nowrap text-center text-base font-normal leading-[normal] text-white">
+                        <span className="whitespace-nowrap text-center text-base font-normal leading-normal text-white">
                           파일 선택
                         </span>
                         <input
@@ -210,7 +210,7 @@ export default function CreatePage() {
                   </div>
 
                   <div className="flex flex-col gap-2 pc:gap-2.5">
-                    <span className="text-base font-bold leading-[normal] text-white pc:text-xl">
+                    <span className="text-base font-bold leading-normal text-white pc:text-xl">
                       포토카드 이름
                     </span>
                     <input
@@ -222,7 +222,7 @@ export default function CreatePage() {
                   </div>
 
                   <div className="flex flex-col gap-2 pc:gap-2.5">
-                    <span className="text-base font-bold leading-[normal] text-white pc:text-xl">
+                    <span className="text-base font-bold leading-normal text-white pc:text-xl">
                       카테고리
                     </span>
                     <div className="flex gap-2.5">
@@ -244,7 +244,7 @@ export default function CreatePage() {
                   </div>
 
                   <div className="flex flex-col gap-2 pc:gap-2.5">
-                    <span className="text-base font-bold leading-[normal] text-white pc:text-xl">
+                    <span className="text-base font-bold leading-normal text-white pc:text-xl">
                       포토카드 설명
                     </span>
                     <textarea
@@ -278,11 +278,11 @@ export default function CreatePage() {
         {isSubmitting && (
           <div className="fixed inset-0 z-50 flex w-full flex-col items-center justify-center gap-10 bg-black px-6">
             <h2
-              className={`${styles.loadingDots} w-full text-center text-2xl leading-[normal] tracking-[-1.38px] font-primary-bold text-white pc:text-[46px]`}
+              className={`${styles.loadingDots} w-full text-center text-2xl leading-normal tracking-[-1.38px] font-primary-bold text-white pc:text-[46px]`}
             >
               포토카드 <span className="text-yellow-300">생성 중</span>
             </h2>
-            <span className="block w-full text-center text-base leading-[normal] font-sans-700 text-white pc:text-xl">
+            <span className="block w-full text-center text-base leading-normal font-sans-700 text-white pc:text-xl">
               <span className="text-purple-button">{name}</span>의 포토카드를 만드는 중 입니다
             </span>
           </div>
