@@ -98,4 +98,67 @@ Content-Type: application/json
 POST {{baseUrl}}/auth/signup
 Content-Type: application/json
 
-{ this is not json
+{ this is not json ]}}
+
+
+### ─────────────────────────── 로그인 / 로그아웃 / 토큰 재발급 ───────────────────────────
+# REST Client는 응답의 Set-Cookie를 기억해 다음 요청에 자동으로 보낸다(기본 설정).
+# 로그아웃·재발급은 X-CSRF-TOKEN 헤더가 필요하다. 로그인 뒤 아래 "CSRF 토큰 조회" 요청을 한 번 보내면
+# 그 응답값이 {{csrf.response.body.data.csrfToken}} 으로 자동 채워진다 (REST Client 요청 변수).
+
+### 로그인 → 200 { "data": { "user", "accessToken", "refreshToken" } } + Set-Cookie 3개(accessToken, refreshToken, csrfToken)
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "{{dupEmail}}",
+  "password": "password123"
+}
+
+### 로그인 실패 (틀린 비밀번호) → 401 { "code": "INVALID_CREDENTIALS" }
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "{{dupEmail}}",
+  "password": "wrong-password"
+}
+
+### 로그인 검증 실패 (빈 값) → 400 { "code": "VALIDATION_ERROR" }
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": ""
+}
+
+### CSRF 토큰 조회 → 200 { "data": { "csrfToken" } } (로그인 뒤 실행)
+# @name csrf
+GET {{baseUrl}}/auth/csrf-token
+
+### 토큰 재발급 → 200 { "data": { "accessToken" } } (refreshToken 쿠키 + CSRF 헤더 필요)
+POST {{baseUrl}}/auth/refresh-token
+X-CSRF-TOKEN: {{csrf.response.body.data.csrfToken}}
+
+### 토큰 재발급 CSRF 헤더 없음 → 403 { "code": "CSRF_TOKEN_INVALID" }
+POST {{baseUrl}}/auth/refresh-token
+
+### 로그아웃 → 204 (쿠키 삭제)
+POST {{baseUrl}}/auth/signout
+X-CSRF-TOKEN: {{csrf.response.body.data.csrfToken}}
+
+### 소셜 로그인 콜백 (토큰이 잘못됨) → 401 { "code": "INVALID_SOCIAL_TOKEN" }
+POST {{baseUrl}}/auth/social/callback
+Content-Type: application/json
+
+{
+  "supabaseAccessToken": "not-a-real-token"
+}
+
+### 소셜 로그인 시작 → 302, Location 이 Supabase OAuth 주소 (브라우저에서 열면 Google 로그인 화면으로 이동)
+# REST Client는 리다이렉트를 따라가므로 응답이 Google/Supabase HTML로 보일 수 있다. 실제 확인은 브라우저 주소창에 아래 URL 입력
+GET {{baseUrl}}/auth/social/google
+
+### 지원하지 않는 provider → 400 { "code": "VALIDATION_ERROR" }
+GET {{baseUrl}}/auth/social/naver
