@@ -2,16 +2,29 @@ import Image from "next/image";
 
 import AutoFitText from "./AutoFitText";
 
+// filterType(1~4, useImageVariants.js VARIANTS 순서와 동일: 원본·세피아·모노·도트) 별 렌더링 방식.
+// 세피아·모노는 CSS filter로 충분하지만, 도트는 filter로 흉내낼 수 없어 이미지를 작게 그린 뒤
+// 원래 크기로 확대해서(scale) 블록져 보이게 한다 — image-rendering: pixelated 가 그 확대를 각지게 만든다
+const CSS_FILTERS = { 2: "sepia(0.7)", 3: "grayscale(1)" };
+const DOT_FILTER_TYPE = 4;
+const IMAGE_BOX_WIDTH = 352; // w-88
+const IMAGE_BOX_HEIGHT = 232; // h-58
+const DOT_RENDER_WIDTH = 40; // 이 크기로 그린 뒤 박스 크기로 확대
+
 /**
  * 완성된 포토카드 1장.
  * @param {{ card: {
  *   name: string,
- *   imageUrl: string,          // 필터 적용된 최종 이미지
+ *   imageUrl: string,          // 원본 이미지. filterType에 맞춰 렌더링 시점에 필터를 입힌다
+ *   filterType?: number,       // 1 원본 · 2 세피아 · 3 모노 · 4 도트
  *   description?: string | null,
  *   score?: { axes: { field: string, value: number }[], topField: string, topScore: number },
  * } }} props
  */
 export default function PhotoCard({ card }) {
+  const isDot = card.filterType === DOT_FILTER_TYPE;
+  const cssFilter = CSS_FILTERS[card.filterType];
+
   return (
     <div
       className="relative flex h-147.5 w-100 flex-col overflow-hidden rounded-[10px]"
@@ -26,12 +39,31 @@ export default function PhotoCard({ card }) {
       }}
     >
       <div className="mt-3 flex h-full w-full flex-col items-center gap-5 px-3">
-        <div
-          role="img"
-          aria-label={`${card.name} 포토카드 이미지`}
-          style={card.imageUrl ? { backgroundImage: `url(${card.imageUrl})` } : undefined}
-          className="h-58 w-88 rounded-[10px] bg-[#535353] bg-cover bg-center"
-        />
+        <div className="relative h-58 w-88 overflow-hidden rounded-[10px] bg-[#535353]">
+          {card.imageUrl && !isDot && (
+            <div
+              role="img"
+              aria-label={`${card.name} 포토카드 이미지`}
+              style={{ backgroundImage: `url(${card.imageUrl})`, filter: cssFilter }}
+              className="h-full w-full bg-cover bg-center"
+            />
+          )}
+          {card.imageUrl && isDot && (
+            <div
+              role="img"
+              aria-label={`${card.name} 포토카드 이미지`}
+              style={{
+                backgroundImage: `url(${card.imageUrl})`,
+                width: DOT_RENDER_WIDTH,
+                height: (DOT_RENDER_WIDTH * IMAGE_BOX_HEIGHT) / IMAGE_BOX_WIDTH,
+                transform: `scale(${IMAGE_BOX_WIDTH / DOT_RENDER_WIDTH})`,
+                transformOrigin: "top left",
+                imageRendering: "pixelated",
+              }}
+              className="bg-cover bg-center"
+            />
+          )}
+        </div>
 
         <div className="flex w-full flex-col gap-3">
           <AutoFitText as="h3" className="w-full text-lg font-bold text-white">

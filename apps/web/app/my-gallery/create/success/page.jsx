@@ -26,21 +26,23 @@ function Loading() {
 }
 
 function SuccessContent() {
-  const cardId = useSearchParams().get("id");
+  const searchParams = useSearchParams();
+  const cardId = searchParams.get("id");
   const [card, setCard] = useState(null);
 
   useEffect(() => {
     let ignore = false;
 
     async function loadCard() {
-      // TODO: API 연동 시 GET /cards/{cardId} 응답으로 교체
+      // TODO: API 연동 시 GET /cards/{cardId} 응답으로 교체. 지금은 create 페이지가 쿼리로 넘긴
+      // 값을 그대로 쓴다 (필터 렌더링을 실제로 확인해보기 위한 임시 방편 — score는 여전히 목업)
       const data = {
         id: cardId ?? "temp",
-        name: "임시 포토카드",
-        category: "CAT",
-        imageUrl: "",
-        filterType: 1,
-        description: "임시 설명입니다.",
+        name: searchParams.get("name") || "임시 포토카드",
+        category: searchParams.get("category") || "CAT",
+        imageUrl: searchParams.get("imageUrl") || "",
+        filterType: Number(searchParams.get("filterType")) || 1,
+        description: searchParams.get("description") || "임시 설명입니다.",
         score: {
           axes: [
             { field: "재물운", value: 30 },
@@ -59,7 +61,7 @@ function SuccessContent() {
     return () => {
       ignore = true;
     };
-  }, [cardId]);
+  }, [cardId, searchParams]);
 
   return (
     <main className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-4 py-12 font-sans-400 pc:flex-row pc:gap-16 pc:py-20">

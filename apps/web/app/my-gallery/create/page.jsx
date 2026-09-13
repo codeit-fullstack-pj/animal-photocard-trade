@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { VARIANTS, useImageVariants } from "./useImageVariants";
 import styles from "./create.module.css";
 import LandingHeader from "@/components/landing/LandingHeader";
+import { uploadImage } from "@/lib/image/api";
 
 // TODO: API 연동 시 실제 생성 응답으로 교체 (지금은 이 시간만큼 로딩 후 완료 페이지로 이동)
 const SUBMIT_DELAY_MS = 10000;
@@ -14,6 +15,22 @@ const CATEGORIES = [
   { value: "DOG", label: "강아지", image: "/dog.png" },
   { value: "CAT", label: "고양이", image: "/cat.png" },
 ];
+
+// 아이폰 HEIC는 대부분 브라우저(Safari 제외)가 <img>로 표시하지 못해서, 선택 즉시 JPEG로 바꿔둔다.
+// mimetype이 비어있는 경우가 있어 확장자로도 같이 확인한다
+const HEIC_TYPES = ["image/heic", "image/heif"];
+function isHeicFile(file) {
+  return HEIC_TYPES.includes(file.type) || /\.hei[cf]$/i.test(file.name);
+}
+
+async function toUploadableFile(rawFile) {
+  if (!isHeicFile(rawFile)) return rawFile;
+
+  const { default: heic2any } = await import("heic2any");
+  const converted = await heic2any({ blob: rawFile, toType: "image/jpeg", quality: 0.9 });
+  const blob = Array.isArray(converted) ? converted[0] : converted;
+  return new File([blob], rawFile.name.replace(/\.hei[cf]$/i, ".jpg"), { type: "image/jpeg" });
+}
 
 export default function CreatePage() {
   const router = useRouter();
@@ -27,13 +44,22 @@ export default function CreatePage() {
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 파일을 고르는 즉시 POST /images/upload 를 호출한다 (카테고리는 이 시점에 이미 선택돼 있음)
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [uploadStatus, setUploadStatus] = useState("idle"); // idle | converting | uploading | success | error
+  const [uploadErrorMessage, setUploadErrorMessage] = useState("");
+
   const submitTimerRef = useRef(null);
+  const uploadSeqRef = useRef(0);
 
   const { variants } = useImageVariants(imageFile);
   const selectedUrl = variants?.[selectedKey]?.url || previewUrl;
 
   const canSubmit =
-    Boolean(imageFile) && name.trim() !== "" && category !== "" && description.trim() !== "";
+    uploadStatus === "success" &&
+    name.trim() !== "" &&
+    category !== "" &&
+    description.trim() !== "";
 
   // 카테고리 선택 전에는 카테고리만 노출. 선택하면 나머지 입력(이미지·이름·설명·생성 버튼)을 한 번에 표시
   const showDetails = category !== "";
@@ -72,28 +98,83 @@ export default function CreatePage() {
 
     setIsSubmitting(true);
 
-    // TODO: API 연동 시 2단계로 교체
-    //  1) POST /images/upload  (FormData: image=imageFile, category)  → { imageId }
-    //  2) POST /cards  (JSON: { imageId, filterType, name, description })  → 생성된 카드 { id }
+    // TODO: API 연동 시 POST /cards 로 교체
+    //  POST /cards  (JSON: { imageId, filterType, name, description })  → 생성된 카드 { id }
     //  성공 → router.push(`/my-gallery/create/success?id=${id}`), 실패 → setIsSubmitting(false)
     console.log("포토카드 생성 요청", {
-      category,
+      imageId: uploadedImage?.id,
       filterType,
       name: name.trim(),
       description: description.trim(),
     });
     submitTimerRef.current = setTimeout(() => {
-      const createdId = "temp"; // TODO: POST /cards 응답의 id
-      router.push(`/my-gallery/create/success?id=${createdId}`);
+      // TODO: POST /cards 응답의 id로 교체. 지금은 success 페이지가 실제 카드를 조회할 수 없어
+      // 방금 만든 값들을 쿼리로 그대로 넘긴다 (필터 렌더링 확인용 임시 방편)
+      const params = new URLSearchParams({
+        id: "temp",
+        imageUrl: uploadedImage?.imageUrl ?? "",
+        filterType: String(filterType),
+        name: name.trim(),
+        description: description.trim(),
+        category,
+      });
+      router.push(`/my-gallery/create/success?${params.toString()}`);
     }, SUBMIT_DELAY_MS);
   }
 
-  function handleImageChange(e) {
-    const file = e.target.files?.[0] ?? null;
+  // 업로드 중 파일이 또 바뀌면, 먼저 보낸 요청의 응답이 나중에 와도 무시한다
+  async function uploadSelectedImage(file, categoryValue) {
+    const seq = (uploadSeqRef.current += 1);
+    setUploadStatus("uploading");
+    setUploadErrorMessage("");
+
+    try {
+      const result = await uploadImage({ file, category: categoryValue });
+      if (uploadSeqRef.current !== seq) return;
+      setUploadedImage(result);
+      setUploadStatus("success");
+    } catch (error) {
+      if (uploadSeqRef.current !== seq) return;
+      setUploadedImage(null);
+      setUploadStatus("error");
+      setUploadErrorMessage(error.message);
+    }
+  }
+
+  async function handleImageChange(e) {
+    const rawFile = e.target.files?.[0] ?? null;
     if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+    if (!rawFile) {
+      uploadSeqRef.current += 1;
+      setImageFile(null);
+      setPreviewUrl("");
+      setSelectedKey("original");
+      setUploadedImage(null);
+      setUploadStatus("idle");
+      return;
+    }
+
+    // HEIC면 JPEG로 바꾸는 동안, 그사이 다른 파일이 또 선택되면 이 결과는 버린다
+    const seq = (uploadSeqRef.current += 1);
+    setUploadStatus("converting");
+    setUploadErrorMessage("");
+
+    let file;
+    try {
+      file = await toUploadableFile(rawFile);
+    } catch {
+      if (uploadSeqRef.current !== seq) return;
+      setUploadStatus("error");
+      setUploadErrorMessage("이미지를 처리하지 못했어요. 다른 사진을 선택해 주세요.");
+      return;
+    }
+    if (uploadSeqRef.current !== seq) return;
+
     setImageFile(file);
-    setPreviewUrl(file ? URL.createObjectURL(file) : "");
+    setPreviewUrl(URL.createObjectURL(file));
     setSelectedKey("original");
+    uploadSelectedImage(file, category);
   }
 
   return (
@@ -207,6 +288,15 @@ export default function CreatePage() {
                         />
                       </label>
                     </div>
+                    {uploadStatus === "converting" && (
+                      <span className="text-sm text-gray-300">이미지 변환 중...</span>
+                    )}
+                    {uploadStatus === "uploading" && (
+                      <span className="text-sm text-gray-300">이미지 업로드 중...</span>
+                    )}
+                    {uploadStatus === "error" && (
+                      <span className="text-sm text-red">{uploadErrorMessage}</span>
+                    )}
                   </div>
 
                   <div className="flex flex-col gap-2 pc:gap-2.5">
@@ -219,28 +309,6 @@ export default function CreatePage() {
                       placeholder="포토카드 이름을 입력해 주세요"
                       className="flex h-15 w-full items-center gap-2.5 rounded-xs border border-gray-200 bg-black px-5 py-4.5"
                     />
-                  </div>
-
-                  <div className="flex flex-col gap-2 pc:gap-2.5">
-                    <span className="text-base font-bold leading-[normal] text-white pc:text-xl">
-                      카테고리
-                    </span>
-                    <div className="flex gap-2.5">
-                      {CATEGORIES.map(({ value, label }) => (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() => setCategory(value)}
-                          className={`flex h-15 flex-1 items-center justify-center rounded-xs font-sans-600 text-white transition ${
-                            category === value
-                              ? "bg-purple-button"
-                              : "bg-[#535353] opacity-70 hover:opacity-100"
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
                   </div>
 
                   <div className="flex flex-col gap-2 pc:gap-2.5">
