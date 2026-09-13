@@ -4,6 +4,7 @@ import express from "express";
 
 import { errorHandler, notFoundHandler } from "./middlewares/error-handler.js";
 import { authRouter } from "./routes/auth.routes.js";
+import { cardRouter } from "./routes/card.routes.js";
 import { healthRouter } from "./routes/health.routes.js";
 import { imageRouter } from "./routes/image.routes.js";
 
@@ -18,6 +19,7 @@ app.use(cookieParser());
 
 app.use("/api/v1", healthRouter);
 app.use("/api/v1", imageRouter);
+app.use("/api/v1", cardRouter);
 app.use("/api/v1/auth", authRouter);
 
 app.use(notFoundHandler);
