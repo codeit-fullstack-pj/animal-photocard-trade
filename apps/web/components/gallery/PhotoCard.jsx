@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+import { SCORE_CONFIG } from "@/components/card/scoreConfig";
+
 import AutoFitText from "./AutoFitText";
 
 // filterType(1~4, useImageVariants.js VARIANTS 순서와 동일: 원본·세피아·모노·도트) 별 렌더링 방식.
@@ -15,15 +17,21 @@ const DOT_RENDER_WIDTH = 40; // 이 크기로 그린 뒤 박스 크기로 확대
  * 완성된 포토카드 1장.
  * @param {{ card: {
  *   name: string,
+ *   tag?: string,              // 이름 앞에 붙는 관상 태그 (예: "우주를 정복하는 마에스트로")
+ *   category: "DOG" | "CAT",   // score.axes의 field(영문 키)를 한글 라벨로 바꾸는 데 씀
  *   imageUrl: string,          // 원본 이미지. filterType에 맞춰 렌더링 시점에 필터를 입힌다
  *   filterType?: number,       // 1 원본 · 2 세피아 · 3 모노 · 4 도트
  *   description?: string | null,
- *   score?: { axes: { field: string, value: number }[], topField: string, topScore: number },
+ *   score?: { axes: { field: string, value: number }[] },
  * } }} props
  */
 export default function PhotoCard({ card }) {
   const isDot = card.filterType === DOT_FILTER_TYPE;
   const cssFilter = CSS_FILTERS[card.filterType];
+  // score.axes 의 field는 ENERGIZER/UDADA 같은 백엔드 키라서, 카드에 보일 땐 한글 라벨로 바꾼다
+  const scoreLabels = Object.fromEntries(
+    (SCORE_CONFIG[card.category] ?? []).map(({ key, label }) => [key, label]),
+  );
 
   return (
     <div
@@ -67,7 +75,7 @@ export default function PhotoCard({ card }) {
 
         <div className="flex w-full flex-col gap-3">
           <AutoFitText as="h3" className="w-full text-lg font-bold text-white">
-            {card.name}
+            {card.tag} {card.name}
           </AutoFitText>
 
           {card.score?.axes?.length > 0 && (
@@ -75,7 +83,7 @@ export default function PhotoCard({ card }) {
               {card.score.axes.map(({ field, value }) => (
                 <div key={field} className="flex items-center gap-2 text-xs">
                   <AutoFitText className="inline-flex h-5 w-20 shrink-0 items-center font-sans-500 text-sm text-white">
-                    {field}
+                    {scoreLabels[field] ?? field}
                   </AutoFitText>
                   <div className="h-2 w-50 shrink-0 overflow-hidden rounded-full bg-white">
                     <div

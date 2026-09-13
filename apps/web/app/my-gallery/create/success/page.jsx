@@ -34,8 +34,9 @@ function SuccessContent() {
     let ignore = false;
 
     async function loadCard() {
-      // TODO: API 연동 시 GET /cards/{cardId} 응답으로 교체. 지금은 create 페이지가 쿼리로 넘긴
-      // 값을 그대로 쓴다 (필터 렌더링을 실제로 확인해보기 위한 임시 방편 — score는 여전히 목업)
+      // TODO: API 연동 시 GET /cards/{cardId} 응답으로 교체. 지금은 create 페이지가 실제
+      // POST /cards 응답값을 쿼리로 그대로 넘긴다 (success 페이지 자체 조회 API가 아직 없어서)
+      const rawScore = searchParams.get("score");
       const data = {
         id: cardId ?? "temp",
         name: searchParams.get("name") || "임시 포토카드",
@@ -43,16 +44,8 @@ function SuccessContent() {
         imageUrl: searchParams.get("imageUrl") || "",
         filterType: Number(searchParams.get("filterType")) || 1,
         description: searchParams.get("description") || "임시 설명입니다.",
-        score: {
-          axes: [
-            { field: "재물운", value: 30 },
-            { field: "애정운", value: 25 },
-            { field: "건강운", value: 25 },
-            { field: "사교운", value: 20 },
-          ],
-          topField: "재물운",
-          topScore: 30,
-        },
+        tag: searchParams.get("tag") || "",
+        score: rawScore ? JSON.parse(rawScore) : { axes: [] },
       };
       if (!ignore) setCard(data);
     }

@@ -6,10 +6,8 @@ import { useRouter } from "next/navigation";
 import { VARIANTS, useImageVariants } from "./useImageVariants";
 import styles from "./create.module.css";
 import LandingHeader from "@/components/landing/LandingHeader";
+import { createCard } from "@/lib/card/api";
 import { uploadImage } from "@/lib/image/api";
-
-// TODO: API 연동 시 실제 생성 응답으로 교체 (지금은 이 시간만큼 로딩 후 완료 페이지로 이동)
-const SUBMIT_DELAY_MS = 10000;
 
 const CATEGORIES = [
   { value: "DOG", label: "강아지", image: "/dog.png" },
@@ -43,13 +41,13 @@ export default function CreatePage() {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitErrorMessage, setSubmitErrorMessage] = useState("");
 
   // 파일을 고르는 즉시 POST /images/upload 를 호출한다 (카테고리는 이 시점에 이미 선택돼 있음)
   const [uploadedImage, setUploadedImage] = useState(null);
   const [uploadStatus, setUploadStatus] = useState("idle"); // idle | converting | uploading | success | error
   const [uploadErrorMessage, setUploadErrorMessage] = useState("");
 
-  const submitTimerRef = useRef(null);
   const uploadSeqRef = useRef(0);
 
   const { variants } = useImageVariants(imageFile);
@@ -85,41 +83,38 @@ export default function CreatePage() {
     };
   }, [previewUrl]);
 
-  useEffect(() => {
-    return () => {
-      if (submitTimerRef.current) clearTimeout(submitTimerRef.current);
-    };
-  }, []);
-
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!canSubmit || isSubmitting) return;
 
     const filterType = VARIANTS.findIndex((v) => v.key === selectedKey) + 1;
 
     setIsSubmitting(true);
+    setSubmitErrorMessage("");
 
-    // TODO: API 연동 시 POST /cards 로 교체
-    //  POST /cards  (JSON: { imageId, filterType, name, description })  → 생성된 카드 { id }
-    //  성공 → router.push(`/my-gallery/create/success?id=${id}`), 실패 → setIsSubmitting(false)
-    console.log("포토카드 생성 요청", {
-      imageId: uploadedImage?.id,
-      filterType,
-      name: name.trim(),
-      description: description.trim(),
-    });
-    submitTimerRef.current = setTimeout(() => {
-      // TODO: POST /cards 응답의 id로 교체. 지금은 success 페이지가 실제 카드를 조회할 수 없어
-      // 방금 만든 값들을 쿼리로 그대로 넘긴다 (필터 렌더링 확인용 임시 방편)
-      const params = new URLSearchParams({
-        id: "temp",
-        imageUrl: uploadedImage?.imageUrl ?? "",
-        filterType: String(filterType),
+    try {
+      const card = await createCard({
+        imageId: uploadedImage.id,
+        filterType,
         name: name.trim(),
         description: description.trim(),
-        category,
+      });
+
+      // TODO: GET /cards/{id} 가 생기면 success 페이지가 직접 조회하도록 바꾸고 쿼리 전달은 제거
+      const params = new URLSearchParams({
+        id: card.id,
+        imageUrl: card.imageUrl,
+        filterType: String(card.filterType),
+        name: card.name,
+        description: card.description,
+        category: card.category,
+        tag: card.tag,
+        score: JSON.stringify(card.score),
       });
       router.push(`/my-gallery/create/success?${params.toString()}`);
-    }, SUBMIT_DELAY_MS);
+    } catch (error) {
+      setIsSubmitting(false);
+      setSubmitErrorMessage(error.message);
+    }
   }
 
   // 업로드 중 파일이 또 바뀌면, 먼저 보낸 요청의 응답이 나중에 와도 무시한다
@@ -323,7 +318,7 @@ export default function CreatePage() {
                     />
                   </div>
 
-                  <div className="w-full">
+                  <div className="flex w-full flex-col gap-2">
                     <button
                       type="button"
                       onClick={handleSubmit}
@@ -336,6 +331,9 @@ export default function CreatePage() {
                     >
                       생성하기
                     </button>
+                    {submitErrorMessage && (
+                      <span className="text-sm text-red">{submitErrorMessage}</span>
+                    )}
                   </div>
                 </div>
               </>
