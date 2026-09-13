@@ -11,7 +11,8 @@ const SORT_TO_ORDER_BY = {
 };
 
 // TODO: 인증 연동 시 제거. 지금 API 가 ?ownerId= 를 요구함 (인증 파트 담당 팀원 작업 대기)
-const DEV_OWNER_ID = "user-001";
+// 로컬 seed.js 픽스처(user-001)는 지금 쓰는 공용 Supabase DB엔 없어서, 실제 테스트 계정 id로 둔다
+const DEV_OWNER_ID = "c13f1325-17d3-4039-aab0-792a6744df33";
 
 /**
  * GET /cards — 로그인 유저가 보유한 카드 목록 (페이지네이션)
