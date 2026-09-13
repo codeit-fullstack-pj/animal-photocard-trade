@@ -35,7 +35,8 @@ export async function listCards({ ownerId, page, pageSize, orderBy, keyword, cat
 
   const [cards, totalCount] = await findCardsAndCount({
     where,
-    orderBy: ORDER_BY_CLAUSE[orderBy],
+    // id(유일값)를 마지막 기준으로 추가해 동점/동시각 행의 순서를 페이지 간에도 고정한다 (안 그러면 페이지네이션에서 중복·누락 발생 가능)
+    orderBy: [...ORDER_BY_CLAUSE[orderBy], { id: "asc" }],
     skip: (page - 1) * pageSize,
     take: pageSize,
   });
