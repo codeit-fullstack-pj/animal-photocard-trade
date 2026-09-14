@@ -10,6 +10,8 @@ export default function ConfirmModal({
   confirmLabel,
   onConfirm,
   isSubmitting,
+  secondaryLabel,
+  onSecondary,
 }) {
   if (!isOpen) return null;
 
@@ -30,14 +32,35 @@ export default function ConfirmModal({
           {description}
         </p>
 
-        <button
-          type="button"
-          onClick={onConfirm}
-          disabled={isSubmitting}
-          className="font-sans-600 mt-2 h-12.5 w-full rounded-xs bg-purple-button text-sm text-black disabled:opacity-50 tablet:h-14 tablet:text-base"
-        >
-          {confirmLabel}
-        </button>
+        {secondaryLabel ? (
+          <div className="mt-2 flex w-full gap-3">
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={isSubmitting}
+              className="font-sans-600 h-12.5 flex-1 rounded-xs bg-purple-button text-sm text-black disabled:opacity-50 tablet:h-14 tablet:text-base"
+            >
+              {confirmLabel}
+            </button>
+            <button
+              type="button"
+              onClick={onSecondary ?? onClose}
+              disabled={isSubmitting}
+              className="font-sans-600 h-12.5 flex-1 rounded-xs border border-white bg-transparent text-sm text-white disabled:opacity-50 tablet:h-14 tablet:text-base"
+            >
+              {secondaryLabel}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isSubmitting}
+            className="font-sans-600 mt-2 h-12.5 w-full rounded-xs bg-purple-button text-sm text-black disabled:opacity-50 tablet:h-14 tablet:text-base"
+          >
+            {confirmLabel}
+          </button>
+        )}
       </div>
     </div>
   );
