@@ -1,5 +1,5 @@
 import { ApiError } from "../lib/api-error.js";
-import { deriveCardTag } from "../lib/card-flavor.js";
+import { deriveCardDescription, deriveCardTag } from "../lib/card-flavor.js";
 import {
   countCardsByCategory,
   countCardsCreatedSince,
@@ -22,7 +22,7 @@ const ORDER_BY_CLAUSE = {
   oldest: [{ createdAt: "asc" }],
 };
 
-export async function createCardFromImage({ ownerId, imageId, filterType, name, description }) {
+export async function createCardFromImage({ ownerId, imageId, filterType, name }) {
   const usedToday = await countCardsCreatedSince({
     createdById: ownerId,
     since: startOfTodayKst(),
@@ -43,6 +43,8 @@ export async function createCardFromImage({ ownerId, imageId, filterType, name, 
 
   const topScore = Math.max(...image.score.axes.map((axis) => axis.value));
   const tag = deriveCardTag(image.category, image.score.axes);
+  // 사용자가 직접 입력하던 설명을 ML 1·2등 축 조합 기반 자동 생성으로 대체 (카테고리당 12가지 × 2모델 = 24가지)
+  const description = deriveCardDescription(image.category, image.score.axes);
 
   let card;
   try {

@@ -3,15 +3,15 @@ import Image from "next/image";
 import { SCORE_CONFIG } from "@/components/card/scoreConfig";
 
 import AutoFitText from "./AutoFitText";
+import DotHalftoneImage from "./DotHalftoneImage";
 
 // filterType(1~4, useImageVariants.js VARIANTS 순서와 동일: 원본·세피아·모노·도트) 별 렌더링 방식.
-// 세피아·모노는 CSS filter로 충분하지만, 도트는 filter로 흉내낼 수 없어 이미지를 작게 그린 뒤
-// 원래 크기로 확대해서(scale) 블록져 보이게 한다 — image-rendering: pixelated 가 그 확대를 각지게 만든다
+// 세피아·모노는 CSS filter로 충분하지만, 도트는 픽셀 밝기에 따라 점 크기가 달라지는 진짜
+// 망점(halftone)이라 CSS만으로는 불가능 — canvas로 그리는 DotHalftoneImage를 쓴다
 const CSS_FILTERS = { 2: "sepia(0.7)", 3: "grayscale(1)" };
 const DOT_FILTER_TYPE = 4;
 const IMAGE_BOX_WIDTH = 352; // w-88
 const IMAGE_BOX_HEIGHT = 232; // h-58
-const DOT_RENDER_WIDTH = 40; // 이 크기로 그린 뒤 박스 크기로 확대
 
 /**
  * 완성된 포토카드 1장.
@@ -57,18 +57,11 @@ export default function PhotoCard({ card }) {
             />
           )}
           {card.imageUrl && isDot && (
-            <div
-              role="img"
-              aria-label={`${card.name} 포토카드 이미지`}
-              style={{
-                backgroundImage: `url(${card.imageUrl})`,
-                width: DOT_RENDER_WIDTH,
-                height: (DOT_RENDER_WIDTH * IMAGE_BOX_HEIGHT) / IMAGE_BOX_WIDTH,
-                transform: `scale(${IMAGE_BOX_WIDTH / DOT_RENDER_WIDTH})`,
-                transformOrigin: "top left",
-                imageRendering: "pixelated",
-              }}
-              className="bg-cover bg-center"
+            <DotHalftoneImage
+              src={card.imageUrl}
+              alt={`${card.name} 포토카드 이미지`}
+              width={IMAGE_BOX_WIDTH}
+              height={IMAGE_BOX_HEIGHT}
             />
           )}
         </div>

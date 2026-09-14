@@ -23,14 +23,12 @@ const CreateCardBody = type({
   imageId: NonEmpty,
   filterType: enums(FILTER_TYPES),
   name: NonEmpty,
-  description: NonEmpty,
 });
 
 const VALIDATION_MESSAGES = {
   imageId: "imageId가 필요합니다",
   filterType: `filterType 은 ${FILTER_TYPES.join(" / ")} 중 하나여야 합니다`,
   name: "포토카드 이름을 입력해 주세요",
-  description: "포토카드 설명을 입력해 주세요",
 };
 
 export async function create(req, res) {
@@ -48,7 +46,6 @@ export async function create(req, res) {
     imageId: body.imageId,
     filterType: body.filterType,
     name: body.name.trim(),
-    description: body.description.trim(),
   });
   res.status(201).json({ data: result });
 }

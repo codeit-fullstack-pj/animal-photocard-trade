@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { VARIANTS, useImageVariants } from "./useImageVariants";
 import styles from "./create.module.css";
 import LandingHeader from "@/components/landing/LandingHeader";
+import MobileHeader from "@/components/ui/MobileHeader";
 import { createCard, getRemainingCount } from "@/lib/card/api";
 import { uploadImage } from "@/lib/image/api";
 
@@ -39,7 +40,6 @@ export default function CreatePage() {
   const [selectedKey, setSelectedKey] = useState("original");
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
-  const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitErrorMessage, setSubmitErrorMessage] = useState("");
 
@@ -54,13 +54,9 @@ export default function CreatePage() {
   const selectedUrl = variants?.[selectedKey]?.url || previewUrl;
 
   const canSubmit =
-    count > 0 &&
-    uploadStatus === "success" &&
-    name.trim() !== "" &&
-    category !== "" &&
-    description.trim() !== "";
+    count > 0 && uploadStatus === "success" && name.trim() !== "" && category !== "";
 
-  // 카테고리 선택 전에는 카테고리만 노출. 선택하면 나머지 입력(이미지·이름·설명·생성 버튼)을 한 번에 표시
+  // 카테고리 선택 전에는 카테고리만 노출. 선택하면 나머지 입력(이미지·이름·생성 버튼)을 한 번에 표시
   const showDetails = category !== "";
 
   useEffect(() => {
@@ -93,11 +89,11 @@ export default function CreatePage() {
     setSubmitErrorMessage("");
 
     try {
+      // description은 서버가 ML 1·2등 축 조합으로 자동 생성한다 (card-flavor.js 참고)
       const card = await createCard({
         imageId: uploadedImage.id,
         filterType,
         name: name.trim(),
-        description: description.trim(),
       });
 
       // TODO: GET /cards/{id} 가 생기면 success 페이지가 직접 조회하도록 바꾸고 쿼리 전달은 제거
@@ -173,17 +169,52 @@ export default function CreatePage() {
     uploadSelectedImage(file, category);
   }
 
+  // "카테고리 다시 선택" — 카테고리 선택 화면으로 돌아가면서 그 사이 입력해둔 것들을 전부 비운다
+  function resetToCategory() {
+    uploadSeqRef.current += 1; // 진행 중이던 업로드 응답이 나중에 와도 무시한다
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+    setCategory("");
+    setImageFile(null);
+    setPreviewUrl("");
+    setSelectedKey("original");
+    setName("");
+    setUploadedImage(null);
+    setUploadStatus("idle");
+    setUploadErrorMessage("");
+    setSubmitErrorMessage("");
+  }
+
   return (
     <>
-      <LandingHeader />
+      <div className="tablet:hidden">
+        <MobileHeader title="포토카드 생성" backHref="/my-gallery" />
+      </div>
+      <div className="hidden tablet:block">
+        <LandingHeader />
+      </div>
       <main className="flex w-full justify-center px-4 pt-10 font-sans-400 tablet:px-6 pc:px-0 pc:pt-20">
-        <div className="mb-10 flex h-full w-84.25 flex-col items-center gap-8 tablet:w-full tablet:max-w-[680px] pc:mb-15 pc:max-w-none pc:w-310 pc:gap-20">
+        <div className="mb-10 flex h-full w-full flex-col items-center gap-8 tablet:max-w-[680px] pc:mb-15 pc:max-w-none pc:w-310 pc:gap-20">
           <div className="flex w-full flex-col gap-3 pc:gap-5">
-            <h2 className="text-left text-3xl font-primary tablet:text-4xl pc:text-[62px]">
+            {/* 모바일에선 MobileHeader가 이미 타이틀을 보여주니 중복 노출을 막는다 */}
+            <h2 className="hidden text-left text-3xl font-primary tablet:block tablet:text-4xl pc:text-[62px]">
               포토카드 생성
             </h2>
-            <div className="h-0.5 w-full bg-gray-100" />
-            <span className="text-right text-sm pc:text-xl">남은 생성 횟수 : {count}</span>
+            <div className="hidden h-0.5 w-full bg-gray-100 tablet:block" />
+            <div className="flex h-10 w-full items-center justify-between">
+              {showDetails ? (
+                <button
+                  type="button"
+                  onClick={resetToCategory}
+                  className="flex h-10 items-center justify-center rounded-xs bg-purple-button px-4 text-sm text-white tablet:text-base tablet:font-normal tablet:leading-[normal]"
+                >
+                  카테고리 다시 선택
+                </button>
+              ) : (
+                <span aria-hidden="true" />
+              )}
+              <span className="text-sm pc:text-xl">남은 생성 횟수 : {count}</span>
+            </div>
           </div>
           <form
             onSubmit={(e) => e.preventDefault()}
@@ -304,18 +335,6 @@ export default function CreatePage() {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="포토카드 이름을 입력해 주세요"
                       className="flex h-15 w-full items-center gap-2.5 rounded-xs border border-gray-200 bg-black px-5 py-4.5"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2 pc:gap-2.5">
-                    <span className="text-base font-bold leading-[normal] text-white pc:text-xl">
-                      포토카드 설명
-                    </span>
-                    <textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="카드 설명을 입력해 주세요"
-                      className="flex h-36 w-full resize-none items-center gap-2.5 rounded-xs border border-gray-200 bg-black px-5 py-4.5 pc:h-45"
                     />
                   </div>
 
