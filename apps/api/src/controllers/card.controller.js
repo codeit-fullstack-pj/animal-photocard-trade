@@ -13,6 +13,7 @@ import {
 } from "superstruct";
 
 import { ApiError } from "../lib/api-error.js";
+import { CSRF_TOKEN_COOKIE } from "../lib/auth-cookies.js";
 import * as cardService from "../services/card.service.js";
 
 // useImageVariants.js VARIANTS 순서(1 원본 · 2 세피아 · 3 모노 · 4 도트)와 일치
@@ -32,6 +33,14 @@ const VALIDATION_MESSAGES = {
 };
 
 export async function create(req, res) {
+  // POST /cards는 상태를 바꾸는 요청이라 CSRF 토큰을 직접 검증한다 (double-submit cookie 방식:
+  // 헤더 값과 쿠키 값이 같아야 통과 — 공격 사이트는 쿠키를 읽을 수 없어 헤더를 못 맞춘다)
+  const fromHeader = req.get("X-CSRF-TOKEN");
+  const fromCookie = req.cookies[CSRF_TOKEN_COOKIE];
+  if (!fromHeader || !fromCookie || fromHeader !== fromCookie) {
+    throw new ApiError(403, "CSRF_TOKEN_INVALID", "CSRF 토큰이 올바르지 않습니다");
+  }
+
   const [error, body] = validate(req.body, CreateCardBody);
   if (error) {
     throw new ApiError(
