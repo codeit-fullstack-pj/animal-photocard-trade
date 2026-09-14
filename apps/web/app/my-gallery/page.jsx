@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import MyGalleryCards from "@/components/gallery/MyGalleryCards";
-import LandingHeader from "@/components/landing/LandingHeader";
+import AppHeader from "@/components/ui/AppHeader";
 
 export default function MyGalleryPage() {
   // TODO: 인증 연동 시 로그인 유저 정보·남은 생성 횟수로 교체
@@ -10,7 +10,7 @@ export default function MyGalleryPage() {
 
   return (
     <>
-      <LandingHeader />
+      <AppHeader />
       <main className="flex w-full justify-center px-4 pt-10 font-sans-400 tablet:px-6 pc:px-0 pc:pt-20">
         <div className="mb-10 flex h-full w-84.25 flex-col items-center gap-8 tablet:w-full tablet:max-w-170 pc:mb-15 pc:max-w-none pc:w-310 pc:gap-20">
           <div className="flex w-full flex-col gap-3 pc:gap-5">

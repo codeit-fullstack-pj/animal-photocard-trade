@@ -15,6 +15,11 @@ export function signin({ email, password }) {
   return apiFetch("/auth/signin", { method: "POST", body: { email, password } });
 }
 
+// GET /users/me — 로그인 안되어 있다면 401 UNAUTHORIZED
+export function getCurrentUser() {
+  return apiFetch("/users/me");
+}
+
 // 로그아웃·토큰 재발급은 X-CSRF-TOKEN 헤더가 필요하다.
 // 웹과 API 도메인이 달라 쿠키를 직접 읽을 수 없으므로 서버에 값을 물어본 뒤 헤더로 보낸다
 async function csrfHeaders() {
