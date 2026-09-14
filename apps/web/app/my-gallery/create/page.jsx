@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { VARIANTS, useImageVariants } from "./useImageVariants";
 import styles from "./create.module.css";
-import LandingHeader from "@/components/landing/LandingHeader";
+import AppHeader from "@/components/ui/AppHeader";
 
 // TODO: API 연동 시 실제 생성 응답으로 교체 (지금은 이 시간만큼 로딩 후 완료 페이지로 이동)
 const SUBMIT_DELAY_MS = 10000;
@@ -98,7 +98,7 @@ export default function CreatePage() {
 
   return (
     <>
-      <LandingHeader />
+      <AppHeader />
       <main className="flex w-full justify-center px-4 pt-10 font-sans-400 tablet:px-6 pc:px-0 pc:pt-20">
         <div className="mb-10 flex h-full w-84.25 flex-col items-center gap-8 tablet:w-full tablet:max-w-170 pc:mb-15 pc:max-w-none pc:w-310 pc:gap-20">
           <div className="flex w-full flex-col gap-3 pc:gap-5">
