@@ -4,12 +4,12 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import PhotoCard from "@/components/gallery/PhotoCard";
-import LandingHeader from "@/components/landing/LandingHeader";
+import AppHeader from "@/components/ui/AppHeader";
 
 export default function CreateSuccessPage() {
   return (
     <>
-      <LandingHeader />
+      <AppHeader />
       <Suspense fallback={<Loading />}>
         <SuccessContent />
       </Suspense>
