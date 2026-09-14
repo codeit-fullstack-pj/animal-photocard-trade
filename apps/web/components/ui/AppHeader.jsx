@@ -9,8 +9,8 @@ export default function AppHeader() {
   const { currentUser, logout } = useCurrentUser();
 
   return (
-    <header className="h-14 w-full bg-[#0F0F0F] tablet:h-16 pc:h-[80px]">
-      <div className="mx-auto flex h-full w-full max-w-[1240px] items-center justify-between px-4 tablet:px-6 pc:px-0">
+    <header className="h-[56px] w-full bg-[#0F0F0F] tablet:h-[64px] pc:h-[80px]">
+      <div className="mx-auto flex h-full w-full max-w-[1240px] items-center justify-between px-[16px] tablet:px-[24px] pc:px-0">
         {/* 서비스 로고 */}
         <Link href="/" aria-label="최애 멍냥 홈">
           <Image src="/logo.png" alt="최애 멍냥" width={182} height={61} priority />
@@ -50,7 +50,7 @@ export default function AppHeader() {
             </button>
           </div>
         ) : (
-          <nav className="flex items-center gap-5 font-sans-400 text-xs text-gray-200 tablet:text-sm">
+          <nav className="flex items-center gap-[20px] font-sans-400 text-[12px] text-gray-200 tablet:text-[14px]">
             <Link href="/login" className="hover:text-white">
               로그인
             </Link>
