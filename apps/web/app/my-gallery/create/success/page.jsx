@@ -4,8 +4,8 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import PhotoCard from "@/components/gallery/PhotoCard";
-import LandingHeader from "@/components/landing/LandingHeader";
 import MobileHeader from "@/components/ui/MobileHeader";
+import AppHeader from "@/components/ui/AppHeader";
 
 export default function CreateSuccessPage() {
   return (
@@ -14,7 +14,7 @@ export default function CreateSuccessPage() {
         <MobileHeader title="포토카드 생성" backHref="/my-gallery" />
       </div>
       <div className="hidden tablet:block">
-        <LandingHeader />
+        <AppHeader />
       </div>
       <Suspense fallback={<Loading />}>
         <SuccessContent />

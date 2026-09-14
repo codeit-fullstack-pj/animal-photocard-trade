@@ -5,8 +5,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { VARIANTS, useImageVariants } from "./useImageVariants";
 import styles from "./create.module.css";
-import LandingHeader from "@/components/landing/LandingHeader";
 import MobileHeader from "@/components/ui/MobileHeader";
+import AppHeader from "@/components/ui/AppHeader";
 import { createCard, getRemainingCount } from "@/lib/card/api";
 import { uploadImage } from "@/lib/image/api";
 
@@ -191,7 +191,7 @@ export default function CreatePage() {
         <MobileHeader title="포토카드 생성" backHref="/my-gallery" />
       </div>
       <div className="hidden tablet:block">
-        <LandingHeader />
+        <AppHeader />
       </div>
       <main className="flex w-full justify-center px-4 pt-10 font-sans-400 tablet:px-6 pc:px-0 pc:pt-20">
         <div className="mb-10 flex h-full w-full flex-col items-center gap-8 tablet:max-w-[680px] pc:mb-15 pc:max-w-none pc:w-310 pc:gap-20">

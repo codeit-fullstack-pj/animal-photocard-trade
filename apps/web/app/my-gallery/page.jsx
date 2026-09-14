@@ -6,8 +6,8 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/api";
 import { getRemainingCount } from "@/lib/card/api";
 import MyGalleryCards from "@/components/gallery/MyGalleryCards";
-import LandingHeader from "@/components/landing/LandingHeader";
 import MobileHeader from "@/components/ui/MobileHeader";
+import AppHeader from "@/components/ui/AppHeader";
 
 const CREATE_BUTTON_CLASSNAME =
   "hidden h-15.25 items-center justify-center rounded-xs font-sans-400 text-base text-white tablet:flex tablet:w-85.5 pc:w-110";
@@ -69,7 +69,7 @@ export default function MyGalleryPage() {
         <MobileHeader title="마이갤러리" />
       </div>
       <div className="hidden tablet:block">
-        <LandingHeader />
+        <AppHeader />
       </div>
       <main className="flex w-full justify-center px-4 pt-10 font-sans-400 tablet:px-6 pc:px-0 pc:pt-20">
         <div className="mb-10 flex h-full w-full flex-col items-center gap-8 tablet:max-w-170 pc:mb-15 pc:max-w-none pc:w-310 pc:gap-20">
