@@ -1,10 +1,16 @@
 import { ApiError } from "../lib/api-error.js";
 import { deriveCardTag } from "../lib/card-flavor.js";
-import { createCard, findCardsAndCount } from "../repositories/card.repository.js";
+import {
+  countCardsCreatedSince,
+  createCard,
+  findCardsAndCount,
+} from "../repositories/card.repository.js";
 import { findImageById } from "../repositories/image.repository.js";
 import { findUserById } from "../repositories/user.repository.js";
 
 const PRISMA_UNIQUE_CONSTRAINT_CODE = "P2002";
+const DAILY_CREATE_LIMIT = 5;
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
 // orderBy 파라미터 → Prisma orderBy
 const ORDER_BY_CLAUSE = {
@@ -84,6 +90,22 @@ export async function listCards({ ownerId, page, pageSize, orderBy, keyword, cat
     totalCount,
     totalPages: Math.ceil(totalCount / pageSize),
   };
+}
+
+// 오늘(KST 기준) 만든 카드 수를 빼고 남은 생성 가능 횟수. 서버 지역 설정과 무관하게 UTC 연산으로 KST 자정을 구한다
+export async function getRemainingCreateCount(userId) {
+  const usedToday = await countCardsCreatedSince({
+    createdById: userId,
+    since: startOfTodayKst(),
+  });
+  return { remainingCount: Math.max(0, DAILY_CREATE_LIMIT - usedToday), limit: DAILY_CREATE_LIMIT };
+}
+
+// 지금 이 순간의 KST 날짜로 자정을 구해서, 그 시각의 UTC 타임스탬프로 돌려준다
+function startOfTodayKst() {
+  const kstNow = new Date(Date.now() + KST_OFFSET_MS);
+  const kstMidnight = Date.UTC(kstNow.getUTCFullYear(), kstNow.getUTCMonth(), kstNow.getUTCDate());
+  return new Date(kstMidnight - KST_OFFSET_MS);
 }
 
 function toCardResponse(card) {

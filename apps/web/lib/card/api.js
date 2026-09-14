@@ -11,3 +11,8 @@ export async function createCard({ imageId, filterType, name, description }) {
     headers: await csrfHeaders(),
   });
 }
+
+// GET /cards/remaining-count — 오늘 남은 카드 생성 가능 횟수. 성공하면 { remainingCount, limit }
+export function getRemainingCount() {
+  return apiFetch("/cards/remaining-count");
+}

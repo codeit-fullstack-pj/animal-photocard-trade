@@ -143,6 +143,11 @@ export async function socialCallback(req, res) {
   });
 }
 
+// GET /auth/me — 로그인한 유저 정보 (require-auth 미들웨어가 req.user를 채워둠)
+export function me(req, res) {
+  res.json({ data: { user: authService.toPublicUser(req.user) } });
+}
+
 // GET /auth/csrf-token — 로그아웃·토큰 재발급 때 X-CSRF-TOKEN 헤더에 넣을 값.
 // 웹과 API 도메인이 달라 JS가 쿠키를 직접 읽을 수 없으므로 이 응답으로 알려준다 (쿠키가 없으면 새로 발급)
 export function csrfToken(req, res) {

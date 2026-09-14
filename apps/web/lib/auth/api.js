@@ -15,6 +15,11 @@ export function signin({ email, password }) {
   return apiFetch("/auth/signin", { method: "POST", body: { email, password } });
 }
 
+// GET /auth/me — 로그인한 유저 정보. 성공하면 { user }, 로그인 안 했으면 401
+export function getCurrentUser() {
+  return apiFetch("/auth/me");
+}
+
 // POST /auth/signout — 204
 export async function signout() {
   return apiFetch("/auth/signout", { method: "POST", headers: await csrfHeaders() });

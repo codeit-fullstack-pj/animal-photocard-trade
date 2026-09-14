@@ -23,3 +23,8 @@ export function findCardsAndCount({ where, orderBy, skip, take }) {
     prisma.card.count({ where }),
   ]);
 }
+
+// since 이후 해당 유저가 만든(창작자 기준) 카드 개수. 하루 생성 한도 계산에 쓴다
+export function countCardsCreatedSince({ createdById, since }) {
+  return prisma.card.count({ where: { createdById, createdAt: { gte: since } } });
+}
