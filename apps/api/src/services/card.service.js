@@ -1,6 +1,7 @@
 import { ApiError } from "../lib/api-error.js";
 import { deriveCardTag } from "../lib/card-flavor.js";
 import {
+  countCardsByCategory,
   countCardsCreatedSince,
   createCard,
   findCardsAndCount,
@@ -11,6 +12,7 @@ import { findUserById } from "../repositories/user.repository.js";
 const PRISMA_UNIQUE_CONSTRAINT_CODE = "P2002";
 const DAILY_CREATE_LIMIT = 5;
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+const CATEGORY_VALUES = ["DOG", "CAT"];
 
 // orderBy 파라미터 → Prisma orderBy
 const ORDER_BY_CLAUSE = {
@@ -83,24 +85,35 @@ export async function listCards({ ownerId, page, pageSize, orderBy, keyword, cat
     throw new ApiError(404, "USER_NOT_FOUND", "해당 유저를 찾을 수 없습니다");
   }
 
-  const where = {
+  // 카테고리 필터를 뺀 조건 — 필터 UI에 "카테고리별 개수"를 보여줄 때는 다른 카테고리를
+  // 골랐을 때의 개수도 알아야 해서, 지금 고른 카테고리로 좁히기 전 기준으로 센다
+  const baseWhere = {
     ownerId,
     ...(keyword ? { name: { contains: keyword, mode: "insensitive" } } : {}),
+  };
+  const where = {
+    ...baseWhere,
     ...(categories.length > 0 ? { image: { category: { in: categories } } } : {}),
   };
 
-  const [cards, totalCount] = await findCardsAndCount({
-    where,
-    // id(유일값)를 마지막 기준으로 추가해 동점/동시각 행의 순서를 페이지 간에도 고정한다 (안 그러면 페이지네이션에서 중복·누락 발생 가능)
-    orderBy: [...ORDER_BY_CLAUSE[orderBy], { id: "asc" }],
-    skip: (page - 1) * pageSize,
-    take: pageSize,
-  });
+  const [[cards, totalCount], categoryCountValues] = await Promise.all([
+    findCardsAndCount({
+      where,
+      // id(유일값)를 마지막 기준으로 추가해 동점/동시각 행의 순서를 페이지 간에도 고정한다 (안 그러면 페이지네이션에서 중복·누락 발생 가능)
+      orderBy: [...ORDER_BY_CLAUSE[orderBy], { id: "asc" }],
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    countCardsByCategory({ baseWhere, categoryValues: CATEGORY_VALUES }),
+  ]);
 
   return {
     items: cards.map(toCardResponse),
     totalCount,
     totalPages: Math.ceil(totalCount / pageSize),
+    categoryCounts: Object.fromEntries(
+      CATEGORY_VALUES.map((category, i) => [category, categoryCountValues[i]]),
+    ),
   };
 }
 
