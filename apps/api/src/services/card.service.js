@@ -21,6 +21,18 @@ const ORDER_BY_CLAUSE = {
 };
 
 export async function createCardFromImage({ ownerId, imageId, filterType, name, description }) {
+  const usedToday = await countCardsCreatedSince({
+    createdById: ownerId,
+    since: startOfTodayKst(),
+  });
+  if (usedToday >= DAILY_CREATE_LIMIT) {
+    throw new ApiError(
+      429,
+      "DAILY_CREATE_LIMIT_EXCEEDED",
+      "오늘 생성 가능한 카드 횟수를 모두 사용했습니다",
+    );
+  }
+
   const image = await findImageById(imageId);
   // 존재하지 않는 이미지와 "남의 이미지"를 구분해서 응답하면 다른 사람의 imageId 존재 여부가 새어나가므로 똑같이 404 처리한다
   if (!image || image.uploaderId !== ownerId) {

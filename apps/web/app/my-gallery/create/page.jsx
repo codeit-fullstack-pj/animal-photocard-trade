@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { VARIANTS, useImageVariants } from "./useImageVariants";
 import styles from "./create.module.css";
 import LandingHeader from "@/components/landing/LandingHeader";
-import { createCard } from "@/lib/card/api";
+import { createCard, getRemainingCount } from "@/lib/card/api";
 import { uploadImage } from "@/lib/image/api";
 
 const CATEGORIES = [
@@ -54,6 +54,7 @@ export default function CreatePage() {
   const selectedUrl = variants?.[selectedKey]?.url || previewUrl;
 
   const canSubmit =
+    count > 0 &&
     uploadStatus === "success" &&
     name.trim() !== "" &&
     category !== "" &&
@@ -65,13 +66,13 @@ export default function CreatePage() {
   useEffect(() => {
     let ignore = false;
 
-    async function loadRemainingCount() {
-      // TODO: API 연동 시 남은 생성 횟수 조회로 교체
-      const remaining = 0;
-      if (!ignore) setCount(remaining);
-    }
+    getRemainingCount()
+      .then((result) => {
+        if (ignore) return;
+        setCount(result.remainingCount);
+      })
+      .catch(() => {});
 
-    loadRemainingCount();
     return () => {
       ignore = true;
     };
@@ -331,6 +332,11 @@ export default function CreatePage() {
                     >
                       생성하기
                     </button>
+                    {count <= 0 && (
+                      <span className="text-sm text-red">
+                        오늘 생성 가능한 횟수를 모두 사용했어요. 내일 다시 시도해 주세요.
+                      </span>
+                    )}
                     {submitErrorMessage && (
                       <span className="text-sm text-red">{submitErrorMessage}</span>
                     )}
