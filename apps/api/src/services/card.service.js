@@ -1,9 +1,18 @@
 import { ApiError } from "../lib/api-error.js";
 import { deriveCardTag } from "../lib/card-flavor.js";
-import { createCard } from "../repositories/card.repository.js";
+import { createCard, findCardsAndCount } from "../repositories/card.repository.js";
 import { findImageById } from "../repositories/image.repository.js";
+import { findUserById } from "../repositories/user.repository.js";
 
 const PRISMA_UNIQUE_CONSTRAINT_CODE = "P2002";
+
+// orderBy 파라미터 → Prisma orderBy
+const ORDER_BY_CLAUSE = {
+  highestScore: [{ topScore: "desc" }, { createdAt: "desc" }],
+  lowestScore: [{ topScore: "asc" }, { createdAt: "desc" }],
+  latest: [{ createdAt: "desc" }],
+  oldest: [{ createdAt: "asc" }],
+};
 
 export async function createCardFromImage({ ownerId, imageId, filterType, name, description }) {
   const image = await findImageById(imageId);
@@ -37,6 +46,44 @@ export async function createCardFromImage({ ownerId, imageId, filterType, name, 
   }
 
   return toCardResponse(card);
+}
+
+/**
+ * 특정 유저가 보유(ownerId)한 카드 목록 (마이갤러리).
+ * @param {{
+ *   ownerId: string,
+ *   page: number,
+ *   pageSize: number,
+ *   orderBy: keyof typeof ORDER_BY_CLAUSE,
+ *   keyword: string,
+ *   categories: ("DOG" | "CAT")[],
+ * }} params
+ */
+export async function listCards({ ownerId, page, pageSize, orderBy, keyword, categories }) {
+  const owner = await findUserById(ownerId);
+  if (!owner) {
+    throw new ApiError(404, "USER_NOT_FOUND", "해당 유저를 찾을 수 없습니다");
+  }
+
+  const where = {
+    ownerId,
+    ...(keyword ? { name: { contains: keyword, mode: "insensitive" } } : {}),
+    ...(categories.length > 0 ? { image: { category: { in: categories } } } : {}),
+  };
+
+  const [cards, totalCount] = await findCardsAndCount({
+    where,
+    // id(유일값)를 마지막 기준으로 추가해 동점/동시각 행의 순서를 페이지 간에도 고정한다 (안 그러면 페이지네이션에서 중복·누락 발생 가능)
+    orderBy: [...ORDER_BY_CLAUSE[orderBy], { id: "asc" }],
+    skip: (page - 1) * pageSize,
+    take: pageSize,
+  });
+
+  return {
+    items: cards.map(toCardResponse),
+    totalCount,
+    totalPages: Math.ceil(totalCount / pageSize),
+  };
 }
 
 function toCardResponse(card) {
