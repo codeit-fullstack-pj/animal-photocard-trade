@@ -14,12 +14,12 @@ export class ApiError extends Error {
 }
 
 // 공통 fetch: JSON으로 보내고 받는다. 쿠키(httpOnly 토큰)를 함께 보내기 위해 credentials: "include"
-export async function apiFetch(path, { method = "GET", body } = {}) {
+export async function apiFetch(path, { method = "GET", body, headers = {} } = {}) {
   let response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       method,
-      headers: body ? { "Content-Type": "application/json" } : undefined,
+      headers: body ? { "Content-Type": "application/json", ...headers } : headers,
       body: body ? JSON.stringify(body) : undefined,
       credentials: "include",
     });

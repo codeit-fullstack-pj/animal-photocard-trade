@@ -1,0 +1,49 @@
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stepIn {
+  animation: stepIn 0.28s ease-out both;
+}
+
+/* "포토카드 생성 중" 뒤에 . → .. → ... → (없음) 반복 */
+@keyframes loadingDots {
+  0%,
+  100% {
+    content: "";
+  }
+  25% {
+    content: ".";
+  }
+  50% {
+    content: "..";
+  }
+  75% {
+    content: "...";
+  }
+}
+
+.loadingDots::after {
+  content: "";
+  display: inline-block;
+  width: 1.6em;
+  text-align: left;
+  animation: loadingDots 1.4s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stepIn {
+    animation: none;
+  }
+  .loadingDots::after {
+    content: "...";
+    animation: none;
+  }
+}

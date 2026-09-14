@@ -2,6 +2,12 @@
 
 /* 디자인 시스템 팔레트 (Figma color 페이지 기준) */
 @theme inline {
+  /* TEMP: 팀원 PR(미머지) 컨벤션 그대로 가져다 씀. 머지되면 이 블록 지울 것 */
+  --breakpoint-*: initial;
+  --breakpoint-mobile: 375px;
+  --breakpoint-tablet: 744px;
+  --breakpoint-pc: 1280px;
+
   --color-gray-*: initial;
   --color-black: #0f0f0f;
   --color-gray-500: #161616;
@@ -17,6 +23,12 @@
   --color-main: #efff04;
   --color-purple-button: #a656f5;
   --font-sans: var(--font-noto-sans-kr), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+
+  /* 반응형 breakpoint — Figma 프레임: mobile 375 / tablet 744 / pc 1920
+     (프레임 폭이 아니라 레이아웃 전환 지점. pc는 데스크톱 콘텐츠 폭 기준 1280) */
+  --breakpoint-mobile: 375px;
+  --breakpoint-tablet: 744px;
+  --breakpoint-pc: 1280px;
 }
 
 /* 본문 서체: Noto Sans KR (font-sans-400 ~ font-sans-700) */

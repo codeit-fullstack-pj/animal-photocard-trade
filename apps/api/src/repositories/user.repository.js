@@ -8,6 +8,10 @@ export function findUserByNickname(nickname) {
   return prisma.user.findUnique({ where: { nickname } });
 }
 
+export function findUserByProviderUid(providerUid) {
+  return prisma.user.findFirst({ where: { providerUid } });
+}
+
 export function createUser({ email, nickname, provider, providerUid }) {
   return prisma.user.create({ data: { email, nickname, provider, providerUid } });
 }
