@@ -1,3 +1,5 @@
+import { prisma } from "../lib/prisma.js";
+
 //판매글에 해당하는 교환 제시건 찾기
 export function findPendingExchangesWithOfferer(tx, saleId) {
   return tx.exchange.findMany({
@@ -49,5 +51,36 @@ export function findExchangeById(tx, exchangeId) {
 export function findMyExchangeById(tx, { exchangeId, offererId }) {
   return tx.exchange.findFirst({
     where: { id: exchangeId, offerCard: { ownerId: offererId } },
+  });
+}
+
+// 교환 제시 목록 조회(listExchanges) 전용
+// 판매글의 PENDING 제시 조회. offererId가 있으면 그 사람이 낸 제시만 조회.
+export function findPendingExchangesBySaleId({ saleId, offererId }) {
+  return prisma.exchange.findMany({
+    where: {
+      saleId,
+      status: "PENDING",
+      ...(offererId && { offerCard: { ownerId: offererId } }),
+    },
+    select: {
+      id: true,
+      status: true,
+      message: true,
+      createdAt: true,
+      respondedAt: true,
+      offerCard: {
+        select: {
+          id: true,
+          name: true,
+          tag: true,
+          description: true,
+          filterType: true,
+          owner: { select: { id: true, nickname: true } },
+          image: { select: { imageUrl: true, category: true, score: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
   });
 }

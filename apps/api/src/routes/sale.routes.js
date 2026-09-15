@@ -13,3 +13,6 @@ saleRouter.post("/:saleId/purchase", requireAuth, saleController.purchase);
 
 // POST /sales/:saleId/exchanges — 판매글에 내 카드로 교환 제시
 saleRouter.post("/:saleId/exchanges", requireAuth, saleController.createExchange);
+
+// GET /sales/:saleId/exchanges — 판매글의 교환 제시 목록 (보는 사람에 따라 결과가 다르다)
+saleRouter.get("/:saleId/exchanges", requireAuth, saleController.listExchanges);

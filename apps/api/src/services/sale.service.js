@@ -242,3 +242,42 @@ export async function createExchange({ saleId, offerCardId, message, offerer }) 
     };
   });
 }
+
+//교환 목록 조회 응답 모양
+function toExchangeResponse(exchange) {
+  const { offerCard } = exchange;
+
+  return {
+    id: exchange.id,
+    status: exchange.status,
+    message: exchange.message,
+    createdAt: exchange.createdAt,
+    respondedAt: exchange.respondedAt,
+    offerer: {
+      id: offerCard.owner.id,
+      nickname: offerCard.owner.nickname,
+    },
+    offerCard: {
+      id: offerCard.id,
+      name: offerCard.name,
+      tag: offerCard.tag,
+      description: offerCard.description,
+      filterType: offerCard.filterType,
+      imageUrl: offerCard.image.imageUrl,
+      category: offerCard.image.category,
+      score: offerCard.image.score,
+    },
+  };
+}
+//판매글의 PENDING 교환 제시 목록을 조회
+export async function listExchanges({ saleId, viewer }) {
+  const sale = await saleRepository.findSaleSellerById(saleId);
+
+  if (!sale) throw new ApiError(404, "SALE_NOT_FOUND", "판매글을 찾을 수 없습니다.");
+
+  const isSeller = sale.sellerId === viewer.id;
+  const exchanges = await exchangeRepository.findPendingExchangesBySaleId(
+    isSeller ? { saleId } : { saleId, offererId: viewer.id },
+  );
+  return { exchanges: exchanges.map(toExchangeResponse) };
+}
