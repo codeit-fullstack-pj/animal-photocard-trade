@@ -1,0 +1,77 @@
+# VS Code "REST Client" 확장으로 실행: 요청 위의 "Send Request"를 누른다.
+# 준비: apps/api 에서 `npm run dev` (포트 4000)
+#
+# ⚠️ exchange.http와 같은 이유로 시드만으로는 테스트가 안 된다. exchange.http를 먼저 한 번
+# 실행해서 "정상 제시" 케이스(exchangeId가 나오는 요청)까지 만들어 둔 뒤, 그 exchangeId를
+# 아래 @exchangeId에 채운다.
+#
+# 준비 순서:
+#   1) exchange.http의 준비 순서(1~4)를 그대로 따라 판매자/제시자 계정 + saleId + offerCardId를 만든다
+#   2) exchange.http의 "1. 정상 제시"를 실행해서 exchangeId를 얻는다 (제시자로 로그인된 상태)
+#   3) "이미 수락된 제시" 케이스는 교환 수락 API(다른 담당자 구현)로 상태를 ACCEPTED로 바꾸거나,
+#      Prisma Studio에서 해당 Exchange 행의 status를 직접 ACCEPTED로 바꿔서 준비한다
+#
+# 성공: { "data": { "exchangeId", "status": "CANCELED" } }
+# 실패: { "code": "UPPER_SNAKE", "message": "..." }  (docs/conventions.md §3)
+
+@baseUrl = http://localhost:4000/api/v1
+@noSuchExchangeId = 00000000-0000-0000-0000-000000000002
+
+### ─────────────────────────── 준비: 로그인 ───────────────────────────
+
+### 제시자 로그인 → accessToken 쿠키가 이후 요청에 자동으로 실린다
+# @name offererSignin
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "purchase-buyer1872@gmail.com",
+  "password": "password123"
+}
+
+### 판매자 로그인 ("남의 제시" 취소 시도 직전에 이 요청을 먼저 보낼 것)
+# @name sellerSignin
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "purchase-seller4082@gmail.com",
+  "password": "password123"
+}
+
+### ─────────────────────────── 본 테스트 ───────────────────────────
+@exchangeId = 41c41dbf-77ca-47b3-8f6c-099d1b2c5434
+
+### 1. 정상 취소 → 200 { "data": { "exchangeId", "status": "CANCELED" } } DONE
+#    ▶ offererSignin으로 로그인된 상태에서, 위 준비 순서로 만든 PENDING 상태의 exchangeId로 실행
+POST {{baseUrl}}/exchanges/{{exchangeId}}/cancel
+
+### 2. 없는 exchangeId → 404 { "code": "EXCHANGE_NOT_FOUND" }DONE
+POST {{baseUrl}}/exchanges/{{noSuchExchangeId}}/cancel
+
+### 3. 남의 제시 취소 → 404 { "code": "EXCHANGE_NOT_FOUND" } DONE
+#    ▶ 먼저 위 sellerSignin을 보내서 판매자로 로그인한 다음 이 요청을 보낼 것
+#      (제시자 본인이 아니므로 403이 아니라 404로 응답해야 한다 — 존재 여부를 숨기기 위함)
+POST {{baseUrl}}/exchanges/{{exchangeId}}/cancel
+
+### 4. 이미 수락된 제시 취소 → 404 EXCHANGE_NOT_FOUND 또는 409 (구현에 따라 다름)DONE
+#    ▶ offererSignin으로 되돌아온 뒤, 준비 순서 3)으로 status를 ACCEPTED로 바꾼 exchangeId로 요청
+#      (count===0 원인을 구분하는 선택 구현을 했다면 409, 안 했다면 404로 통일되어 나온다)
+POST {{baseUrl}}/exchanges/{{exchangeId}}/cancel
+
+### 5. 두 번 취소 (이미 CANCELED) → 404 또는 409 (4번과 동일한 이유) DONE
+#    ▶ 1번을 먼저 성공시킨 뒤, 같은 exchangeId로 다시 요청
+POST {{baseUrl}}/exchanges/{{exchangeId}}/cancel
+
+### 6. 토큰 없음 → 401 { "code": "UNAUTHORIZED" }
+#    쿠키를 안 실어 보내려면 REST Client 새 세션(로그인 이력 없는 상태)에서 실행
+POST {{baseUrl}}/exchanges/{{exchangeId}}/cancel
+
+
+### ─────────────────────────── 동시성 실험 (터미널에서 직접) ───────────────────────────
+# 같은 PENDING 제시를 동시에 두 번 취소해서 하나만 성공(200)하고 하나는
+# 404(EXCHANGE_NOT_FOUND, 또는 선택 구현 시 409)가 나는지 확인한다.
+# <ACCESS_TOKEN>은 제시자 계정의 토큰, <EXCHANGE_ID>는 PENDING 상태인 교환 id.
+#
+# curl -s -X POST http://localhost:4000/api/v1/exchanges/<EXCHANGE_ID>/cancel -H "Authorization: Bearer <ACCESS_TOKEN>" & \
+# curl -s -X POST http://localhost:4000/api/v1/exchanges/<EXCHANGE_ID>/cancel -H "Authorization: Bearer <ACCESS_TOKEN>" &
