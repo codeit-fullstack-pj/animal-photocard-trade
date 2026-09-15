@@ -3,7 +3,9 @@ import BuyerActionButtons from "./BuyerActionButtons.jsx";
 import ExchangeListView from "./ExchangeListView.jsx";
 import Link from "next/link";
 
+// 판매글 상세 화면 — 판매자 본인이면 SellerActionButtons(수정/캔슬), 아니면 BuyerActionButtons를 보여줌
 const SaleDetailView = ({ sale, currentUser }) => {
+  // 지금 보고 있는 사람이 이 판매글의 판매자인지 판별
   const isSeller = currentUser.id === sale.seller.id;
 
   return (
@@ -49,7 +51,7 @@ const SaleDetailView = ({ sale, currentUser }) => {
         />
       </div>
 
-      {/* 버튼 */}
+      {/* 버튼 — isSeller에 따라 판매자용/구매자용 버튼을 다르게 렌더링 */}
       <div className="absolute left-[1181px] top-[1020px] w-[400px] flex flex-col gap-2 items-end">
         {isSeller ? <SellerActionButtons sale={sale} /> : <BuyerActionButtons sale={sale} />}
       </div>
@@ -59,6 +61,7 @@ const SaleDetailView = ({ sale, currentUser }) => {
       </div>
       <div className="absolute right-[339px] top-[1400px] w-[1235px] h-[1px] bg-white" />
 
+      {/* 교환 신청 목록 (판매자면 전체, 구매자면 자기 신청만 보이도록 isSeller를 넘겨줌) */}
       <ExchangeListView sale={sale} currentUser={currentUser} isSeller={isSeller} />
     </main>
   );
