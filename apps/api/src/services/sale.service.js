@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 import { ApiError } from "../lib/api-error.js";
 import { prisma } from "../lib/prisma.js";
 import * as cardRepository from "../repositories/card.repository.js";
@@ -88,7 +90,7 @@ export async function purchaseCard({ saleId, buyer }) {
   const { id: buyerId, nickname: buyerNickname } = buyer;
 
   return prisma.$transaction(async (tx) => {
-    // 판매글 존재 여부와 본인 판매글 구매 여부를 확인
+    //선 검증 fail fast [판매글 존재 여부, 구매자와 판매자 일치 여부]
     const sale = await saleRepository.findSaleById(tx, saleId);
 
     if (!sale) {
@@ -171,6 +173,77 @@ export async function purchaseCard({ saleId, buyer }) {
     return {
       saleId,
       ...saleUpdate,
+    };
+  });
+}
+
+/**
+ * 판매글에 자신의 카드로 교환을 제시한다.
+ * @param {{ saleId: string, offerCardId: string, message: string|undefined,
+ *           offerer: { id: string, nickname: string } }} params
+ * @returns {Promise<{ exchangeId: string, status: string, createdAt: Date }>}
+ */
+export async function createExchange({ saleId, offerCardId, message, offerer }) {
+  return prisma.$transaction(async (tx) => {
+    // 잠그기 전 fail fast. 아래에서 한번 더 검증
+    const saleExists = await saleRepository.findSaleById(tx, saleId);
+    if (!saleExists) throw new ApiError(404, "SALE_NOT_FOUND", "판매글을 찾을 수 없습니다.");
+    const offerCardExists = await cardRepository.findCardById(tx, offerCardId);
+    if (!offerCardExists) throw new ApiError(404, "CARD_NOT_FOUND", "카드를 찾을 수 없습니다.");
+
+    //CARD LOCK : 제안카드에 대해서만 잠금
+    await cardRepository.lockCardForUpdate(tx, offerCardId);
+    //SALE LOCK : 판매글에 대해서 잠금
+    await saleRepository.lockSaleForUpdate(tx, saleId);
+
+    // 잠근 뒤 다시 읽는다. 이제부터 트랜잭션이 끝날 때까지 유효한 값
+    const sale = await saleRepository.findSaleById(tx, saleId);
+    const offerCard = await cardRepository.findCardById(tx, offerCardId);
+
+    //CARD
+    if (offerCard.ownerId !== offerer.id)
+      throw new ApiError(403, "NOT_CARD_OWNER", "본인 소유의 카드만 제시할 수 있습니다.");
+
+    //SALE
+    if (sale.sellerId === offerer.id)
+      throw new ApiError(403, "SELF_EXCHANGE_NOT_ALLOWED", "자신의 판매글에는 제시할 수 없습니다.");
+    if (sale.status !== "ON_SALE")
+      throw new ApiError(409, "SALE_NOT_ON_SALE", "판매 중인 판매글이 아닙니다.");
+
+    //CLAIM 정책 검증
+    const onSale = await saleRepository.findOnSaleByCardId(tx, offerCardId);
+    if (onSale) throw new ApiError(409, "CARD_ALREADY_CLAIMED", "이미 판매 중인 카드입니다.");
+    const pendingExchange = await exchangeRepository.findPendingExchangeByOfferCardId(
+      tx,
+      offerCardId,
+    );
+    if (pendingExchange)
+      throw new ApiError(409, "CARD_ALREADY_CLAIMED", "이미 교환 제시 중인 카드입니다.");
+
+    //EXCHANGE 유니크 조회 및 생성 + 응답 교환 저장
+    let exchange;
+    try {
+      exchange = await exchangeRepository.createExchange(tx, { saleId, offerCardId, message });
+    } catch (error) {
+      //보수적 방어
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")
+        throw new ApiError(409, "DUPLICATE_EXCHANGE", "이미 같은 카드로 제시한 교환이 있습니다.");
+      throw error;
+    }
+
+    //NOTIFICATION
+    await notificationRepository.createManyNotifications(tx, [
+      {
+        userId: sale.sellerId,
+        type: "EXCHANGE_RECEIVED",
+        content: `${offerer.nickname}님이 '${sale.card.tag} ${sale.card.name}'에 교환을 제시했습니다`,
+        targetId: saleId,
+      },
+    ]);
+    return {
+      exchangeId: exchange.id,
+      status: exchange.status,
+      createdAt: exchange.createdAt,
     };
   });
 }
