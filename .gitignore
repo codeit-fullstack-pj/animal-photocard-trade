@@ -8,3 +8,5 @@ coverage/
 .DS_Store
 AGENTS.md
 CLAUDE.md
+Claude outputs/
+apps/api/scripts/
