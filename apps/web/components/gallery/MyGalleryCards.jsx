@@ -21,7 +21,7 @@ export default function MyGalleryCards({ userName }) {
   const [sort, setSort] = useState("score_desc");
   const [page, setPage] = useState(1);
 
-  const [data, setData] = useState({ items: [], totalCount: 0, totalPages: 0 });
+  const [data, setData] = useState({ items: [], totalCount: 0, totalPages: 0, categoryCounts: {} });
   const [status, setStatus] = useState("loading"); // loading | success | error
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -71,18 +71,29 @@ export default function MyGalleryCards({ userName }) {
 
   return (
     <>
-      <span>
-        <span className="font-sans-700 text-2xl text-gray-200">{userName}님이 보유한 포토카드</span>{" "}
-        <span className="font-sans-400 text-xl text-gray-300">({data.totalCount}개)</span>
-      </span>
+      {/* 모바일에선 최소한의 정보만 보여주기로 해서 닉네임·개수와 구분선을 통째로 숨긴다 */}
+      <div className="hidden w-full items-baseline gap-1 tablet:flex">
+        {/* min-w-0 이 있어야 flex 안에서 truncate(말줄임표)가 실제로 동작한다. 닉네임만 줄어들고
+            "님이 보유한 포토카드"·개수는 shrink-0 로 항상 그대로 보이게 한다 */}
+        <span className="min-w-0 shrink truncate font-sans-700 text-2xl text-gray-200">
+          {userName}
+        </span>
+        <span className="shrink-0 font-sans-700 text-2xl whitespace-nowrap text-gray-200">
+          님이 보유한 포토카드
+        </span>
+        <span className="shrink-0 font-sans-400 text-xl whitespace-nowrap text-gray-300">
+          ({data.totalCount}개)
+        </span>
+      </div>
 
-      <div className="h-0.5 w-full bg-gray-400" />
+      <div className="hidden h-0.5 w-full bg-gray-400 tablet:block" />
 
       <GalleryToolbar
         search={search}
         onSearchChange={setSearch}
         categories={categories}
         onCategoriesChange={setCategories}
+        categoryCounts={data.categoryCounts}
         sort={sort}
         onSortChange={setSort}
       />

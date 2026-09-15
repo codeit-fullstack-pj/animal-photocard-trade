@@ -21,6 +21,12 @@ export function errorHandler(error, req, res, next) {
     return;
   }
 
+  // multer가 던지는 에러 (파일 크기 초과, 필드명 불일치 등)
+  if (error.name === "MulterError") {
+    res.status(400).json({ code: "VALIDATION_ERROR", message: "이미지 파일이 올바르지 않습니다" });
+    return;
+  }
+
   console.error(error);
   res.status(500).json({ code: "INTERNAL_ERROR", message: "서버 오류가 발생했습니다" });
 }

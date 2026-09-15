@@ -1,0 +1,125 @@
+# VS Code "REST Client" 확장으로 실행: 요청 위의 "Send Request"를 누른다.
+# 준비: apps/api 에서 `npm run dev` (포트 4000), .env에 SUPABASE_STORAGE_BUCKET·SUPABASE_URL·SUPABASE_ANON_KEY 채우기,
+#      Supabase Storage에 해당 버킷(Public) + INSERT 정책 생성 (README.md 참고)
+# 로그인 → CSRF 조회 순서로 먼저 실행해야 아래 업로드 요청이 인증·CSRF를 통과한다 (쿠키는 REST Client가 자동으로 물고 다닌다)
+
+@baseUrl = http://localhost:4000/api/v1
+@email = dup-test@gmail.com
+@password = password123
+
+### 로그인 (auth.http에서 만든 계정 재사용) → Set-Cookie: accessToken, refreshToken, csrfToken
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### CSRF 토큰 조회
+# @name csrf
+GET {{baseUrl}}/auth/csrf-token
+
+### 1. 업로드 성공 → 201 { "data": { id, uploaderId, category, imageUrl, score: { axes: [...] }, createdAt } }
+#    score.axes 4개 합계가 100인지 확인
+POST {{baseUrl}}/images/upload
+Content-Type: multipart/form-data; boundary=----boundary123
+X-CSRF-TOKEN: {{csrf.response.body.data.csrfToken}}
+
+------boundary123
+Content-Disposition: form-data; name="category"
+
+CAT
+------boundary123
+Content-Disposition: form-data; name="image"; filename="sample.png"
+Content-Type: image/png
+
+< ../../web/public/dropdown.png
+------boundary123--
+
+### 2. 카테고리 없음 → 400 { "code": "VALIDATION_ERROR" }
+POST {{baseUrl}}/images/upload
+Content-Type: multipart/form-data; boundary=----boundary123
+X-CSRF-TOKEN: {{csrf.response.body.data.csrfToken}}
+
+------boundary123
+Content-Disposition: form-data; name="image"; filename="sample.png"
+Content-Type: image/png
+
+< ../../web/public/dropdown.png
+------boundary123--
+
+### 3. 잘못된 카테고리 값 → 400 "category 는 DOG / CAT 만 가능합니다"
+POST {{baseUrl}}/images/upload
+Content-Type: multipart/form-data; boundary=----boundary123
+X-CSRF-TOKEN: {{csrf.response.body.data.csrfToken}}
+
+------boundary123
+Content-Disposition: form-data; name="category"
+
+BIRD
+------boundary123
+Content-Disposition: form-data; name="image"; filename="sample.png"
+Content-Type: image/png
+
+< ../../web/public/dropdown.png
+------boundary123--
+
+### 4. image 파일 없음 → 400 "image 파일이 필요합니다"
+POST {{baseUrl}}/images/upload
+Content-Type: multipart/form-data; boundary=----boundary123
+X-CSRF-TOKEN: {{csrf.response.body.data.csrfToken}}
+
+------boundary123
+Content-Disposition: form-data; name="category"
+
+CAT
+------boundary123--
+
+### 5. 로그인 없이 요청 → 401 { "code": "UNAUTHORIZED" }
+# 새 시크릿 탭/다른 REST Client 환경에서 쿠키 없이 보내야 정확히 재현된다 (같은 파일 안에서는 위 로그인 쿠키가 남아있음)
+POST {{baseUrl}}/images/upload
+Content-Type: multipart/form-data; boundary=----boundary123
+Cookie: accessToken=; refreshToken=; csrfToken=
+
+------boundary123
+Content-Disposition: form-data; name="category"
+
+CAT
+------boundary123
+Content-Disposition: form-data; name="image"; filename="sample.png"
+Content-Type: image/png
+
+< ../../web/public/dropdown.png
+------boundary123--
+
+### 6. CSRF 헤더 없음 → 403 { "code": "CSRF_TOKEN_INVALID" }
+POST {{baseUrl}}/images/upload
+Content-Type: multipart/form-data; boundary=----boundary123
+
+------boundary123
+Content-Disposition: form-data; name="category"
+
+CAT
+------boundary123
+Content-Disposition: form-data; name="image"; filename="sample.png"
+Content-Type: image/png
+
+< ../../web/public/dropdown.png
+------boundary123--
+
+### 7. 지원하지 않는 파일 형식 (svg) → 400 "jpg / png / webp / gif 이미지만 업로드할 수 있습니다"
+POST {{baseUrl}}/images/upload
+Content-Type: multipart/form-data; boundary=----boundary123
+X-CSRF-TOKEN: {{csrf.response.body.data.csrfToken}}
+
+------boundary123
+Content-Disposition: form-data; name="category"
+
+CAT
+------boundary123
+Content-Disposition: form-data; name="image"; filename="sample.svg"
+Content-Type: image/svg+xml
+
+<html></html>
+------boundary123--

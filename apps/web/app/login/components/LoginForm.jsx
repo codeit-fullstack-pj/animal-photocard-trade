@@ -33,7 +33,7 @@ export default function LoginForm() {
     setIsSubmitting(true);
     try {
       await signin(values);
-      router.push("/");
+      router.push("/market");
     } catch (error) {
       if (error instanceof ApiError && error.code === "INVALID_CREDENTIALS") {
         setErrors({ form: "이메일 또는 비밀번호가 올바르지 않아요." });

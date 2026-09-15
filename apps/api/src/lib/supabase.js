@@ -15,6 +15,15 @@ export function createAuthClient() {
   });
 }
 
+// 요청을 보낸 사용자 권한으로 동작하는 클라이언트. Storage 업로드처럼 RLS가 "본인 것만" 허용하는 작업에 쓴다
+export function createUserScopedClient(accessToken) {
+  const { url, anonKey } = getEnv();
+  return createClient(url, anonKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+    global: { headers: { Authorization: `Bearer ${accessToken}` } },
+  });
+}
+
 export const OAUTH_VERIFIER_KEY = "oauth-code-verifier";
 
 export function createOAuthClient(store = new Map()) {

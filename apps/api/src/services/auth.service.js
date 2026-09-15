@@ -196,7 +196,7 @@ async function makeUniqueNickname(baseNickname) {
 }
 
 // 응답에 실을 사용자 정보 (point는 BigInt라 JSON으로 바로 못 보내므로 숫자로 바꾼다)
-function toPublicUser(user) {
+export function toPublicUser(user) {
   return {
     id: user.id,
     nickname: user.nickname,

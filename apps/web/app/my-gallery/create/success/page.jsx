@@ -4,12 +4,18 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import PhotoCard from "@/components/gallery/PhotoCard";
-import LandingHeader from "@/components/landing/LandingHeader";
+import MobileHeader from "@/components/ui/MobileHeader";
+import AppHeader from "@/components/ui/AppHeader";
 
 export default function CreateSuccessPage() {
   return (
     <>
-      <LandingHeader />
+      <div className="tablet:hidden">
+        <MobileHeader title="포토카드 생성" backHref="/my-gallery" />
+      </div>
+      <div className="hidden tablet:block">
+        <AppHeader />
+      </div>
       <Suspense fallback={<Loading />}>
         <SuccessContent />
       </Suspense>
@@ -26,31 +32,26 @@ function Loading() {
 }
 
 function SuccessContent() {
-  const cardId = useSearchParams().get("id");
+  const searchParams = useSearchParams();
+  const cardId = searchParams.get("id");
   const [card, setCard] = useState(null);
 
   useEffect(() => {
     let ignore = false;
 
     async function loadCard() {
-      // TODO: API 연동 시 GET /cards/{cardId} 응답으로 교체
+      // TODO: API 연동 시 GET /cards/{cardId} 응답으로 교체. 지금은 create 페이지가 실제
+      // POST /cards 응답값을 쿼리로 그대로 넘긴다 (success 페이지 자체 조회 API가 아직 없어서)
+      const rawScore = searchParams.get("score");
       const data = {
         id: cardId ?? "temp",
-        name: "임시 포토카드",
-        category: "CAT",
-        imageUrl: "",
-        filterType: 1,
-        description: "임시 설명입니다.",
-        score: {
-          axes: [
-            { field: "재물운", value: 30 },
-            { field: "애정운", value: 25 },
-            { field: "건강운", value: 25 },
-            { field: "사교운", value: 20 },
-          ],
-          topField: "재물운",
-          topScore: 30,
-        },
+        name: searchParams.get("name") || "임시 포토카드",
+        category: searchParams.get("category") || "CAT",
+        imageUrl: searchParams.get("imageUrl") || "",
+        filterType: Number(searchParams.get("filterType")) || 1,
+        description: searchParams.get("description") || "임시 설명입니다.",
+        tag: searchParams.get("tag") || "",
+        score: rawScore ? JSON.parse(rawScore) : { axes: [] },
       };
       if (!ignore) setCard(data);
     }
@@ -59,7 +60,7 @@ function SuccessContent() {
     return () => {
       ignore = true;
     };
-  }, [cardId]);
+  }, [cardId, searchParams]);
 
   return (
     <main className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-4 py-12 font-sans-400 pc:flex-row pc:gap-16 pc:py-20">
