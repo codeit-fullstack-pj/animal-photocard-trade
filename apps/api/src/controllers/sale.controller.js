@@ -1,9 +1,12 @@
-import { refine, string, type, validate } from "superstruct";
+import { optional, refine, size, string, type, validate } from "superstruct";
 
 import { ApiError } from "../lib/api-error.js";
 import * as saleService from "../services/sale.service.js";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// 같은 uuid 검증 패턴이 params에 여러 번 나와서 상수로 뺌
+const Uuid = refine(string(), "uuid", (value) => UUID_PATTERN.test(value));
 
 // GET /sales 쿼리 파라미터를 확인하고 판매 목록을 반환
 export async function getSales(req, res) {
@@ -16,6 +19,7 @@ export async function getSales(req, res) {
   const orderBy = req.query.orderBy;
   const cursor = req.query.cursor;
 
+  //POST /sales/:saleId/purchase
   if (!Number.isInteger(limit) || limit < 1) {
     throw new ApiError(400, "VALIDATION_ERROR", "limit은 1 이상의 정수여야 합니다");
   }
@@ -74,7 +78,7 @@ export async function getSales(req, res) {
 
 // 판매글 ID가 UUID 형식인지 확인
 const PurchaseParams = type({
-  saleId: refine(string(), "uuid", (value) => UUID_PATTERN.test(value)),
+  saleId: Uuid,
 });
 
 // POST /sales/:saleId/purchase 구매 요청을 처리
@@ -92,4 +96,48 @@ export async function purchase(req, res) {
   });
 
   res.json({ data: result });
+}
+
+//POST /sales/:saleId/exchanges
+
+const ExchangeParams = type({
+  saleId: Uuid,
+});
+
+const ExchangeBody = type({
+  offerCardId: Uuid,
+  message: optional(size(string(), 0, 200)),
+});
+
+const EXCHANGE_VALIDATION_MESSAGES = {
+  saleId: "saleId는 UUID 형식이어야 합니다",
+  offerCardId: "offerCardId는 UUID 형식이어야 합니다",
+  message: "message는 200자 이하 문자열이어야 합니다",
+};
+
+export async function createExchange(req, res) {
+  const [paramsError, params] = validate(req.params, ExchangeParams);
+  if (paramsError) {
+    throw new ApiError(400, "VALIDATION_ERROR", EXCHANGE_VALIDATION_MESSAGES.saleId);
+  }
+
+  const [bodyError, body] = validate(req.body, ExchangeBody);
+  if (bodyError) {
+    const field = bodyError.path[0] ?? bodyError.key;
+    throw new ApiError(
+      400,
+      "VALIDATION_ERROR",
+      EXCHANGE_VALIDATION_MESSAGES[field] ?? "요청 값이 올바르지 않습니다",
+    );
+  }
+
+  //제시자는 requireAuth 미들웨어의 req.user에서만 가져온다 (body로 안 받음)
+  const result = await saleService.createExchange({
+    saleId: params.saleId,
+    offerCardId: body.offerCardId,
+    message: body.message,
+    offerer: req.user,
+  });
+
+  res.status(201).json({ data: result });
 }

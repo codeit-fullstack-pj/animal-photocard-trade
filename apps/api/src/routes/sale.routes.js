@@ -10,3 +10,6 @@ saleRouter.get("/", saleController.getSales);
 
 // 포인트로 판매 중인 포토카드를 구매
 saleRouter.post("/:saleId/purchase", requireAuth, saleController.purchase);
+
+// POST /sales/:saleId/exchanges — 판매글에 내 카드로 교환 제시
+saleRouter.post("/:saleId/exchanges", requireAuth, saleController.createExchange);
