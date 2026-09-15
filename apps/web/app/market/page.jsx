@@ -349,7 +349,7 @@ export default function MarketPage() {
         description={"카드 상세 페이지를 확인하려면\n로그인이 필요합니다."}
         confirmLabel="로그인하기"
         onConfirm={() => {
-          window.location.href = "/login";
+          router.push("/login");
         }}
         isSubmitting={false}
       />
