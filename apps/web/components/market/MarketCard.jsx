@@ -44,27 +44,27 @@ export default function MarketCard({ card, onCardClick }) {
           "linear-gradient(135deg, #353535 0%, #575656 38%, #686666 60%, #555454 82%, #353535 100%)",
       }}
     >
-      <Link
-        href={`/market/${card.id}`}
-        onClick={(event) => {
-          if (onCardClick) {
-            event.preventDefault();
-            onCardClick(card.id);
-          }
-        }}
+      <button
+        type="button"
+        onClick={() => onCardClick?.(card.id)}
         className="
-          group
-          flex
-          w-full
-          flex-col
-          overflow-hidden
-          rounded-[2px]
-
-          tablet:rounded-[2px]
-        "
-        style={{
-          background: "linear-gradient(180deg, #636363 0%, #313131 100%)",
-        }}
+            group
+            block
+            w-full
+            overflow-hidden
+            rounded-[12px]
+            border
+            border-[#555555]
+            bg-gradient-to-b
+            from-[#444444]
+            to-[#292929]
+            text-left
+            transition-all
+            duration-200
+            hover:-translate-y-[3px]
+            hover:border-[#777777]
+            hover:shadow-[0_8px_30px_rgba(0,0,0,0.35)]
+          "
       >
         {/* ========================================
             이미지
@@ -257,7 +257,7 @@ export default function MarketCard({ card, onCardClick }) {
             />
           </div>
         </div>
-      </Link>
+      </button>
     </li>
   );
 }

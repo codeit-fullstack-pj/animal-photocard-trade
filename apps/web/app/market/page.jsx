@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import MarketHeader from "@/components/market/MarketHeader";
 import MarketFilters from "@/components/market/MarketFilters";
@@ -14,6 +15,7 @@ import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 import { mockCards } from "@/mocks/cards";
 
 export default function MarketPage() {
+  const router = useRouter();
   // ========================================
   // 검색 / 필터 / 정렬 상태
   // ========================================
@@ -109,7 +111,7 @@ export default function MarketPage() {
       return;
     }
 
-    window.location.href = `/market/${cardId}`;
+    router.push(`/market/${cardId}`);
   };
 
   // ========================================
