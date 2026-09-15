@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { drawHalftone } from "@/lib/image/halftone";
+
 // 썸네일 순서 · 라벨 · 캔버스 필터 정의
 export const VARIANTS = [
   { key: "original", label: "원본", filter: null },
@@ -12,7 +14,6 @@ export const VARIANTS = [
 
 // 튜닝 파라미터
 const MAX_SIZE = 1024; // 변형본 긴 변 최대 px
-const DOT_BLOCKS = 72; // 도트: 긴 변 분할 칸 수
 const OUTPUT_TYPE = "image/png";
 
 function drawVariant(img, filter) {
@@ -26,19 +27,8 @@ function drawVariant(img, filter) {
   const ctx = canvas.getContext("2d");
 
   if (filter === "dot") {
-    const block = Math.max(2, Math.round(Math.max(w, h) / DOT_BLOCKS));
-    const sw = Math.max(1, Math.round(w / block));
-    const sh = Math.max(1, Math.round(h / block));
-
-    const small = document.createElement("canvas");
-    small.width = sw;
-    small.height = sh;
-    const smallCtx = small.getContext("2d");
-    smallCtx.imageSmoothingEnabled = false;
-    smallCtx.drawImage(img, 0, 0, sw, sh);
-
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(small, 0, 0, sw, sh, 0, 0, w, h);
+    // 마이갤러리 카드에서 쓰는 것과 동일한 명암 기반 망점(halftone) — DotHalftoneImage.jsx 참고
+    drawHalftone(ctx, img, w, h);
   } else {
     if (filter) ctx.filter = filter;
     ctx.drawImage(img, 0, 0, w, h);

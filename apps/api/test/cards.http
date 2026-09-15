@@ -1,0 +1,122 @@
+# VS Code "REST Client" 확장으로 실행: 요청 위의 "Send Request"를 누른다.
+# 준비: apps/api 에서 `npm run dev` (포트 4000)
+# 로그인 → CSRF 조회 → 이미지 업로드 순서로 먼저 실행해야 아래 카드 생성 요청이 통과한다 (쿠키는 REST Client가 자동으로 물고 다닌다)
+# images.http 를 먼저 한 번 실행해서 로그인 계정을 준비해두면 편하다
+
+@baseUrl = http://localhost:4000/api/v1
+@email = dup-test@gmail.com
+@password = password123
+
+### 로그인
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### CSRF 토큰 조회
+# @name csrf
+GET {{baseUrl}}/auth/csrf-token
+
+### 이미지 업로드 (카드 생성에 쓸 imageId 확보용)
+# @name upload
+POST {{baseUrl}}/images/upload
+Content-Type: multipart/form-data; boundary=----boundary123
+X-CSRF-TOKEN: {{csrf.response.body.data.csrfToken}}
+
+------boundary123
+Content-Disposition: form-data; name="category"
+
+DOG
+------boundary123
+Content-Disposition: form-data; name="image"; filename="sample.png"
+Content-Type: image/png
+
+< ../../web/public/dog.png
+------boundary123--
+
+### 1. 카드 생성 성공 → 201
+#    tag는 score.axes 1·2등 조합으로 자동 결정, topScore는 axes 중 최댓값, description은 그대로 사용자 입력
+POST {{baseUrl}}/cards
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf.response.body.data.csrfToken}}
+
+{
+  "imageId": "{{upload.response.body.data.id}}",
+  "filterType": 2,
+  "name": "우리집 댕댕이",
+  "description": "세상 활발한 강아지"
+}
+
+### 2. 같은 imageId로 재생성 시도 → 409 { "code": "IMAGE_ALREADY_USED" }
+#    (뒤로가기로 돌아온 폼 재제출, 중복 탭, 요청 재시도 등을 막기 위함)
+POST {{baseUrl}}/cards
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf.response.body.data.csrfToken}}
+
+{
+  "imageId": "{{upload.response.body.data.id}}",
+  "filterType": 1,
+  "name": "또 만들어보기",
+  "description": "중복 테스트"
+}
+
+### 3. 존재하지 않는(또는 남의) imageId → 404 { "code": "IMAGE_NOT_FOUND" }
+POST {{baseUrl}}/cards
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf.response.body.data.csrfToken}}
+
+{
+  "imageId": "00000000-0000-0000-0000-000000000000",
+  "filterType": 1,
+  "name": "없는 이미지",
+  "description": "없음"
+}
+
+### 4. 잘못된 filterType → 400 "filterType 은 1 / 2 / 3 / 4 중 하나여야 합니다"
+POST {{baseUrl}}/cards
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf.response.body.data.csrfToken}}
+
+{
+  "imageId": "{{upload.response.body.data.id}}",
+  "filterType": 9,
+  "name": "이상한 필터",
+  "description": "테스트"
+}
+
+### 5. 필수값 누락(name) → 400 { "code": "VALIDATION_ERROR" }
+POST {{baseUrl}}/cards
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf.response.body.data.csrfToken}}
+
+{
+  "imageId": "{{upload.response.body.data.id}}",
+  "filterType": 1,
+  "description": "이름이 없음"
+}
+
+### 6. 로그인 없이 요청 → 401 { "code": "UNAUTHORIZED" }
+POST {{baseUrl}}/cards
+Content-Type: application/json
+Cookie: accessToken=; refreshToken=; csrfToken=
+
+{
+  "imageId": "x",
+  "filterType": 1,
+  "name": "n",
+  "description": "d"
+}
+
+### 7. CSRF 헤더 없음 → 403 { "code": "CSRF_TOKEN_INVALID" }
+POST {{baseUrl}}/cards
+Content-Type: application/json
+
+{
+  "imageId": "x",
+  "filterType": 1,
+  "name": "n",
+  "description": "d"
+}
