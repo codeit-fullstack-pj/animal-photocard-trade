@@ -1,0 +1,126 @@
+# VS Code "REST Client" 확장으로 실행: 요청 위의 "Send Request"를 누른다.
+# 준비: apps/api 에서 `npm run dev` (포트 4000)
+#
+# ⚠️ 시드(prisma/seed.js)만으로는 이 API를 끝까지 테스트할 수 없다.
+#   - saleId는 컨트롤러에서 UUID 형식만 통과시키는데, 시드의 Sale은 전부 "sale-001" 같은
+#     읽기 쉬운 id라 형식 검증에서 먼저 걸린다 (실제 운영에서 POST /sales로 만들어지는
+#     판매글은 @default(uuid())라 진짜 UUID다 — 검증 로직 자체는 맞다).
+#   - 시드 User(user-001 등)는 전부 provider가 google/kakao인 "가짜" 소셜 계정이라
+#     실제 Supabase 로그인으로 만들 수 없다. requireAuth를 통과하려면 아래처럼
+#     POST /auth/signup으로 진짜 계정을 새로 만들어야 한다.
+#
+#   그래서:
+#   - "없는 saleId(404)" 케이스는 형식만 맞는 아무 UUID로 바로 테스트 가능하다.
+#   - 나머지(정상 구매 / 이미 팔림 / 자기 판매글 / 포인트 부족) 케이스는
+#     아래 @saleId, @sellerToken 등을 실제 값으로 채워야 한다:
+#     1) 이 파일의 회원가입 요청 2개(구매자/판매자용)로 진짜 계정을 만든다
+#     2) 판매자 계정으로 카드를 만들고(포토카드 생성 플로우) 판매글을 등록한다
+#        (둘 다 다른 담당자 기능 — 이 문서 범위 밖)
+#     3) 그렇게 생긴 진짜 Sale.id(uuid)를 @saleId에 채운다
+#
+@baseUrl = http://localhost:4000/api/v1
+@noSuchSaleId = 00000000-0000-0000-0000-000000000000
+
+### ─────────────────────────── 준비: 테스트용 계정 만들기 ───────────────────────────
+
+### 구매자 계정 회원가입 → 201
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "purchase-buyer{{$randomInt 1000 9999}}@gmail.com",
+  "nickname": "구매자{{$randomInt 1000 9999}}",
+  "password": "password123",
+  "passwordConfirm": "password123"
+}
+
+### 판매자 계정 회원가입 → 201
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "purchase-seller{{$randomInt 1000 9999}}@gmail.com",
+  "nickname": "판매자{{$randomInt 1000 9999}}",
+  "password": "password123",
+  "passwordConfirm": "password123"
+}
+
+### 구매자 로그인 → accessToken 쿠키가 이후 요청에 자동으로 실린다 (REST Client 기본 동작)
+# 이후 요청은 "가장 최근에 성공한 signin"의 쿠키를 그대로 쓴다는 점에 주의 —
+# 판매자로 로그인한 채로 있으면 구매자 테스트가, 그 반대도 마찬가지로 꼬인다.
+# @name buyerSignin
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "purchase-buyer2806@gmail.com",
+  "password": "password123"
+}
+
+### 판매자 로그인 (4번 "자기 판매글 구매" 테스트 직전에 이 요청을 먼저 보낼 것)
+# @name sellerSignin
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "purchase-seller4082@gmail.com",
+  "password": "password123"
+}
+
+### ─────────────────────────── 본 테스트 ───────────────────────────
+# 아래 @saleId는 위 "준비" 과정을 거쳐 실제로 만든 판매글의 UUID로 교체해서 쓴다.
+# ⚠️ 4번(자기 판매글)은 실패해야 정상이라 판매글 상태를 안 바꾸지만, 1번(정상 구매)은
+# 성공하면 판매글을 SOLD_OUT으로 닫아버린다. 그래서 순서를 4 → 1 → 3으로 두면
+# 중간에 saleId를 새로 만들 필요 없이 한 번에 쭉 테스트할 수 있다.
+@saleId = d94b0843-ccb3-4d7a-a025-c8cd7a0dbc39
+
+### 4. 자기 판매글 구매 → 403 { "code": "SELF_PURCHASE_NOT_ALLOWED" } DONE
+#    ▶ 먼저 위 sellerSignin을 보내서 판매자로 로그인한 다음 이 요청을 보낼 것
+POST {{baseUrl}}/sales/{{saleId}}/purchase
+
+### 1. 정상 구매 → 200 { data: { saleId, status, closedAt } } DONE
+#    ▶ 위 buyerSignin을 다시 보내서 구매자로 돌아온 다음 이 요청을 보낼 것
+POST {{baseUrl}}/sales/{{saleId}}/purchase
+
+### 2. 없는 saleId → 404 { "code": "SALE_NOT_FOUND" } DONE
+#    형식만 맞는 UUID면 되므로 로그인만 돼 있으면 바로 테스트 가능 (누구로 로그인해도 무방)
+POST {{baseUrl}}/sales/{{noSuchSaleId}}/purchase
+
+### 3. 이미 팔린 판매글(SOLD_OUT) → 409 { "code": "SALE_NOT_ON_SALE" } DONE
+#    바로 위 1번에서 이미 SOLD_OUT으로 닫혔으니, 로그인 상태 그대로 같은 saleId로 다시 요청
+POST {{baseUrl}}/sales/{{saleId}}/purchase
+
+### 5. 포인트 부족 → 409 { "code": "INSUFFICIENT_POINT" } DONE
+#    ⚠️ 위 saleId는 1·3번에서 이미 SOLD_OUT이라 재사용하면 SALE_NOT_ON_SALE만 또 뜬다.
+#    아래 순서로 새로 준비해야 진짜로 재현된다:
+#      1) 이 파일 맨 위 "회원가입" 요청으로 계정을 하나 더 만든다 (포인트를 절대 안 올릴 계정,
+#         스크립트의 buyer 인자로는 안 넘긴다 — buyer 인자는 아무 계정이나 상관없다,
+#         어차피 이 새 계정으로 구매를 "시도"만 할 거라 포인트 0 그대로 둬야 함)
+#      2) create-test-sale.js를 다시 실행해서 "아직 안 팔린" saleId를 하나 더 만든다
+#         (seller/buyer 인자는 기존 계정 아무거나 재사용해도 됨 — 여기서 만든 sale의
+#          가격이 0보다 크기만 하면 된다)
+#      3) 방금 만든 "포인트 0인 새 계정"으로 로그인
+#      4) @saleId2에 2)에서 새로 만든 saleId를 채우고 아래 요청을 보낸다
+@saleId2 = f3929d35-9cfc-419a-bcd8-0a09745e6a71
+POST {{baseUrl}}/sales/{{saleId2}}/purchase
+
+### 6. 토큰 없음 → 401 { "code": "UNAUTHORIZED" } DONE
+#    쿠키를 안 실어 보내려면 REST Client 새 세션(로그인 이력 없는 상태)에서 실행
+POST {{baseUrl}}/sales/{{saleId}}/purchase
+
+
+### ─────────────────────────── 동시성 실험 (터미널에서 직접) ───────────────────────────
+# 같은 판매글에 동시에 두 요청을 보내 하나만 성공(200)하고 하나는 409(SALE_NOT_ON_SALE)가
+# 나는지 확인한다. <ACCESS_TOKEN>은 서로 다른(포인트 충분한) 두 구매자 계정의 accessToken.
+# #
+# curl -s -X POST http://localhost:4000/api/v1/sales/d94b0843-ccb3-4d7a-a025-c8cd7a0dbc39/purchase -H "Authorization: Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6IjBmZDVlZmY0LWFhYjEtNDJkMi04YzQ4LTYzNGQ4YmRiNDBhMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3RnZWVneXZ1eXJod2pwaGRjYnNhLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJhZWM4NjkwZS0wMzM5LTQ3NTMtYjMzNS00YmM4MmY2ZTYwYWUiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzg5NDMxOTIyLCJpYXQiOjE3ODk0MjgzMjIsImVtYWlsIjoicHVyY2hhc2UtYnV5ZXIxODcyQGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWwiOiJwdXJjaGFzZS1idXllcjE4NzJAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBob25lX3ZlcmlmaWVkIjpmYWxzZSwic3ViIjoiYWVjODY5MGUtMDMzOS00NzUzLWIzMzUtNGJjODJmNmU2MGFlIn0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3ODk0MjgzMjJ9XSwic2Vzc2lvbl9pZCI6IjRkMmU5OGQ4LTVjMzItNDAzYi04MWY1LTMxNWZjZjU4NjUzZSIsImlzX2Fub255bW91cyI6ZmFsc2V9.K09SkBOl2iwSsqSBn1lAFCJWTllyFt5vIvbXplE8Q-LbtnZDShhv7L_28dUu5mpI3KKdLl5TdEhPalwE9hMDVg" & \
+# curl -s -X POST http://localhost:4000/api/v1/sales/d94b0843-ccb3-4d7a-a025-c8cd7a0dbc39/purchase -H "Authorization: Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6IjBmZDVlZmY0LWFhYjEtNDJkMi04YzQ4LTYzNGQ4YmRiNDBhMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3RnZWVneXZ1eXJod2pwaGRjYnNhLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI4MmQ3NTgwNy04NTg4LTRjOGQtOGQ0Zi02YzZlMzYyNmVhMTUiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzg5NDMxOTc2LCJpYXQiOjE3ODk0MjgzNzYsImVtYWlsIjoicHVyY2hhc2UtYnV5ZXIyODA2QGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWwiOiJwdXJjaGFzZS1idXllcjI4MDZAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBob25lX3ZlcmlmaWVkIjpmYWxzZSwic3ViIjoiODJkNzU4MDctODU4OC00YzhkLThkNGYtNmM2ZTM2MjZlYTE1In0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3ODk0MjgzNzZ9XSwic2Vzc2lvbl9pZCI6ImM1NzAxZjFkLWY1M2QtNDJmMS04OTYwLWU4YzQ0NjYwODQ4NSIsImlzX2Fub255bW91cyI6ZmFsc2V9.ZB-W5TdjlXTCYn1wAz0U3MF-qxKc8-Um2awGx0WrXH7AlwrbGxw0c9d360M77QZqJ71TjSmK5ZFksD7lT9MgAA" &
+
+##처리결과 DONE
+# [1] 47071
+# [2] 47072
+# shlee@shlee-m1 api % {"data":{"saleId":"d94b0843-ccb3-4d7a-a025-c8cd7a0dbc39","status":"SOLD_OUT","closedAt":"2026-09-14T23:30:45.010Z"}}
+# [1]  - done       curl -s -X POST  -H
+# shlee@shlee-m1 api % {"code":"SALE_NOT_ON_SALE","message":"판매가 종료된 판매글입니다."}
+# [2]  + done       curl -s -X POST  -H
+

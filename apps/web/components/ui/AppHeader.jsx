@@ -16,6 +16,7 @@ export default function AppHeader() {
           <Image src="/logo.png" alt="최애 멍냥" width={182} height={61} priority />
         </Link>
 
+        {/* 로그인 여부에 따라 사용자 정보 또는 로그인 메뉴를 표시 */}
         {currentUser ? (
           <div className="flex items-center gap-[32px]">
             <span className="font-sans-500 text-[14px] text-[#DDDDDD]">
@@ -54,6 +55,7 @@ export default function AppHeader() {
             <Link href="/login" className="hover:text-white">
               로그인
             </Link>
+
             <Link href="/signup" className="hidden hover:text-white tablet:inline">
               회원가입
             </Link>
