@@ -7,6 +7,7 @@ import { authRouter } from "./routes/auth.routes.js";
 import { cardRouter } from "./routes/card.routes.js";
 import { healthRouter } from "./routes/health.routes.js";
 import { imageRouter } from "./routes/image.routes.js";
+import { saleRouter } from "./routes/sale.routes.js";
 import { userRouter } from "./routes/user.routes.js";
 
 export const app = express();
@@ -21,6 +22,7 @@ app.use(cookieParser());
 app.use("/api/v1", healthRouter);
 app.use("/api/v1", imageRouter);
 app.use("/api/v1", cardRouter);
+app.use("/api/v1/sales", saleRouter);
 app.use("/api/v1", userRouter);
 app.use("/api/v1/auth", authRouter);
 
