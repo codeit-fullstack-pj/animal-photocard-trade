@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import Profile from "@/components/ui/Profile";
+import Notification from "@/components/ui/Notification";
 
 const MENU_LINKS = [
   { href: "/market", label: "마켓플레이스" },
@@ -77,18 +78,7 @@ export default function AppHeader() {
                     {currentUser.point?.toLocaleString("ko-KR") ?? "err"} P
                   </span>
 
-                  <button
-                    type="button"
-                    className="flex h-[20px] w-[20px] items-center justify-center"
-                    aria-label="알림"
-                  >
-                    <Image
-                      src={currentUser.unreadCount > 0 ? "/alarm_active.png" : "/alarm_default.png"}
-                      alt=""
-                      width={20}
-                      height={20}
-                    />
-                  </button>
+                  <Notification unreadCount={currentUser.unreadCount} />
 
                   <Profile currentUser={currentUser} />
 
