@@ -1,14 +1,17 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
-
 import { errorHandler, notFoundHandler } from "./middlewares/error-handler.js";
 import { authRouter } from "./routes/auth.routes.js";
 import { cardRouter } from "./routes/card.routes.js";
 import { healthRouter } from "./routes/health.routes.js";
+import { saleRouter } from "./routes/saleRoute.js";
 import { imageRouter } from "./routes/image.routes.js";
 import { saleRouter } from "./routes/sale.routes.js";
 import { userRouter } from "./routes/user.routes.js";
+BigInt.prototype.toJSON = function () {
+  return Number(this);
+};
 
 export const app = express();
 
@@ -29,6 +32,7 @@ app.use("/api/v1/sales", saleRouter);
 
 app.use("/api/v1", userRouter);
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1", saleRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
