@@ -8,6 +8,8 @@ import MarketFilters from "@/components/market/MarketFilters";
 import MarketCardList from "@/components/market/MarketCardList";
 import MarketEmpty from "@/components/market/MarketEmpty";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import MobileHeader from "@/components/ui/MobileHeader";
+import AppHeader from "@/components/ui/AppHeader";
 
 import { getCurrentUser } from "@/lib/auth/api";
 import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
@@ -257,8 +259,15 @@ export default function MarketPage() {
   }, [hasMore, filteredCards.length, isLoading]);
 
   return (
-    <main
-      className="
+    <>
+      <div className="tablet:hidden">
+        <MobileHeader title="마켓플레이스" />
+      </div>
+      <div className="hidden tablet:block">
+        <AppHeader />
+      </div>
+      <main
+        className="
         mx-auto
         min-h-screen
         w-full
@@ -276,41 +285,41 @@ export default function MarketPage() {
         pc:pt-[40px]
         pc:pb-[80px]
       "
-    >
-      {/* ========================================
+      >
+        {/* ========================================
           마켓 헤더
       ======================================== */}
 
-      <MarketHeader />
+        <MarketHeader />
 
-      {/* ========================================
+        {/* ========================================
           검색 / 필터
 
           GalleryToolbar와 동일한 반응형 여백
       ======================================== */}
 
-      <div
-        className="
+        <div
+          className="
           mt-3
 
           tablet:mt-4
 
           pc:mt-6
         "
-      >
-        <MarketFilters
-          keyword={search}
-          setKeyword={handleSearchChange}
-          categories={categories}
-          handleCategoryChange={handleCategoryChange}
-          quality={isQuality}
-          setQuality={handleQualityChange}
-          sort={sort}
-          setSort={handleSortChange}
-        />
-      </div>
+        >
+          <MarketFilters
+            keyword={search}
+            setKeyword={handleSearchChange}
+            categories={categories}
+            handleCategoryChange={handleCategoryChange}
+            quality={isQuality}
+            setQuality={handleQualityChange}
+            sort={sort}
+            setSort={handleSortChange}
+          />
+        </div>
 
-      {/* ========================================
+        {/* ========================================
           카드 목록
 
           모바일 / 태블릿
@@ -320,48 +329,48 @@ export default function MarketPage() {
           → 3열
       ======================================== */}
 
-      <section
-        className="
+        <section
+          className="
           mt-4
 
           tablet:mt-6
 
           pc:mt-8
         "
-      >
-        {visibleCards.length > 0 ? (
-          <MarketCardList cards={visibleCards} onCardClick={handleCardClick} />
-        ) : (
-          <MarketEmpty />
-        )}
-      </section>
+        >
+          {visibleCards.length > 0 ? (
+            <MarketCardList cards={visibleCards} onCardClick={handleCardClick} />
+          ) : (
+            <MarketEmpty />
+          )}
+        </section>
 
-      {/* ========================================
+        {/* ========================================
           로그인 필요 모달
       ======================================== */}
 
-      <ConfirmModal
-        isOpen={isLoginModalOpen}
-        onClose={() => {
-          setIsLoginModalOpen(false);
-        }}
-        title="로그인이 필요합니다"
-        description={"카드 상세 페이지를 확인하려면\n로그인이 필요합니다."}
-        confirmLabel="로그인하기"
-        onConfirm={() => {
-          router.push("/login");
-        }}
-        isSubmitting={false}
-      />
+        <ConfirmModal
+          isOpen={isLoginModalOpen}
+          onClose={() => {
+            setIsLoginModalOpen(false);
+          }}
+          title="로그인이 필요합니다"
+          description={"카드 상세 페이지를 확인하려면\n로그인이 필요합니다."}
+          confirmLabel="로그인하기"
+          onConfirm={() => {
+            router.push("/login");
+          }}
+          isSubmitting={false}
+        />
 
-      {/* ========================================
+        {/* ========================================
           무한 스크롤 감지 영역
       ======================================== */}
 
-      {hasMore && (
-        <div
-          ref={observerRef}
-          className="
+        {hasMore && (
+          <div
+            ref={observerRef}
+            className="
             flex
             h-16
             items-center
@@ -369,22 +378,23 @@ export default function MarketPage() {
 
             tablet:h-20
           "
-          aria-hidden="true"
-        >
-          {isLoading && (
-            <span
-              className="
+            aria-hidden="true"
+          >
+            {isLoading && (
+              <span
+                className="
                 text-[11px]
                 text-gray-400
 
                 tablet:text-sm
               "
-            >
-              불러오는 중...
-            </span>
-          )}
-        </div>
-      )}
-    </main>
+              >
+                불러오는 중...
+              </span>
+            )}
+          </div>
+        )}
+      </main>
+    </>
   );
 }
