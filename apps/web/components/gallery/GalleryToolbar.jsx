@@ -21,6 +21,7 @@ const SORT_OPTIONS = [
  * @param {{
  *   search: string, onSearchChange: (value: string) => void,
  *   categories: string[], onCategoriesChange: (value: string[]) => void,
+ *   categoryCounts: { DOG: number, CAT: number },
  *   sort: string, onSortChange: (value: string) => void,
  * }} props
  */
@@ -29,6 +30,7 @@ export default function GalleryToolbar({
   onSearchChange,
   categories,
   onCategoriesChange,
+  categoryCounts,
   sort,
   onSortChange,
 }) {
@@ -51,13 +53,14 @@ export default function GalleryToolbar({
           options={CATEGORY_OPTIONS}
           value={categories}
           onChange={onCategoriesChange}
+          optionCounts={categoryCounts}
           placeholder="카테고리"
           triggerImage="/dropdown.png"
           placeholderClassName="text-white"
         />
       </div>
 
-      <div className="w-40 shrink-0 tablet:ml-auto tablet:w-52 tablet:flex-none">
+      <div className="w-50 shrink-0 tablet:ml-auto tablet:w-52 tablet:flex-none">
         <Dropdown options={SORT_OPTIONS} value={sort} onChange={onSortChange} placeholder="정렬" />
       </div>
     </div>

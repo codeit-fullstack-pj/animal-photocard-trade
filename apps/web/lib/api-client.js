@@ -13,14 +13,17 @@ export class ApiError extends Error {
   }
 }
 
-// 공통 fetch: JSON으로 보내고 받는다. 쿠키(httpOnly 토큰)를 함께 보내기 위해 credentials: "include"
+// 공통 fetch: JSON으로 보내고 받는다 (body가 FormData면 그대로 보낸다 — Content-Type은 브라우저가 boundary와 함께 채움).
+// 쿠키(httpOnly 토큰)를 함께 보내기 위해 credentials: "include"
 export async function apiFetch(path, { method = "GET", body, headers = {} } = {}) {
+  const isFormData = body instanceof FormData;
+
   let response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       method,
-      headers: body ? { "Content-Type": "application/json", ...headers } : headers,
-      body: body ? JSON.stringify(body) : undefined,
+      headers: body && !isFormData ? { "Content-Type": "application/json", ...headers } : headers,
+      body: isFormData ? body : body ? JSON.stringify(body) : undefined,
       credentials: "include",
     });
   } catch {
@@ -39,4 +42,11 @@ export async function apiFetch(path, { method = "GET", body, headers = {} } = {}
     );
   }
   return json?.data;
+}
+
+// 로그아웃·토큰 재발급·이미지 업로드처럼 상태를 바꾸는 요청에 필요한 CSRF 헤더.
+// 웹과 API 도메인이 달라 쿠키를 직접 읽을 수 없으므로 서버에 값을 물어본 뒤 헤더로 보낸다
+export async function csrfHeaders() {
+  const { csrfToken } = await apiFetch("/auth/csrf-token");
+  return { "X-CSRF-TOKEN": csrfToken };
 }

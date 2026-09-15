@@ -5,3 +5,4 @@ dist
 coverage
 package-lock.json
 *.min.*
+apps/api/models/**/*.json
