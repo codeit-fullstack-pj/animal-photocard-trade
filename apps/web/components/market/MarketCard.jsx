@@ -11,14 +11,9 @@ const formatPrice = (price) => {
   return Number(price).toLocaleString("ko-KR");
 };
 
-export default function MarketCard({ card }) {
-  // 카드의 category에 맞는 점수 설정 가져오기
-  //
-  // DOG → 강아지 점수 설정
-  // CAT → 고양이 점수 설정
+export default function MarketCard({ card, onCardClick }) {
   const scoreConfig = SCORE_CONFIG[card.category] ?? [];
 
-  // 실제 카드의 score.axes와 SCORE_CONFIG를 연결
   const scoreRows = scoreConfig.map((config) => {
     const score = card.score?.axes?.find((item) => item.field === config.key);
 
@@ -30,202 +25,292 @@ export default function MarketCard({ card }) {
   });
 
   return (
-    <li className="min-w-0">
+    <li
+      className="
+        w-full
+        min-w-0
+        rounded-lg
+        p-1.25
+        tracking-tight
+
+        tablet:rounded-[10px]
+        tablet:p-3.25
+
+        pc:rounded-[10px]
+        pc:p-3.25
+      "
+      style={{
+        background:
+          "linear-gradient(135deg, #353535 0%, #575656 38%, #686666 60%, #555454 82%, #353535 100%)",
+      }}
+    >
       <Link
         href={`/market/${card.id}`}
+        onClick={(event) => {
+          if (onCardClick) {
+            event.preventDefault();
+            onCardClick(card.id);
+          }
+        }}
         className="
           group
-          block
+          flex
+          w-full
+          flex-col
           overflow-hidden
-          rounded-[12px]
-          border
-          border-[#555555]
-          bg-gradient-to-b
-          from-[#444444]
-          to-[#292929]
-          transition-all
-          duration-200
-          hover:-translate-y-[3px]
-          hover:border-[#777777]
-          hover:shadow-[0_8px_30px_rgba(0,0,0,0.35)]
-        "
-      >
-        {/* ==================================
-            카드 이미지
-        ================================== */}
+          rounded-[2px]
 
+          tablet:rounded-[2px]
+        "
+        style={{
+          background: "linear-gradient(180deg, #636363 0%, #313131 100%)",
+        }}
+      >
+        {/* ========================================
+            이미지
+        ======================================== */}
         <div
           className="
             relative
-            mx-[12px]
-            mt-[12px]
-            aspect-[1.55/1]
+            mx-1.5
+            mt-2.75
+            aspect-168/116
+            max-h-29
             overflow-hidden
-            rounded-[8px]
+            rounded-[5px]
             bg-[#333333]
+
+            tablet:mx-2.75
+            tablet:mt-3.75
+            tablet:aspect-344/233
+            tablet:max-h-58.25
+            tablet:rounded-[10px]
+
+            pc:mx-2.75
+            pc:mt-3.75
+            pc:aspect-400/232
+            pc:max-h-58
           "
         >
           <Image
             src={card.imageUrl}
-            alt={card.name}
+            alt={card.title ?? card.name}
             fill
-            sizes="400px"
+            sizes="
+              (min-width: 1280px) 400px,
+              (min-width: 744px) 344px,
+              168px
+            "
             className="
+              rounded-[5px]
+              border
+              border-[#424242]
               object-cover
               transition-transform
               duration-300
               group-hover:scale-[1.02]
+
+              tablet:rounded-[10px]
+              tablet:border-[3px]
             "
           />
         </div>
 
-        {/* ==================================
-            카드 정보
-        ================================== */}
-
+        {/* ========================================
+            카드 내용
+        ======================================== */}
         <div
           className="
-            px-[12px]
-            pb-[16px]
-            pt-[12px]
+            px-1.5
+            pb-1.5
+            pt-1.75
+
+            tablet:px-2.75
+            tablet:pb-2.75
+            tablet:pt-2.5
+
+            pc:px-2.75
+            pc:pb-2.75
+            pc:pt-2.5
           "
         >
-          {/* 카드 제목 */}
-
-          <h3
+          {/* 이름 */}
+          <h2
             className="
-              min-h-[52px]
-              text-[19px]
-              font-bold
-              leading-[1.4]
-              tracking-[-0.5px]
+              font-sans-700
+              w-4/5
+              text-[11px]
+              leading-3.5
               text-white
+
+              tablet:text-[20px]
+              tablet:leading-6.5
+
+              pc:text-[22px]
             "
           >
-            {card.tag}
-          </h3>
+            {card.tag} {card.title ?? card.name}
+          </h2>
 
-          {/* ==================================
+          {/* ========================================
               관상 지수
-          ================================== */}
-
+          ======================================== */}
           <div
             className="
-              mt-[12px]
-              flex
-              flex-col
-              gap-[7px]
+              mt-2
+              space-y-0.75
+
+              tablet:mt-3
+              tablet:space-y-1.5
             "
           >
             {scoreRows.map((score) => (
-              <div
-                key={score.key}
-                className="
-                  grid
-                  grid-cols-[64px_minmax(0,1fr)_40px]
-                  items-center
-                  gap-[8px]
-                  text-[12px]
-                "
-              >
-                {/* 점수 이름 */}
-
-                <span className="truncate text-white">{score.label}</span>
-
-                {/* 점수 바 */}
-
-                <div
-                  className="
-                    h-[6px]
-                    overflow-hidden
-                    rounded-full
-                    bg-[#f1f1f1]
-                  "
-                >
-                  <span
-                    className="
-                      block
-                      h-full
-                      rounded-full
-                      bg-[#a855f7]
-                    "
-                    style={{
-                      width: `${score.value}%`,
-                    }}
-                  />
-                </div>
-
-                {/* 점수 */}
-
-                <span className="text-right text-white">{score.value}%</span>
-              </div>
+              <ScoreRow key={score.key} label={score.label} value={score.value} />
             ))}
           </div>
 
-          {/* ==================================
-              구분선
-          ================================== */}
-
-          <div
-            className="
-              my-[14px]
-              h-px
-              bg-[#555555]
-            "
-          />
-
-          {/* ==================================
+          {/* ========================================
               구매 포인트
-          ================================== */}
-
-          <div className="flex items-center justify-between">
-            <span className="text-[13px] text-white">구매 포인트</span>
-
-            <strong
-              className="
-                text-[24px]
-                font-normal
-                leading-none
-                text-[#f5bd45]
-              "
-            >
-              {formatPrice(card.price)}
-
-              <small
-                className="
-                  ml-[4px]
-                  text-[12px]
-                  text-white
-                "
-              >
-                P
-              </small>
-            </strong>
-          </div>
-
-          {/* ==================================
-              로고
-          ================================== */}
-
+          ======================================== */}
           <div
             className="
-              mt-[10px]
-              flex
-              h-[24px]
-              items-center
-              justify-center
+              mt-1.75
+              border-t
+              border-[#1D1D1D]
+              pt-1.75
+
+              tablet:mt-3
+              tablet:pt-2
             "
           >
+            <div className="flex items-center justify-between">
+              <span
+                className="
+                  font-sans-400
+                  text-[7px]
+                  text-white
+
+                  tablet:text-[12px]
+                "
+              >
+                구매 포인트
+              </span>
+
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-[3px]
+
+                  tablet:gap-[6px]
+                "
+              >
+                <strong
+                  className="
+                    font-sans-400
+                    text-[10px]
+                    leading-3.5
+                    text-[#FFC146]
+
+                    tablet:text-[20px]
+                  "
+                >
+                  {formatPrice(card.price)}
+                </strong>
+
+                <Image
+                  src="/cardpoint.png"
+                  alt="포인트"
+                  width={16}
+                  height={16}
+                  className="
+                    h-auto
+                    w-2
+                    translate-y-[3px]
+
+                    tablet:w-4
+                  "
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ========================================
+              하단 로고
+          ======================================== */}
+          <div className="mt-1.5 flex justify-center tablet:mt-3">
             <Image
-              src="/images/logo.png"
-              alt="최애멍냥"
-              width={80}
+              src="/logo.png"
+              alt="최애 멍냥"
+              width={96}
               height={24}
-              className="h-[24px] w-[80px] object-contain"
+              className="
+                h-2.5
+                w-10
+
+                tablet:h-5
+                tablet:w-20
+
+                pc:h-6
+                pc:w-24
+              "
             />
           </div>
         </div>
       </Link>
     </li>
+  );
+}
+
+function ScoreRow({ label, value }) {
+  return (
+    <div
+      className="
+        grid
+        w-full
+        grid-cols-[50px_1fr_23px]
+        items-center
+        gap-x-1
+
+        tablet:grid-cols-[100px_1fr_45px]
+        tablet:gap-x-2.5
+      "
+    >
+      <span
+        className="
+          font-sans-500
+          text-[7px]
+          whitespace-nowrap
+          text-white
+
+          tablet:text-[14px]
+        "
+      >
+        {label}
+      </span>
+
+      <div className="h-1 overflow-hidden rounded-full bg-white tablet:h-2">
+        <div
+          className="h-full rounded-full bg-[#A656F5]"
+          style={{
+            width: `${value}%`,
+          }}
+        />
+      </div>
+
+      <span
+        className="
+          font-sans-600
+          text-right
+          text-[7px]
+          whitespace-nowrap
+          text-white
+
+          tablet:text-[14px]
+        "
+      >
+        {value}%
+      </span>
+    </div>
   );
 }

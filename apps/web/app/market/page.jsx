@@ -6,99 +6,130 @@ import MarketHeader from "@/components/market/MarketHeader";
 import MarketFilters from "@/components/market/MarketFilters";
 import MarketCardList from "@/components/market/MarketCardList";
 import MarketEmpty from "@/components/market/MarketEmpty";
+import ConfirmModal from "@/components/ui/ConfirmModal";
+
+import { getCurrentUser } from "@/lib/auth/api";
+import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 
 import { mockCards } from "@/mocks/cards";
 
 export default function MarketPage() {
-  // ==========================================
-  // 검색
-  // ==========================================
+  // ========================================
+  // 검색 / 필터 / 정렬 상태
+  // ========================================
 
   const [search, setSearch] = useState("");
-
-  // ==========================================
-  // 카테고리
-  //
-  // []              → 전체
-  // ["DOG"]         → 강아지만
-  // ["CAT"]         → 고양이만
-  // ["DOG", "CAT"]  → 강아지 + 고양이
-  // ==========================================
-
   const [categories, setCategories] = useState([]);
-
-  // ==========================================
-  // 품질 여부
-  // ==========================================
-
   const [isQuality, setIsQuality] = useState(false);
-
-  // ==========================================
-  // 정렬
-  // ==========================================
-
   const [sort, setSort] = useState("최근 등록 순");
 
-  // ==========================================
+  // ========================================
   // 무한 스크롤
-  // ==========================================
+  // ========================================
 
   const [visibleCount, setVisibleCount] = useState(6);
   const [isLoading, setIsLoading] = useState(false);
 
   const observerRef = useRef(null);
 
-  // ==========================================
-  // 검색 변경
-  // ==========================================
+  // ========================================
+  // 로그인 상태
+  // ========================================
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // ========================================
+  // 로그인 여부 확인
+  // ========================================
+
+  useEffect(() => {
+    const checkLogin = async () => {
+      try {
+        await getCurrentUser();
+        setIsLoggedIn(true);
+      } catch {
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkLogin();
+  }, []);
+
+  // ========================================
+  // 검색
+  // ========================================
 
   const handleSearchChange = (value) => {
     setSearch(value);
     setVisibleCount(6);
   };
 
-  // ==========================================
-  // 카테고리 선택 변경
-  // ==========================================
+  // ========================================
+  // 카테고리
+  // ========================================
 
   const handleCategoryChange = (value) => {
     setCategories((prev) => {
-      // 이미 선택된 카테고리라면 제거
       if (prev.includes(value)) {
         return prev.filter((category) => category !== value);
       }
 
-      // 선택되지 않은 카테고리라면 추가
       return [...prev, value];
     });
 
     setVisibleCount(6);
   };
 
-  // ==========================================
-  // 품질 필터 변경
-  // ==========================================
+  // ========================================
+  // 품질 필터
+  // ========================================
 
   const handleQualityChange = (value) => {
     setIsQuality(value);
     setVisibleCount(6);
   };
 
-  // ==========================================
-  // 정렬 변경
-  // ==========================================
+  // ========================================
+  // 정렬
+  // ========================================
 
   const handleSortChange = (value) => {
     setSort(value);
     setVisibleCount(6);
   };
 
-  // ==========================================
-  // 카드 필터링 + 정렬
-  // ==========================================
+  // ========================================
+  // 카드 클릭
+  // ========================================
+
+  const handleCardClick = (cardId) => {
+    if (!isLoggedIn) {
+      setIsLoginModalOpen(true);
+      return;
+    }
+
+    window.location.href = `/market/${cardId}`;
+  };
+
+  // ========================================
+  // 카드 데이터 변환 + 필터 + 정렬
+  // ========================================
 
   const filteredCards = useMemo(() => {
-    let result = [...mockCards];
+    /*
+     * mockCards
+     * ↓
+     * cardToPhotoCardProps()
+     * ↓
+     * PhotoCard에서 사용할 수 있는 데이터 형태 추가
+     *
+     * 기존 card 데이터는 ...card로 유지한다.
+     */
+    let result = mockCards.map((card) => ({
+      ...card,
+      ...cardToPhotoCardProps(card),
+    }));
 
     // ========================================
     // 검색
@@ -110,6 +141,7 @@ export default function MarketPage() {
       result = result.filter((card) => {
         return (
           card.name?.toLowerCase().includes(keyword) ||
+          card.title?.toLowerCase().includes(keyword) ||
           card.tag?.toLowerCase().includes(keyword) ||
           card.description?.toLowerCase().includes(keyword)
         );
@@ -118,8 +150,6 @@ export default function MarketPage() {
 
     // ========================================
     // 카테고리
-    //
-    // 아무것도 선택하지 않으면 전체 카드
     // ========================================
 
     if (categories.length > 0) {
@@ -129,9 +159,7 @@ export default function MarketPage() {
     }
 
     // ========================================
-    // 품질 여부
-    //
-    // filterType 3 이상을 품질 카드로 처리
+    // 품질 필터
     // ========================================
 
     if (isQuality) {
@@ -141,7 +169,7 @@ export default function MarketPage() {
     }
 
     // ========================================
-    // 관상 지수 높은 순
+    // 정렬
     // ========================================
 
     if (sort === "관상 지수 높은 순") {
@@ -150,29 +178,17 @@ export default function MarketPage() {
       });
     }
 
-    // ========================================
-    // 관상 지수 낮은 순
-    // ========================================
-
     if (sort === "관상 지수 낮은 순") {
       result.sort((a, b) => {
         return Number(a.topScore ?? 0) - Number(b.topScore ?? 0);
       });
     }
 
-    // ========================================
-    // 최근 등록 순
-    // ========================================
-
     if (sort === "최근 등록 순") {
       result.sort((a, b) => {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
     }
-
-    // ========================================
-    // 오래된 등록 순
-    // ========================================
 
     if (sort === "오래된 등록 순") {
       result.sort((a, b) => {
@@ -183,23 +199,23 @@ export default function MarketPage() {
     return result;
   }, [search, categories, isQuality, sort]);
 
-  // ==========================================
-  // 현재 화면에 보여줄 카드
-  // ==========================================
+  // ========================================
+  // 현재 표시할 카드
+  // ========================================
 
   const visibleCards = useMemo(() => {
     return filteredCards.slice(0, visibleCount);
   }, [filteredCards, visibleCount]);
 
-  // ==========================================
+  // ========================================
   // 더 불러올 카드가 있는지
-  // ==========================================
+  // ========================================
 
   const hasMore = visibleCount < filteredCards.length;
 
-  // ==========================================
+  // ========================================
   // 무한 스크롤
-  // ==========================================
+  // ========================================
 
   useEffect(() => {
     const target = observerRef.current;
@@ -238,55 +254,133 @@ export default function MarketPage() {
     };
   }, [hasMore, filteredCards.length, isLoading]);
 
-  // ==========================================
-  // 화면
-  // ==========================================
-
   return (
     <main
       className="
         mx-auto
+        min-h-screen
         w-full
         max-w-[1248px]
-        px-5
-        py-10
+
+        px-[16px]
+        pt-[16px]
+        pb-[40px]
+
+        tablet:px-[20px]
+        tablet:pt-[24px]
+        tablet:pb-[60px]
+
+        pc:px-0
+        pc:pt-[40px]
+        pc:pb-[80px]
       "
     >
-      {/* 마켓플레이스 제목 */}
+      {/* ========================================
+          마켓 헤더
+      ======================================== */}
 
       <MarketHeader />
 
-      {/* 검색 / 필터 / 정렬 */}
+      {/* ========================================
+          검색 / 필터
 
-      <MarketFilters
-        keyword={search}
-        setKeyword={handleSearchChange}
-        categories={categories}
-        handleCategoryChange={handleCategoryChange}
-        quality={isQuality}
-        setQuality={handleQualityChange}
-        sort={sort}
-        setSort={handleSortChange}
+          GalleryToolbar와 동일한 반응형 여백
+      ======================================== */}
+
+      <div
+        className="
+          mt-3
+
+          tablet:mt-4
+
+          pc:mt-6
+        "
+      >
+        <MarketFilters
+          keyword={search}
+          setKeyword={handleSearchChange}
+          categories={categories}
+          handleCategoryChange={handleCategoryChange}
+          quality={isQuality}
+          setQuality={handleQualityChange}
+          sort={sort}
+          setSort={handleSortChange}
+        />
+      </div>
+
+      {/* ========================================
+          카드 목록
+
+          모바일 / 태블릿
+          → 2열
+
+          PC
+          → 3열
+      ======================================== */}
+
+      <section
+        className="
+          mt-4
+
+          tablet:mt-6
+
+          pc:mt-8
+        "
+      >
+        {visibleCards.length > 0 ? (
+          <MarketCardList cards={visibleCards} onCardClick={handleCardClick} />
+        ) : (
+          <MarketEmpty />
+        )}
+      </section>
+
+      {/* ========================================
+          로그인 필요 모달
+      ======================================== */}
+
+      <ConfirmModal
+        isOpen={isLoginModalOpen}
+        onClose={() => {
+          setIsLoginModalOpen(false);
+        }}
+        title="로그인이 필요합니다"
+        description={"카드 상세 페이지를 확인하려면\n로그인이 필요합니다."}
+        confirmLabel="로그인하기"
+        onConfirm={() => {
+          window.location.href = "/login";
+        }}
+        isSubmitting={false}
       />
 
-      {/* 카드 목록 */}
-
-      {visibleCards.length > 0 ? <MarketCardList cards={visibleCards} /> : <MarketEmpty />}
-
-      {/* 무한 스크롤 감지 영역 */}
+      {/* ========================================
+          무한 스크롤 감지 영역
+      ======================================== */}
 
       {hasMore && (
         <div
           ref={observerRef}
           className="
             flex
-            h-20
+            h-16
             items-center
             justify-center
+
+            tablet:h-20
           "
           aria-hidden="true"
         >
-          {isLoading && <span className="text-sm text-gray-400">불러오는 중...</span>}
+          {isLoading && (
+            <span
+              className="
+                text-[11px]
+                text-gray-400
+
+                tablet:text-sm
+              "
+            >
+              불러오는 중...
+            </span>
+          )}
         </div>
       )}
     </main>
