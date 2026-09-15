@@ -23,7 +23,11 @@ export default function PhotoCard({
 
   return (
     <article
-      className={`w-full tracking-tight rounded-lg p-1.25 tablet:rounded-[10px] tablet:p-3.25 ${variant === "owned" ? "h-70.5 tablet:h-139.25 pc:h-146.5" : "h-67.5 tablet:h-133.5 pc:h-137.5"}`}
+      className={`w-full tracking-tight rounded-lg p-1.25 tablet:rounded-[10px] tablet:p-3.25 ${
+        variant === "owned"
+          ? "h-70.5 tablet:h-139.25 pc:h-146.5"
+          : "h-67.5 tablet:h-133.5 pc:h-137.5"
+      }`}
       style={{
         background:
           "linear-gradient(135deg, #353535 0%, #575656 38%, #686666 60%, #555454 82%, #353535 100%)",
@@ -74,7 +78,7 @@ export default function PhotoCard({
         </h2>
 
         {/* 관상 지수 */}
-        <div className="mt-2 tablet:mt-3 space-y-0.75 tablet:space-y-1.5">
+        <div className="mt-2 space-y-0.75 tablet:mt-3 tablet:space-y-1.5">
           {SCORE_CONFIG[category]?.map(({ key, label }) => {
             const scoreValue = score?.axes?.find((axis) => axis.field === key)?.value ?? 0;
 
@@ -89,10 +93,12 @@ export default function PhotoCard({
               <span className="font-sans-400 text-[7px] text-white tablet:text-[12px]">
                 구매 포인트
               </span>
+
               <div className="flex items-center gap-[6px]">
                 <strong className="font-sans-400 text-[10px] leading-3.5 text-[#FFC146] tablet:text-[20px]">
                   {Number(point).toLocaleString("ko-KR")}
                 </strong>
+
                 <Image
                   src="/cardpoint.png"
                   alt="포인트"
@@ -105,7 +111,7 @@ export default function PhotoCard({
           </div>
         )}
 
-        {/* 설명카드 소개 표기*/}
+        {/* 설명카드 소개 표기 */}
         {variant === "owned" && (
           <div className="pt-2 tablet:pt-3 pc:pt-5">
             <p className="font-sans-400 text-[7px] leading-2.25 break-all text-gray-200 tablet:text-[12px] tablet:leading-4.25 pc:text-[14px]">
