@@ -1,0 +1,92 @@
+# VS Code "REST Client" 확장으로 실행: 요청 위의 "Send Request"를 누른다.
+# 준비: apps/api 에서 `npm run dev` (포트 4000)
+#
+# ⚠️ 이 API는 "누가 보느냐"에 따라 결과가 달라진다. 계정 세 개(판매자 / 제시자 / 제3자)가 필요하고,
+# 각 요청 직전에 해당 계정으로 로그인(Send Request)해야 한다. REST Client는 마지막 로그인의
+# 쿠키를 그대로 재사용하므로 순서를 지켜야 한다.
+#
+# 준비 순서:
+#   1) exchange.http의 준비 순서를 그대로 따라 판매자/제시자 계정 + saleId + offerCardId를 만든다
+#   2) exchange.http의 "1. 정상 제시"를 실행해서 PENDING 제시를 하나 만들어 둔다
+#   3) 제3자 계정을 아래 회원가입 요청으로 하나 더 만든다
+#   4) 제시가 하나도 없는 판매글을 하나 더 만든다 (@emptySaleId 용)
+#      node --env-file=.env scripts/create-test-sale.js <판매자이메일> <구매자이메일>
+#
+# 성공: { "data": { "exchanges": [ ... ] } }
+# 실패: { "code": "UPPER_SNAKE", "message": "..." }  (docs/conventions.md §3)
+
+@baseUrl = http://localhost:4000/api/v1
+@noSuchSaleId = 00000000-0000-0000-0000-000000000000
+
+### ─────────────────────────── 준비 ───────────────────────────
+
+### 제3자 계정 회원가입 → 201 (한 번만 실행하고 이메일을 아래 thirdSignin에 옮겨 적는다)
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "email": "exchange-third{{$randomInt 1000 9999}}@gmail.com",
+  "nickname": "제3자{{$randomInt 1000 9999}}",
+  "password": "password123",
+  "passwordConfirm": "password123"
+}
+
+### 판매자 로그인
+# @name sellerSignin
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "purchase-seller4082@gmail.com",
+  "password": "password123"
+}
+
+### 제시자 로그인
+# @name offererSignin
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "purchase-buyer1872@gmail.com",
+  "password": "password123"
+}
+
+### 제3자 로그인 (위 회원가입에서 만든 이메일로 바꿔서 실행)
+# @name thirdSignin
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "exchange-third2634@gmail.com",
+  "password": "password123"
+}
+
+### ─────────────────────────── 본 테스트 ───────────────────────────
+@saleId = 031038a5-85dc-4021-a6f8-2f1e407ca5fa
+@emptySaleId = 031038a5-85dc-4021-a6f8-2f1e407ca5fa
+
+### 1. 판매자로 조회 → 200, 이 판매글에 온 PENDING 제시가 전부 보인다 DONE
+#    ▶ 먼저 위 sellerSignin을 보낸 뒤 실행
+#      각 항목에 offerer(id, nickname)와 offerCard(imageUrl, category, score 포함)가 평평하게 들어있는지,
+#      topScore가 안 들어있는지 확인
+GET {{baseUrl}}/sales/{{saleId}}/exchanges
+
+### 2. 제시자로 조회 → 200, 내가 낸 제시만 보인다 DONE
+#    ▶ 먼저 위 offererSignin을 보낸 뒤 실행
+#      1번 결과보다 개수가 적거나 같아야 하고, 전부 내 카드로 낸 제시여야 한다
+GET {{baseUrl}}/sales/{{saleId}}/exchanges
+
+### 3. 제3자로 조회 → 200 { "data": { "exchanges": [] } } DONE
+#    ▶ 먼저 위 thirdSignin을 보낸 뒤 실행. 판매자도 제시자도 아니므로 빈 배열
+GET {{baseUrl}}/sales/{{saleId}}/exchanges
+
+### 4. 없는 saleId → 404 { "code": "SALE_NOT_FOUND" } DONE
+GET {{baseUrl}}/sales/{{noSuchSaleId}}/exchanges
+
+### 5. 제시가 0건인 판매글 → 200 { "data": { "exchanges": [] } } DONE
+#    ▶ 준비 순서 4)로 만든 판매글. 에러가 아니라 빈 배열이어야 한다
+GET {{baseUrl}}/sales/{{emptySaleId}}/exchanges
+
+### 6. 토큰 없음 → 401 { "code": "UNAUTHORIZED" }
+#    쿠키를 안 실어 보내려면 REST Client 새 세션(로그인 이력 없는 상태)에서 실행
+GET {{baseUrl}}/sales/{{saleId}}/exchanges

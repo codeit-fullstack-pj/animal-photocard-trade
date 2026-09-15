@@ -141,3 +141,24 @@ export async function createExchange(req, res) {
 
   res.status(201).json({ data: result });
 }
+
+//GET /sales/:saleId/exchanges
+
+const ExchangeListParams = type({
+  saleId: Uuid,
+});
+
+export async function listExchanges(req, res) {
+  const [paramsError, params] = validate(req.params, ExchangeListParams);
+  if (paramsError) {
+    throw new ApiError(400, "VALIDATION_ERROR", EXCHANGE_VALIDATION_MESSAGES.saleId);
+  }
+
+  // 무엇이 보이는지는 서버가 req.user로 판단한다 (쿼리로 안 받는다 — 권한으로 결정될 값이라서)
+  const result = await saleService.listExchanges({
+    saleId: params.saleId,
+    viewer: req.user,
+  });
+
+  res.json({ data: result });
+}

@@ -163,3 +163,12 @@ export function lockSaleForUpdate(tx, saleId) {
 export function findOnSaleByCardId(tx, cardId) {
   return tx.sale.findFirst({ where: { cardId, status: "ON_SALE" } });
 }
+
+// 교환 제시 목록 조회(listExchanges) 전용
+// 판매글 존재 확인 + 요청자가 판매자인지 판단할 sellerId만 조회
+export function findSaleSellerById(saleId) {
+  return prisma.sale.findUnique({
+    where: { id: saleId },
+    select: { id: true, sellerId: true },
+  });
+}
