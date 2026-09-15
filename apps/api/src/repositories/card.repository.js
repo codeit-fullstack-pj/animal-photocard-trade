@@ -38,3 +38,18 @@ export function countCardsByCategory({ baseWhere, categoryValues }) {
     ),
   );
 }
+
+//교환 또는 구매 진행중인 카드 행 잠금 (SQL예외 LOCK처리)
+export function lockCardForUpdate(tx, cardId) {
+  return tx.$queryRaw`SELECT * FROM "Card" WHERE id = ${cardId} FOR UPDATE`;
+}
+
+//카드 소유권 이전
+// 판매·교환에서 동일 카드 잠금과 상태 검증을 보장하면 소유자 불일치는 방지되며,
+// ownerId 검증은 기존 데이터 불일치에 대비한 추가 방어다.
+export function transferCardOwner(tx, cardId, sellerId, buyerId) {
+  return tx.card.updateMany({
+    where: { id: cardId, ownerId: sellerId },
+    data: { ownerId: buyerId },
+  });
+}

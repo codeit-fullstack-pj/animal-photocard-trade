@@ -10,6 +10,9 @@ export const mockCards = [
     filterType: 1,
     tag: "우주를 정복하는 마에스트로",
 
+    price: 1500,
+    saleStatus: "ON_SALE",
+
     score: {
       axes: [
         { field: "UDADA", value: 35 },
@@ -34,9 +37,11 @@ export const mockCards = [
     name: "초코",
     category: "DOG",
     imageUrl: "https://picsum.photos/seed/card-002/400/300",
-
     filterType: 2,
     tag: "세상을 누비는 에너자이저",
+
+    price: 2300,
+    saleStatus: "ON_SALE",
 
     score: {
       axes: [
@@ -59,13 +64,14 @@ export const mockCards = [
     ownerId: "user-003",
     createdById: "user-003",
     imageId: "image-003",
-
     name: "구름",
     category: "CAT",
     imageUrl: "https://picsum.photos/seed/card-003/400/300",
-
     filterType: 1,
     tag: "도도한 매력의 집사",
+
+    price: 1800,
+    saleStatus: "ON_SALE",
 
     score: {
       axes: [
@@ -88,13 +94,14 @@ export const mockCards = [
     ownerId: "user-004",
     createdById: "user-004",
     imageId: "image-004",
-
     name: "몽실",
     category: "DOG",
     imageUrl: "https://picsum.photos/seed/card-004/400/300",
-
     filterType: 2,
     tag: "나만의 길을 걷는 멍멍이",
+
+    price: 3200,
+    saleStatus: "SOLD_OUT",
 
     score: {
       axes: [
@@ -117,13 +124,14 @@ export const mockCards = [
     ownerId: "user-005",
     createdById: "user-005",
     imageId: "image-005",
-
     name: "솜이",
     category: "CAT",
     imageUrl: "https://picsum.photos/seed/card-005/400/300",
-
     filterType: 3,
     tag: "츄르를 사수하는 헌터",
+
+    price: 4500,
+    saleStatus: "ON_SALE",
 
     score: {
       axes: [
@@ -146,13 +154,14 @@ export const mockCards = [
     ownerId: "user-001",
     createdById: "user-001",
     imageId: "image-006",
-
     name: "콩이",
     category: "DOG",
     imageUrl: "https://picsum.photos/seed/card-006/400/300",
-
     filterType: 1,
     tag: "작은 자본가",
+
+    price: 2100,
+    saleStatus: "CANCELED",
 
     score: {
       axes: [
@@ -175,13 +184,14 @@ export const mockCards = [
     ownerId: "user-002",
     createdById: "user-002",
     imageId: "image-007",
-
     name: "레오",
     category: "DOG",
     imageUrl: "https://picsum.photos/seed/card-007/400/300",
-
     filterType: 2,
     tag: "까칠하지만 귀여운 멍멍이",
+
+    price: 2700,
+    saleStatus: "ON_SALE",
 
     score: {
       axes: [
@@ -204,13 +214,14 @@ export const mockCards = [
     ownerId: "user-003",
     createdById: "user-003",
     imageId: "image-008",
-
     name: "단추",
     category: "CAT",
     imageUrl: "https://picsum.photos/seed/card-008/400/300",
-
     filterType: 3,
     tag: "인간을 다루는 마에스트로",
+
+    price: 5000,
+    saleStatus: "SOLD_OUT",
 
     score: {
       axes: [
@@ -233,13 +244,14 @@ export const mockCards = [
     ownerId: "user-004",
     createdById: "user-004",
     imageId: "image-009",
-
     name: "해피",
     category: "DOG",
     imageUrl: "https://picsum.photos/seed/card-009/400/300",
-
     filterType: 1,
     tag: "끝없이 달리는 에너자이저",
+
+    price: 3600,
+    saleStatus: "ON_SALE",
 
     score: {
       axes: [
@@ -262,13 +274,14 @@ export const mockCards = [
     ownerId: "user-005",
     createdById: "user-005",
     imageId: "image-010",
-
     name: "루루",
     category: "CAT",
     imageUrl: "https://picsum.photos/seed/card-010/400/300",
-
     filterType: 2,
     tag: "도도한 츄르 헌터",
+
+    price: 2900,
+    saleStatus: "ON_SALE",
 
     score: {
       axes: [
@@ -291,13 +304,14 @@ export const mockCards = [
     ownerId: "user-001",
     createdById: "user-001",
     imageId: "image-011",
-
     name: "봉봉",
     category: "DOG",
     imageUrl: "https://picsum.photos/seed/card-011/400/300",
-
     filterType: 3,
     tag: "자유로운 에너자이저",
+
+    price: 4200,
+    saleStatus: "ON_SALE",
 
     score: {
       axes: [
@@ -320,13 +334,14 @@ export const mockCards = [
     ownerId: "user-002",
     createdById: "user-002",
     imageId: "image-012",
-
     name: "나나",
     category: "CAT",
     imageUrl: "https://picsum.photos/seed/card-012/400/300",
-
     filterType: 1,
     tag: "우아한 고양이",
+
+    price: 1900,
+    saleStatus: "SOLD_OUT",
 
     score: {
       axes: [

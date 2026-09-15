@@ -27,3 +27,18 @@ export function updateProviderUid(id, providerUid) {
 export function deleteUser(id) {
   return prisma.user.delete({ where: { id } });
 }
+
+//유저 포인트 감소 트랜잭션
+export function deductPointIfEnough(tx, userId, amount) {
+  return tx.user.updateMany({
+    where: { id: userId, point: { gte: amount } },
+    data: { point: { decrement: amount } },
+  });
+}
+//유저 포인트 증가 트랜잭션
+export function increasePoint(tx, userId, amount) {
+  return tx.user.updateMany({
+    where: { id: userId },
+    data: { point: { increment: amount } },
+  });
+}
