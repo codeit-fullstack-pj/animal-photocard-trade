@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api-client";
+import { apiFetch, csrfHeaders } from "@/lib/api-client";
 
 // auth 도메인 API (/signup, /login 페이지에서 사용). 소셜 로그인은 API 주소로 이동만 하므로 여기에 없다
 
@@ -15,16 +15,9 @@ export function signin({ email, password }) {
   return apiFetch("/auth/signin", { method: "POST", body: { email, password } });
 }
 
-// GET /users/me — 로그인 안되어 있다면 401 UNAUTHORIZED
+// GET /users/me — 로그인한 유저 정보. 성공하면 { user }, 로그인 안 했으면 401
 export function getCurrentUser() {
   return apiFetch("/users/me");
-}
-
-// 로그아웃·토큰 재발급은 X-CSRF-TOKEN 헤더가 필요하다.
-// 웹과 API 도메인이 달라 쿠키를 직접 읽을 수 없으므로 서버에 값을 물어본 뒤 헤더로 보낸다
-async function csrfHeaders() {
-  const { csrfToken } = await apiFetch("/auth/csrf-token");
-  return { "X-CSRF-TOKEN": csrfToken };
 }
 
 // POST /auth/signout — 204

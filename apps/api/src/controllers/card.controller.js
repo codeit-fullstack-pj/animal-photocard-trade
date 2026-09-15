@@ -5,6 +5,7 @@ import {
   enums,
   integer,
   min,
+  refine,
   string,
   trimmed,
   type,
@@ -13,6 +14,47 @@ import {
 
 import { ApiError } from "../lib/api-error.js";
 import * as cardService from "../services/card.service.js";
+
+// useImageVariants.js VARIANTS 순서(1 원본 · 2 세피아 · 3 모노 · 4 도트)와 일치
+const FILTER_TYPES = [1, 2, 3, 4];
+const NonEmpty = refine(string(), "nonEmpty", (value) => value.trim() !== "");
+
+const CreateCardBody = type({
+  imageId: NonEmpty,
+  filterType: enums(FILTER_TYPES),
+  name: NonEmpty,
+});
+
+const VALIDATION_MESSAGES = {
+  imageId: "imageId가 필요합니다",
+  filterType: `filterType 은 ${FILTER_TYPES.join(" / ")} 중 하나여야 합니다`,
+  name: "포토카드 이름을 입력해 주세요",
+};
+
+export async function create(req, res) {
+  const [error, body] = validate(req.body, CreateCardBody);
+  if (error) {
+    throw new ApiError(
+      400,
+      "VALIDATION_ERROR",
+      VALIDATION_MESSAGES[error.key] ?? "요청 파라미터가 올바르지 않습니다",
+    );
+  }
+
+  const result = await cardService.createCardFromImage({
+    ownerId: req.user.id,
+    imageId: body.imageId,
+    filterType: body.filterType,
+    name: body.name.trim(),
+  });
+  res.status(201).json({ data: result });
+}
+
+// GET /cards/remaining-count — 오늘 남은 카드 생성 가능 횟수
+export async function remainingCount(req, res) {
+  const result = await cardService.getRemainingCreateCount(req.user.id);
+  res.json({ data: result });
+}
 
 const ORDER_BY = ["highestScore", "lowestScore", "latest", "oldest"];
 const CATEGORY = ["DOG", "CAT"];
@@ -30,8 +72,6 @@ const ListCardsQuery = type({
   orderBy: defaulted(enums(ORDER_BY), "latest"),
   keyword: defaulted(trimmed(string()), ""),
   category: defaulted(array(enums(CATEGORY)), []),
-  // TODO: 인증 미들웨어 연동 시 제거하고 req.user.id 사용 (담당: 인증 파트)
-  ownerId: string(),
 });
 
 const QUERY_MESSAGES = {
@@ -40,7 +80,6 @@ const QUERY_MESSAGES = {
   orderBy: `orderBy 는 ${ORDER_BY.join(" / ")} 중 하나여야 합니다`,
   category: `category 는 ${CATEGORY.join(" / ")} 만 가능합니다`,
   keyword: "keyword 는 문자열이어야 합니다",
-  ownerId: "ownerId 쿼리 파라미터가 필요합니다 (인증 연동 전 임시)",
 };
 
 // Express 5는 async 핸들러가 던진 에러를 error-handler로 넘겨준다
@@ -61,7 +100,7 @@ export async function list(req, res) {
   }
 
   const result = await cardService.listCards({
-    ownerId: query.ownerId,
+    ownerId: req.user.id,
     page: query.page,
     pageSize: query.pageSize,
     orderBy: query.orderBy,

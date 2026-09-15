@@ -2,6 +2,14 @@ import Image from "next/image";
 
 import { SCORE_CONFIG } from "./scoreConfig";
 
+// filterType(1~4, useImageVariants.js VARIANTS 순서와 동일: 원본·세피아·모노·도트) 별 렌더링 방식.
+// 세피아·모노는 CSS filter로 충분하지만, 도트는 filter로 흉내낼 수 없다.
+// 대신 next/image의 sizes를 일부러 아주 작게 줘서(실제 표시 크기보다 훨씬 작은 원본을 받아오게 한 뒤)
+// image-rendering: pixelated 로 확대해 블록져 보이게 한다 — fill이라 고정 px 스케일 트릭을 못 쓰기 때문
+const FILTER_CONFIG = { 2: "sepia(0.7)", 3: "grayscale(1)" };
+const DOT_FILTER_TYPE = 4;
+const DOT_IMAGE_SIZES = "40px";
+
 export default function PhotoCard({
   status,
   title,
@@ -15,11 +23,7 @@ export default function PhotoCard({
   filterType,
   variant,
 }) {
-  const FILTER_CONFIG = {
-    1: "",
-    2: "",
-    3: "",
-  };
+  const isDot = filterType === DOT_FILTER_TYPE;
 
   return (
     <article
@@ -47,9 +51,11 @@ export default function PhotoCard({
               src={imageUrl}
               alt={title}
               fill
-              sizes="353px"
+              sizes={isDot ? DOT_IMAGE_SIZES : "353px"}
               className="rounded-[5px] border border-[#424242] object-cover tablet:rounded-[10px] tablet:border-[3px]"
-              style={{ filter: FILTER_CONFIG[filterType] }}
+              style={
+                isDot ? { imageRendering: "pixelated" } : { filter: FILTER_CONFIG[filterType] }
+              }
             />
           ) : (
             <div className="font-sans-400 flex h-full items-center justify-center text-[13px] text-[#A4A4A4]">

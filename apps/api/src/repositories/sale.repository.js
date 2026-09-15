@@ -131,3 +131,25 @@ export function findSales({
     take: limit + 1,
   });
 }
+
+// 판매글 ID로 판매글과 연결된 카드를 조회
+export function findSaleById(tx, id) {
+  return tx.sale.findUnique({
+    where: { id },
+    include: { card: true },
+  });
+}
+
+// 판매 중인 판매글만 지정한 상태로 마감
+export function closeSaleIfOnSale(tx, id, { status, closedAt }) {
+  return tx.sale.updateMany({
+    where: {
+      id,
+      status: "ON_SALE",
+    },
+    data: {
+      status,
+      closedAt,
+    },
+  });
+}

@@ -1,5 +1,9 @@
+import { refine, string, type, validate } from "superstruct";
+
 import { ApiError } from "../lib/api-error.js";
 import * as saleService from "../services/sale.service.js";
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // GET /sales 쿼리 파라미터를 확인하고 판매 목록을 반환
 export async function getSales(req, res) {
@@ -66,4 +70,26 @@ export async function getSales(req, res) {
       nextCursor,
     },
   });
+}
+
+// 판매글 ID가 UUID 형식인지 확인
+const PurchaseParams = type({
+  saleId: refine(string(), "uuid", (value) => UUID_PATTERN.test(value)),
+});
+
+// POST /sales/:saleId/purchase 구매 요청을 처리
+export async function purchase(req, res) {
+  const [error, params] = validate(req.params, PurchaseParams);
+
+  if (error) {
+    throw new ApiError(400, "VALIDATION_ERROR", "saleId는 UUID 형식이어야 합니다");
+  }
+
+  // 인증 미들웨어에서 전달받은 현재 사용자를 구매자로 사용
+  const result = await saleService.purchaseCard({
+    saleId: params.saleId,
+    buyer: req.user,
+  });
+
+  res.json({ data: result });
 }
