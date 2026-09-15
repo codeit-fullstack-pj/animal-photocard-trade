@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import Profile from "@/components/ui/Profile";
 
 export default function AppHeader() {
   const { currentUser, logout } = useCurrentUser();
@@ -35,9 +36,7 @@ export default function AppHeader() {
               />
             </button>
 
-            <span className="font-sans-700 text-[16px] text-[#DDDDDD]">
-              {currentUser.nickname ?? "err"}
-            </span>
+            <Profile currentUser={currentUser} />
 
             <span className="h-[16px] w-px bg-[#5A5A5A]" aria-hidden="true" />
 
