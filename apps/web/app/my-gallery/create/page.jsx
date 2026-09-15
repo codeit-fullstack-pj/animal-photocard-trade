@@ -7,6 +7,7 @@ import { VARIANTS, useImageVariants } from "./useImageVariants";
 import styles from "./create.module.css";
 import MobileHeader from "@/components/ui/MobileHeader";
 import AppHeader from "@/components/ui/AppHeader";
+import Toast from "@/components/ui/Toast";
 import { createCard, getRemainingCount } from "@/lib/card/api";
 import { uploadImage } from "@/lib/image/api";
 
@@ -42,6 +43,7 @@ export default function CreatePage() {
   const [category, setCategory] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitErrorMessage, setSubmitErrorMessage] = useState("");
+  const [showLimitToast, setShowLimitToast] = useState(false);
 
   // 파일을 고르는 즉시 POST /images/upload 를 호출한다 (카테고리는 이 시점에 이미 선택돼 있음)
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -66,6 +68,8 @@ export default function CreatePage() {
       .then((result) => {
         if (ignore) return;
         setCount(result.remainingCount);
+        // 버튼이 disabled라 정상 경로로는 못 들어오지만, URL 직접 입력 등으로 들어온 경우를 대비
+        if (result.remainingCount <= 0) setShowLimitToast(true);
       })
       .catch(() => {});
 
@@ -378,6 +382,12 @@ export default function CreatePage() {
             </span>
           </div>
         )}
+
+        <Toast
+          isOpen={showLimitToast}
+          message="당일 모든 생성 기회를 소진했어요"
+          onClose={() => setShowLimitToast(false)}
+        />
       </main>
     </>
   );
