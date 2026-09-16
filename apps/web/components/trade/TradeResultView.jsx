@@ -2,10 +2,8 @@
 
 import { useRouter } from "next/navigation";
 
-// TODO: "나의 거래 포토카드" 목록 라우트가 아직 없다. 라우트 확정되면 이 값만 교체하면 된다.
-const MY_TRADE_CARDS_PATH = "/TODO-my-trade-cards";
-// TODO: 마켓플레이스 라우트가 아직 없다. 라우트 확정되면 이 값만 교체하면 된다.
-const MARKETPLACE_PATH = "/TODO-marketplace";
+const MY_TRADE_CARDS_PATH = "/my-sales";
+const MARKETPLACE_PATH = "/market";
 const MY_GALLERY_PATH = "/my-gallery";
 
 // 강조 단어·색상 — kind와 무관하게 항상 같다. 실패 버튼은 흰색으로 통일(노란색 변형 없음)
