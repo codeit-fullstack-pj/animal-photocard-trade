@@ -37,7 +37,7 @@ export default function MarketHeader() {
 
         {/* 판매하기 버튼 */}
         <Link
-          href="/market/sell"
+          href="/my-sales"
           className="
             fixed
             bottom-[40px]

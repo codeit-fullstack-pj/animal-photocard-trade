@@ -52,6 +52,12 @@ export default function MobileFilter({
 
   /**
    * 품절 여부 선택
+   *
+   * false = 품절 제외
+   * true = 품절 포함
+   *
+   * 실제 API 요청에서는 부모 page.jsx에서
+   * includeSoldOut 값으로 전달한다.
    */
   const handleSoldOutSelect = (value) => {
     setSoldOut(value);
@@ -60,8 +66,8 @@ export default function MobileFilter({
   /**
    * 초기화
    *
-   * 실제 적용된 필터가 아니라
    * 현재 Bottom Sheet의 임시 상태만 초기화한다.
+   * "적용" 버튼을 눌러야 실제 필터에 반영된다.
    */
   const handleReset = () => {
     setCategories([]);
@@ -72,10 +78,6 @@ export default function MobileFilter({
    * 현재 선택된 카테고리
    */
   const selectedCategory = categories[0] ?? null;
-
-  if (!isOpen) {
-    return null;
-  }
 
   return (
     <div className="fixed inset-0 z-50 tablet:hidden">
@@ -143,7 +145,16 @@ export default function MobileFilter({
         {/* ========================================
             탭
         ======================================== */}
-        <div className="flex gap-[16px] h-[52px] pl-[16px] border-b border-[#161616]">
+        <div
+          className="
+            flex
+            h-[52px]
+            gap-[16px]
+            border-b
+            border-[#161616]
+            pl-[16px]
+          "
+        >
           {/* 카테고리 */}
           <button
             type="button"
@@ -183,7 +194,7 @@ export default function MobileFilter({
             className="
               relative
               flex
-              w-[87]
+              w-[87px]
               items-center
               justify-center
               text-[14px]

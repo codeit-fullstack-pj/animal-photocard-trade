@@ -39,8 +39,10 @@ export default function MarketPage() {
   // 실제 적용된 카테고리
   const [categories, setCategories] = useState([]);
 
-  // 실제 적용된 품절 여부
-  const [soldOut, setSoldOut] = useState(false);
+  // 실제 적용된 품절 포함 여부
+  // false = 품절 제외
+  // true = 품절 포함
+  const [isSoldOutIncluded, setIsSoldOutIncluded] = useState(false);
 
   // 정렬
   const [sort, setSort] = useState("최근 등록 순");
@@ -52,8 +54,8 @@ export default function MarketPage() {
   // 모바일 필터 안에서 현재 선택 중인 카테고리
   const [tempCategories, setTempCategories] = useState([]);
 
-  // 모바일 필터 안에서 현재 선택 중인 품절 여부
-  const [tempSoldOut, setTempSoldOut] = useState(false);
+  // 모바일 필터 안에서 현재 선택 중인 품절 포함 여부
+  const [tempIsSoldOutIncluded, setTempIsSoldOutIncluded] = useState(false);
 
   // 모바일 필터 열림/닫힘
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -102,11 +104,13 @@ export default function MarketPage() {
 
     return {
       ...sale,
+
       id: sale.id,
       name: sale.card.name,
       image: sale.card.image,
       price: sale.price,
       saleStatus: sale.status,
+
       ...photoCardProps,
     };
   }, []);
@@ -116,6 +120,7 @@ export default function MarketPage() {
    */
   const fetchSales = useCallback(
     async ({ cursor = null, append = false } = {}) => {
+      // 이미 요청 중이면 중복 요청 방지
       if (isFetchingRef.current) {
         return;
       }
@@ -136,31 +141,44 @@ export default function MarketPage() {
 
         params.set("limit", String(PAGE_SIZE));
 
+        // ========================================
         // 검색어
+        // ========================================
         if (keyword.trim()) {
           params.set("keyword", keyword.trim());
         }
 
+        // ========================================
         // 카테고리
+        // ========================================
         // API는 category 하나만 받을 수 있음
         if (categories.length === 1) {
           params.set("category", categories[0]);
         }
 
-        // 품절 여부
-        // 체크된 경우에만 전달
-        if (soldOut) {
-          params.set("soldOut", "true");
-        }
+        // ========================================
+        // 품절 포함 여부
+        // ========================================
+        // my-sales의 "품절 포함"과 동일한 의미
+        //
+        // false → 품절 제외
+        // true  → 품절 포함
+        //
+        // 백엔드에서는 includeSoldOut을 사용함
+        params.set("includeSoldOut", String(isSoldOutIncluded));
 
+        // ========================================
         // 정렬
+        // ========================================
         const orderBy = ORDER_BY_MAP[sort];
 
         if (orderBy) {
           params.set("orderBy", orderBy);
         }
 
+        // ========================================
         // cursor
+        // ========================================
         if (cursor) {
           params.set("cursor", cursor);
         }
@@ -170,11 +188,7 @@ export default function MarketPage() {
         const lists = result?.lists ?? [];
         const newCursor = result?.nextCursor ?? null;
 
-        /*
-         * 백엔드에서 totalCount를 내려주는 경우 사용
-         *
-         * 현재 API에 totalCount가 없다면 0으로 유지됩니다.
-         */
+        // 백엔드에서 totalCount를 내려주는 경우 사용
         if (typeof result?.totalCount === "number") {
           setTotalCount(result.totalCount);
         }
@@ -204,7 +218,7 @@ export default function MarketPage() {
         setIsLoadingMore(false);
       }
     },
-    [keyword, categories, soldOut, sort, normalizeSale],
+    [keyword, categories, isSoldOutIncluded, sort, normalizeSale],
   );
 
   /**
@@ -212,8 +226,6 @@ export default function MarketPage() {
    * 첫 페이지부터 다시 조회
    */
   useEffect(() => {
-    // 외부 API 요청 결과로 state를 변경하는 구조이므로
-    // react-hooks/set-state-in-effect 경고를 이 호출에만 적용하지 않음
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSales({
       cursor: null,
@@ -224,36 +236,44 @@ export default function MarketPage() {
   /**
    * 모바일 필터 열기
    *
-   * 현재 실제 적용된 필터를 임시 상태로 복사한다.
+   * 현재 실제 적용된 필터를
+   * 임시 상태로 복사한다.
    */
   const handleOpenMobileFilter = () => {
     setTempCategories([...categories]);
-    setTempSoldOut(soldOut);
+
+    setTempIsSoldOutIncluded(isSoldOutIncluded);
+
     setIsMobileFilterOpen(true);
   };
 
   /**
    * 모바일 필터 닫기
    *
-   * 적용하지 않고 닫으면 임시 선택은 버린다.
+   * 적용하지 않고 닫으면
+   * 임시 선택은 버린다.
    */
   const handleCloseMobileFilter = () => {
     setTempCategories([...categories]);
-    setTempSoldOut(soldOut);
+
+    setTempIsSoldOutIncluded(isSoldOutIncluded);
+
     setIsMobileFilterOpen(false);
   };
 
   /**
    * 모바일 필터 적용
    *
-   * 여기에서만 실제 필터 상태를 변경한다.
+   * 여기에서 실제 필터 상태를 변경한다.
    *
-   * 실제 상태가 변경되면 fetchSales의 dependency가 변경되고
-   * GET /sales가 실행된다.
+   * 실제 상태가 변경되면 fetchSales의
+   * dependency가 변경되고 GET /sales가 실행된다.
    */
   const handleApplyMobileFilter = () => {
     setCategories([...tempCategories]);
-    setSoldOut(tempSoldOut);
+
+    setIsSoldOutIncluded(tempIsSoldOutIncluded);
+
     setIsMobileFilterOpen(false);
   };
 
@@ -314,6 +334,7 @@ export default function MarketPage() {
       }
 
       console.error("로그인 상태 확인 실패:", error);
+
       setIsLoginModalOpen(true);
     }
   };
@@ -331,9 +352,11 @@ export default function MarketPage() {
           px-[16px]
           pt-[16px]
           pb-[120px]
+
           tablet:px-[20px]
           tablet:pt-[24px]
           tablet:pb-[60px]
+
           pc:px-0
           pc:pt-[40px]
           pc:pb-[80px]
@@ -350,8 +373,8 @@ export default function MarketPage() {
             setKeyword={setKeyword}
             categories={categories}
             setCategories={setCategories}
-            soldOut={soldOut}
-            setSoldOut={setSoldOut}
+            soldOut={isSoldOutIncluded}
+            setSoldOut={setIsSoldOutIncluded}
             sort={sort}
             setSort={setSort}
             onOpenMobileFilter={handleOpenMobileFilter}
@@ -391,8 +414,8 @@ export default function MarketPage() {
         onClose={handleCloseMobileFilter}
         categories={tempCategories}
         setCategories={setTempCategories}
-        soldOut={tempSoldOut}
-        setSoldOut={setTempSoldOut}
+        soldOut={tempIsSoldOutIncluded}
+        setSoldOut={setTempIsSoldOutIncluded}
         totalCount={totalCount}
         onApply={handleApplyMobileFilter}
       />

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import Dropdown from "@/components/gallery/Dropdown";
 
 const CATEGORY_OPTIONS = [
@@ -46,9 +47,48 @@ export default function MarketFilters({
   setSort,
   onOpenMobileFilter,
 }) {
+  // ========================================
+  // 카테고리 드롭다운 상태
+  // ========================================
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+
+  const categoryRef = useRef(null);
+
+  // ========================================
+  // 카테고리 드롭다운 외부 클릭 시 닫기
+  // ========================================
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (categoryRef.current && !categoryRef.current.contains(event.target)) {
+        setIsCategoryOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // ========================================
+  // 카테고리 선택
+  // API는 category 하나만 지원하므로
+  // 강아지 / 고양이 중 하나만 선택
+  // ========================================
+  const handleCategoryChange = (category) => {
+    if (categories.includes(category)) {
+      setCategories([]);
+    } else {
+      setCategories([category]);
+    }
+  };
+
   return (
     <div
       className="
+        relative
+        z-30
         flex
         w-full
         flex-wrap
@@ -132,7 +172,7 @@ export default function MarketFilters({
         </button>
 
         {/* 모바일 정렬 */}
-        <div className="relative w-[160px] shrink-0">
+        <div className="relative z-20 w-[160px] shrink-0">
           <Dropdown
             options={SORT_OPTIONS}
             value={sort}
@@ -145,16 +185,113 @@ export default function MarketFilters({
       {/* ========================================
           PC 카테고리
       ======================================== */}
-      <div className="hidden shrink-0 tablet:block tablet:w-40">
-        <Dropdown
-          multiple
-          options={CATEGORY_OPTIONS}
-          value={categories}
-          onChange={setCategories}
-          placeholder="카테고리"
-          triggerImage="/dropdown.png"
-          placeholderClassName="text-white"
-        />
+      <div
+        ref={categoryRef}
+        className="
+          relative
+          z-50
+          hidden
+          shrink-0
+          tablet:block
+          ml-[29px]
+        "
+      >
+        {/* 카테고리 버튼 */}
+        <button
+          type="button"
+          onClick={() => setIsCategoryOpen((prev) => !prev)}
+          className="
+            font-sans-700
+            flex
+            h-[50px]
+            items-center
+            gap-[8px]
+            text-[16px]
+            text-white
+          "
+          aria-expanded={isCategoryOpen}
+        >
+          카테고리
+          <Image src={isCategoryOpen ? "/up.png" : "/down.png"} alt="" width={24} height={24} />
+        </button>
+
+        {/* ========================================
+            카테고리 드롭다운
+        ======================================== */}
+        {isCategoryOpen && (
+          <div
+            className="
+              absolute
+              top-[50px]
+              left-0
+              z-50
+              w-[136px]
+              rounded-[2px]
+              border
+              border-gray-200
+              bg-black
+              py-[6px]
+            "
+          >
+            {/* 강아지 */}
+            <label
+              className="
+                font-sans-400
+                flex
+                h-[40px]
+                cursor-pointer
+                items-center
+                justify-between
+                px-[16px]
+                text-[16px]
+                text-white
+              "
+            >
+              <span>강아지</span>
+
+              <input
+                type="checkbox"
+                checked={categories.includes("DOG")}
+                onChange={() => handleCategoryChange("DOG")}
+                className="
+                  h-[16px]
+                  w-[16px]
+                  cursor-pointer
+                  accent-white
+                "
+              />
+            </label>
+
+            {/* 고양이 */}
+            <label
+              className="
+                font-sans-400
+                flex
+                h-[40px]
+                cursor-pointer
+                items-center
+                justify-between
+                px-[16px]
+                text-[16px]
+                text-white
+              "
+            >
+              <span>고양이</span>
+
+              <input
+                type="checkbox"
+                checked={categories.includes("CAT")}
+                onChange={() => handleCategoryChange("CAT")}
+                className="
+                  h-[16px]
+                  w-[16px]
+                  cursor-pointer
+                  accent-white
+                "
+              />
+            </label>
+          </div>
+        )}
       </div>
 
       {/* ========================================
@@ -162,29 +299,29 @@ export default function MarketFilters({
       ======================================== */}
       <label
         className="
-          hidden
-          tablet:flex
-          tablet:h-12
-          tablet:shrink-0
-          tablet:cursor-pointer
-          tablet:items-center
-          tablet:gap-2
-          tablet:text-[14px]
-          tablet:text-white
-        "
+        hidden
+        tablet:flex
+        tablet:h-12
+        tablet:shrink-0
+        tablet:cursor-pointer
+        tablet:items-center
+        tablet:gap-2
+        tablet:text-[14px]
+        tablet:text-white
+      "
       >
-        <span className="whitespace-nowrap">품절 여부</span>
+        <span className="whitespace-nowrap">품절 포함</span>
 
         <input
           type="checkbox"
           checked={soldOut}
           onChange={(event) => setSoldOut(event.target.checked)}
           className="
-            size-4
-            shrink-0
-            cursor-pointer
-            accent-[#9b51e5]
-          "
+          size-4
+          shrink-0
+          cursor-pointer
+          accent-[#9b51e5]
+        "
         />
       </label>
 
