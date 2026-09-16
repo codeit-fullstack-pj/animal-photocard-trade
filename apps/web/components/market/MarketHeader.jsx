@@ -6,7 +6,7 @@ export default function MarketHeader() {
       <div
         className="
           flex
-          h-[60px]
+          h-[20px]
           items-start
           justify-end
 

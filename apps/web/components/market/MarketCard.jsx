@@ -46,7 +46,7 @@ export default function MarketCard({ card, onCardClick }) {
     >
       <button
         type="button"
-        onClick={() => onCardClick?.(card.id)}
+        onClick={() => onCardClick?.(card)}
         className="
             group
             block
@@ -72,10 +72,9 @@ export default function MarketCard({ card, onCardClick }) {
         <div
           className="
             relative
-            mx-1.5
             mt-2.75
-            aspect-168/116
-            max-h-29
+            aspect-[344/233]
+            w-full
             overflow-hidden
             rounded-[5px]
             bg-[#333333]
@@ -94,12 +93,12 @@ export default function MarketCard({ card, onCardClick }) {
         >
           <Image
             src={card.imageUrl}
-            alt={card.title ?? card.name}
+            alt={card.title ?? card.name ?? ""}
             fill
             sizes="
-              (min-width: 1280px) 400px,
-              (min-width: 744px) 344px,
-              168px
+              (max-width: 743px) calc((100vw - 40px) / 2),
+              (max-width: 1279px) calc((100vw - 52px) / 2),
+              400px
             "
             className="
               rounded-[5px]

@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-
 import Dropdown from "@/components/gallery/Dropdown";
 
 const CATEGORY_OPTIONS = [
@@ -10,12 +9,30 @@ const CATEGORY_OPTIONS = [
 ];
 
 const SORT_OPTIONS = [
-  { value: "관상 지수 높은 순", label: "관상 지수 높은 순" },
-  { value: "관상 지수 낮은 순", label: "관상 지수 낮은 순" },
-  { value: "낮은 포인트 순", label: "낮은 포인트 순" },
-  { value: "높은 포인트 순", label: "높은 포인트 순" },
-  { value: "최근 등록 순", label: "최근 등록 순" },
-  { value: "오래된 등록 순", label: "오래된 등록 순" },
+  {
+    value: "관상 지수 높은 순",
+    label: "관상 지수 높은 순",
+  },
+  {
+    value: "관상 지수 낮은 순",
+    label: "관상 지수 낮은 순",
+  },
+  {
+    value: "낮은 포인트 순",
+    label: "낮은 포인트 순",
+  },
+  {
+    value: "높은 포인트 순",
+    label: "높은 포인트 순",
+  },
+  {
+    value: "최근 등록 순",
+    label: "최근 등록 순",
+  },
+  {
+    value: "오래된 등록 순",
+    label: "오래된 등록 순",
+  },
 ];
 
 export default function MarketFilters({
@@ -23,10 +40,11 @@ export default function MarketFilters({
   setKeyword,
   categories,
   setCategories,
-  quality,
-  setQuality,
+  soldOut,
+  setSoldOut,
   sort,
   setSort,
+  onOpenMobileFilter,
 }) {
   return (
     <div
@@ -37,7 +55,6 @@ export default function MarketFilters({
         items-center
         justify-between
         gap-3
-
         tablet:flex-nowrap
         tablet:justify-start
       "
@@ -45,7 +62,6 @@ export default function MarketFilters({
       {/* ========================================
           검색
       ======================================== */}
-
       <div
         className="
           flex
@@ -59,18 +75,14 @@ export default function MarketFilters({
           border-gray-200
           bg-black
           px-4
-
           tablet:w-50
-
           pc:w-xs
         "
       >
         <input
           type="text"
           value={keyword}
-          onChange={(event) => {
-            setKeyword(event.target.value);
-          }}
+          onChange={(event) => setKeyword(event.target.value)}
           placeholder="검색"
           className="
             min-w-0
@@ -80,72 +92,65 @@ export default function MarketFilters({
             text-white
             outline-none
             placeholder:text-[#888]
-
             tablet:text-sm
           "
         />
 
-        <Image
-          src="/search.png"
-          alt="검색"
-          width={20}
-          height={20}
-          className="
-            h-5
-            w-5
-            shrink-0
-          "
-        />
+        <Image src="/search.png" alt="검색" width={20} height={20} className="h-5 w-5 shrink-0" />
       </div>
 
       {/* ========================================
-          모바일 전용 구분선
-
-          mobile
-          → 표시
-
-          tablet+
-          → 숨김
+          모바일 필터 + 정렬
       ======================================== */}
-
       <div
         className="
-          block
-          h-px
+          flex
           w-full
-          shrink-0
-          bg-[#5A5A5A]
-
+          items-center
+          justify-between
           tablet:hidden
         "
-      />
+      >
+        {/* 필터 버튼 */}
+        <button
+          type="button"
+          onClick={onOpenMobileFilter}
+          aria-label="필터 열기"
+          className="
+            flex
+            h-[40px]
+            w-[40px]
+            items-center
+            justify-center
+            rounded-[2px]
+            border
+            border-[#555]
+            bg-black
+          "
+        >
+          <Image src="/filter.png" alt="" width={20} height={20} className="h-5 w-5" />
+        </button>
+
+        {/* 모바일 정렬 */}
+        <div className="relative w-[160px] shrink-0">
+          <Dropdown
+            options={SORT_OPTIONS}
+            value={sort}
+            onChange={setSort}
+            placeholder="최근 등록 순"
+          />
+        </div>
+      </div>
 
       {/* ========================================
-          카테고리
-
-          모바일
-          → 35px × 35px 아이콘
-
-          tablet+
-          → 160px × 48px
+          PC 카테고리
       ======================================== */}
-
-      <div
-        className="
-          w-8.75
-          shrink-0
-
-          tablet:w-40
-          tablet:flex-none
-        "
-      >
+      <div className="hidden shrink-0 tablet:block tablet:w-40">
         <Dropdown
           multiple
           options={CATEGORY_OPTIONS}
           value={categories}
-          onChange={(value) => {
-            setCategories(value);
-          }}
+          onChange={setCategories}
           placeholder="카테고리"
           triggerImage="/dropdown.png"
           placeholderClassName="text-white"
@@ -153,19 +158,11 @@ export default function MarketFilters({
       </div>
 
       {/* ========================================
-          품질 여부
-
-          모바일
-          → 숨김
-
-          tablet+
-          → 표시
+          PC 품절 여부
       ======================================== */}
-
       <label
         className="
           hidden
-
           tablet:flex
           tablet:h-12
           tablet:shrink-0
@@ -180,10 +177,8 @@ export default function MarketFilters({
 
         <input
           type="checkbox"
-          checked={quality}
-          onChange={(event) => {
-            setQuality(event.target.checked);
-          }}
+          checked={soldOut}
+          onChange={(event) => setSoldOut(event.target.checked)}
           className="
             size-4
             shrink-0
@@ -194,25 +189,9 @@ export default function MarketFilters({
       </label>
 
       {/* ========================================
-          정렬
-
-          모바일
-          → 160px
-
-          tablet+
-          → 208px
+          PC 정렬
       ======================================== */}
-
-      <div
-        className="
-          ml-auto
-          w-40
-          shrink-0
-
-          tablet:w-52
-          tablet:flex-none
-        "
-      >
+      <div className="ml-auto hidden w-52 shrink-0 tablet:block">
         <Dropdown
           options={SORT_OPTIONS}
           value={sort}

@@ -18,6 +18,11 @@ const nextConfig = {
         protocol: "https",
         hostname: "*.supabase.co",
       },
+      {
+        // 테스트용 placeholder 이미지
+        protocol: "https",
+        hostname: "placehold.co",
+      },
     ],
   },
 };

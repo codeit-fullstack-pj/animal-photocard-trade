@@ -5,6 +5,7 @@ export default function MarketCardList({ cards, onCardClick }) {
     <ul
       className="
         grid
+        w-full
         grid-cols-2
         gap-[8px]
 
