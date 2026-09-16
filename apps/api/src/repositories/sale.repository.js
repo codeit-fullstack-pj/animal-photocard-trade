@@ -9,6 +9,7 @@ export function findSales({
   sellerId,
   orderBy,
   cursor,
+  page,
   limit,
 }) {
   return prisma.sale.findMany({
@@ -18,9 +19,14 @@ export function findSales({
         sellerId,
       }),
 
-      // 품절만 보기일 때 판매 완료된 판매글만 조회
-      ...(soldOut === "true" && {
-        status: "SOLD_OUT",
+      // 취소된 판매글은 판매 목록에서 제외
+      NOT: {
+        status: "CANCELED",
+      },
+
+      // 품절 여부에 따라 판매 완료 또는 판매 중인 판매글을 조회
+      ...(soldOut !== undefined && {
+        status: soldOut === "true" ? "SOLD_OUT" : "ON_SALE",
       }),
 
       // 판매 중인 판매글만 조회하고 대기 중인 교환 제안은 제외
@@ -120,15 +126,94 @@ export function findSales({
                   ]
                 : [{ createdAt: "desc" }, { id: "asc" }],
 
-    // cursor가 있으면 해당 판매글 다음부터 조회
-    ...(cursor && {
-      cursor: {
-        id: cursor,
-      },
-      skip: 1,
-    }),
+    // page 방식이면 페이지 위치만큼 건너뛰고, 아니면 기존 cursor 방식을 사용
+    ...(page !== undefined
+      ? {
+          skip: (page - 1) * limit,
+        }
+      : cursor
+        ? {
+            cursor: {
+              id: cursor,
+            },
+            skip: 1,
+          }
+        : {}),
 
-    take: limit + 1,
+    // page 방식은 요청한 개수만, cursor 방식은 다음 페이지 확인용으로 1개 더 조회
+    take: page !== undefined ? limit : limit + 1,
+  });
+}
+
+// 현재 판매 목록 필터 조건에 해당하는 전체 판매글 개수를 조회
+export function countSales({ category, keyword, soldOut, status, sellerId }) {
+  return prisma.sale.count({
+    where: {
+      // 판매자 조건이 있으면 해당 판매자의 판매글만 조회
+      ...(sellerId && {
+        sellerId,
+      }),
+
+      // 취소된 판매글은 전체 개수 계산에서도 제외
+      NOT: {
+        status: "CANCELED",
+      },
+
+      // 품절 여부에 따라 판매 완료 또는 판매 중인 판매글을 조회
+      ...(soldOut !== undefined && {
+        status: soldOut === "true" ? "SOLD_OUT" : "ON_SALE",
+      }),
+
+      // 판매 중인 판매글만 조회하고 대기 중인 교환 제안은 제외
+      ...(status === "ON_SALE" && {
+        AND: [
+          {
+            status: "ON_SALE",
+          },
+          {
+            exchanges: {
+              none: {
+                status: "PENDING",
+              },
+            },
+          },
+        ],
+      }),
+
+      // 대기 중인 교환 제안이 있는 판매글만 조회
+      ...(status === "ON_EXCHANGE" && {
+        AND: [
+          {
+            status: "ON_SALE",
+          },
+          {
+            exchanges: {
+              some: {
+                status: "PENDING",
+              },
+            },
+          },
+        ],
+      }),
+
+      // 카테고리 또는 검색어가 있으면 연결된 카드 정보를 기준으로 조회
+      ...((category || keyword) && {
+        card: {
+          ...(keyword && {
+            name: {
+              contains: keyword,
+              mode: "insensitive",
+            },
+          }),
+
+          ...(category && {
+            image: {
+              category,
+            },
+          }),
+        },
+      }),
+    },
   });
 }
 

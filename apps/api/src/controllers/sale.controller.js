@@ -15,9 +15,15 @@ export async function getSales(req, res) {
   const sellerId = req.query.sellerId;
   const orderBy = req.query.orderBy;
   const cursor = req.query.cursor;
+  const page = req.query.page === undefined ? undefined : Number(req.query.page);
 
   if (!Number.isInteger(limit) || limit < 1) {
     throw new ApiError(400, "VALIDATION_ERROR", "limit은 1 이상의 정수여야 합니다");
+  }
+
+  // page가 전달되면 1 이상의 정수만 허용
+  if (page !== undefined && (!Number.isInteger(page) || page < 1)) {
+    throw new ApiError(400, "VALIDATION_ERROR", "page는 1 이상의 정수여야 합니다");
   }
 
   // 카테고리는 고양이 또는 강아지만 허용
@@ -48,12 +54,17 @@ export async function getSales(req, res) {
     throw new ApiError(400, "VALIDATION_ERROR", "cursor 값이 올바르지 않습니다");
   }
 
+  // page와 cursor 페이지네이션 방식은 동시에 사용할 수 없음
+  if (page !== undefined && cursor !== undefined) {
+    throw new ApiError(400, "VALIDATION_ERROR", "page와 cursor는 동시에 사용할 수 없습니다");
+  }
+
   // sellerId가 전달되면 빈 값은 허용하지 않음
   if (sellerId !== undefined && sellerId.trim() === "") {
     throw new ApiError(400, "VALIDATION_ERROR", "sellerId 값이 올바르지 않습니다");
   }
 
-  const { lists, nextCursor } = await saleService.getSales({
+  const { lists, nextCursor, totalCount, totalPages } = await saleService.getSales({
     category,
     keyword,
     soldOut,
@@ -61,6 +72,7 @@ export async function getSales(req, res) {
     sellerId,
     orderBy,
     cursor,
+    page,
     limit,
   });
 
@@ -68,6 +80,12 @@ export async function getSales(req, res) {
     data: {
       lists,
       nextCursor,
+
+      // page 방식일 때만 전체 개수와 전체 페이지 수를 응답에 포함
+      ...(page !== undefined && {
+        totalCount,
+        totalPages,
+      }),
     },
   });
 }

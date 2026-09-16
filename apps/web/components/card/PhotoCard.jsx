@@ -63,9 +63,13 @@ export default function PhotoCard({
             </div>
           )}
 
-          {/* 거래 중인 포토카드 상태 */}
+          {/* 판매 중은 흰색, 교환 제시 중은 노란색으로 표시 */}
           {!isSoldOut && status && (
-            <span className="font-sans-500 absolute top-1.5 left-1.5 z-10 bg-black/50 px-1 py-0.5 text-[8px] text-[#FFF3A4] tablet:top-3 tablet:left-3 tablet:px-2 tablet:py-1.25 tablet:text-[12px]">
+            <span
+              className={`font-sans-500 absolute top-1.5 left-1.5 z-10 bg-black/50 px-1 py-0.5 text-[8px] tablet:top-3 tablet:left-3 tablet:px-2 tablet:py-1.25 tablet:text-[12px] ${
+                status === "판매 중" ? "text-white" : "text-[#FFF3A4]"
+              }`}
+            >
               {status}
             </span>
           )}
