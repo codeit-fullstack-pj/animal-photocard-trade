@@ -12,3 +12,28 @@ export function getNotifications({ cursor, limit } = {}) {
   const query = params.toString();
   return apiFetch(`/notification${query ? `?${query}` : ""}`);
 }
+
+// PATCH /notification/delete-all — 로그인한 유저의 알림 전체 삭제. 성공하면 { deletedCount }
+export function deleteAllNotifications() {
+  return apiFetch("/notification/delete-all", { method: "PATCH" });
+}
+
+// PATCH /notification/read-all — 로그인한 유저의 알림 전체 읽음 처리. 성공하면 { updatedCount }
+export function markAllNotificationsRead() {
+  return apiFetch("/notification/read-all", { method: "PATCH" });
+}
+
+// PATCH /notification/:notiId/read — 알림 하나를 읽음 처리. 성공하면 { updatedCount }
+export function markNotificationRead(notiId) {
+  return apiFetch(`/notification/${notiId}/read`, { method: "PATCH" });
+}
+
+// PATCH /notification/:notiId/notread — 알림 하나를 안읽음 처리. 성공하면 { updatedCount }
+export function markNotificationUnread(notiId) {
+  return apiFetch(`/notification/${notiId}/notread`, { method: "PATCH" });
+}
+
+// PATCH /notification/:notiId/delete — 알림 하나를 삭제. 성공하면 { deletedCount }
+export function deleteNotification(notiId) {
+  return apiFetch(`/notification/${notiId}/delete`, { method: "PATCH" });
+}

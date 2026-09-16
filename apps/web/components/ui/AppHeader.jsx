@@ -19,6 +19,9 @@ export default function AppHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // 모바일/태블릿·PC 두 군데에 따로 렌더링되는 Notification 인스턴스가 같은 열림 상태를 쓰도록 여기서 관리
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  // 알림 액션으로 바뀐 안읽음 개수 — null이면 아직 반영 전이라 currentUser.unreadCount를 대신 보여준다
+  const [liveUnreadCount, setLiveUnreadCount] = useState(null);
+  const unreadCount = liveUnreadCount ?? currentUser?.unreadCount ?? 0;
 
   // 메뉴 또는 모바일 알림 전체 화면이 열려 있는 동안 뒤 페이지 스크롤 막기
   useEffect(() => {
@@ -41,11 +44,9 @@ export default function AppHeader() {
   return (
     <>
       <header className="h-[56px] w-full bg-[#0F0F0F] tablet:h-[64px] pc:h-[80px]">
-        <NotificationDataProvider open={isNotifOpen}>
+        <NotificationDataProvider open={isNotifOpen} onUnreadCountChange={setLiveUnreadCount}>
           <div className="mx-auto h-full w-full max-w-[1240px] px-[16px] tablet:px-[24px] pc:px-0">
-            {/* 모바일: 햄버거(좌) - 로고(가운데) - 로그인 또는 빈칸(우). Notification은 항상 마운트해 둬야
-              알림이 열려 있는 동안(패널이 fixed로 화면을 덮는 동안)에도 사라지지 않는다 — 그 위를
-              뒤로가기+"알림" 타이틀 바(MobileHeader 스타일)로 덮어서 트리거 줄만 가린다 */}
+            {/* 모바일: 햄버거-로고-알림. 알림이 열리면 이 줄 위를 뒤로가기+"알림" 타이틀 바로 덮는다 */}
             <div className="relative h-full tablet:hidden">
               <div className="grid h-full grid-cols-[1fr_auto_1fr] items-center">
                 <button
@@ -65,7 +66,7 @@ export default function AppHeader() {
                   (currentUser ? (
                     <div className="justify-self-end">
                       <Notification
-                        unreadCount={currentUser.unreadCount}
+                        unreadCount={unreadCount}
                         mobile
                         open={isNotifOpen}
                         onOpenChange={setIsNotifOpen}
@@ -115,7 +116,7 @@ export default function AppHeader() {
                     </span>
 
                     <Notification
-                      unreadCount={currentUser.unreadCount}
+                      unreadCount={unreadCount}
                       open={isNotifOpen}
                       onOpenChange={setIsNotifOpen}
                     />

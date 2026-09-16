@@ -3,7 +3,14 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
-import { getNotifications } from "@/lib/notification/api";
+import {
+  deleteAllNotifications,
+  deleteNotification,
+  getNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  markNotificationUnread,
+} from "@/lib/notification/api";
 import styles from "./Notification.module.css";
 
 // 무한 스크롤 시 한 번에 요청하는 개수(= GET /notification limit)
@@ -28,8 +35,8 @@ function useNotificationData() {
   return useContext(NotificationDataContext);
 }
 
-// open이 될 때만 새로 마운트되어 state가 자연 초기화되며, 실제 fetch/페이지네이션/읽음·삭제를 전담한다
-function NotificationDataLoader({ children }) {
+// open일 때만 마운트되어 state가 자연 초기화되며, fetch/페이지네이션/읽음·삭제를 전담한다
+function NotificationDataLoader({ onUnreadCountChange, children }) {
   const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -37,8 +44,7 @@ function NotificationDataLoader({ children }) {
   // undefined = 아직 첫 페이지를 안 불러옴, null = 다음 페이지 없음, 문자열 = 다음 페이지 cursor
   const [nextCursor, setNextCursor] = useState(undefined);
   const hasMore = Boolean(nextCursor);
-  // isLoadingMore(state)는 반영이 비동기라, 같은 렌더 틱에 loadMore가 연달아 불리면(StrictMode 이중
-  // 호출 등) 가드를 뚫고 같은 페이지를 두 번 요청해 중복 항목이 생길 수 있다. ref로 즉시 막는다
+  // state는 반영이 비동기라 StrictMode 이중 호출 등으로 loadMore가 연달아 통과할 수 있어 ref로 즉시 막는다
   const isLoadingMoreRef = useRef(false);
 
   useEffect(() => {
@@ -49,6 +55,8 @@ function NotificationDataLoader({ children }) {
         if (ignore) return;
         setNotifications(result.lists);
         setNextCursor(result.nextCursor);
+        // limit/cursor와 무관하게 서버가 계산한 이 유저의 전체 안읽음 개수 — 매번 열 때마다 최신값으로 덮어씀
+        onUnreadCountChange(result.unreadCount);
       })
       .catch(() => {
         if (!ignore) setError("알림을 불러오지 못했어요");
@@ -60,7 +68,7 @@ function NotificationDataLoader({ children }) {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [onUnreadCountChange]);
 
   const loadMore = useCallback(() => {
     if (isLoadingMoreRef.current || !nextCursor) return;
@@ -83,21 +91,54 @@ function NotificationDataLoader({ children }) {
       });
   }, [nextCursor]);
 
-  // TODO: 읽음/삭제 API가 생기면 서버 호출로 교체 — 지금은 로컬 상태만 바꿈
   function handleMarkAllRead() {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    markAllNotificationsRead()
+      .then(() => {
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+        onUnreadCountChange(0);
+      })
+      .catch(() => setError("전체 읽음 처리에 실패했어요"));
   }
 
   function handleDeleteAll() {
-    setNotifications([]);
+    deleteAllNotifications()
+      .then(() => {
+        setNotifications([]);
+        onUnreadCountChange(0);
+      })
+      .catch(() => setError("전체 삭제에 실패했어요"));
   }
 
   function handleDelete(id) {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    const target = notifications.find((n) => n.id === id);
+
+    deleteNotification(id)
+      .then(() => {
+        setNotifications((prev) => prev.filter((n) => n.id !== id));
+        // 지우려던 게 안읽음 상태였으면 배지 개수도 같이 줄어든다
+        if (target && !target.isRead) {
+          onUnreadCountChange((prev) => Math.max(0, (prev ?? 0) - 1));
+        }
+      })
+      .catch(() => setError("삭제에 실패했어요"));
   }
 
-  function handleMarkRead(id) {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+  // 항목 클릭 시 현재 읽음 상태에 따라 반대로 토글 — 읽음이면 /notread, 안읽음이면 /read 호출
+  function handleToggleRead(notification) {
+    const request = notification.isRead
+      ? markNotificationUnread(notification.id)
+      : markNotificationRead(notification.id);
+
+    request
+      .then(() => {
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notification.id ? { ...n, isRead: !n.isRead } : n)),
+        );
+        onUnreadCountChange((prev) =>
+          notification.isRead ? (prev ?? 0) + 1 : Math.max(0, (prev ?? 0) - 1),
+        );
+      })
+      .catch(() => setError("읽음 상태 변경에 실패했어요"));
   }
 
   const value = {
@@ -110,7 +151,7 @@ function NotificationDataLoader({ children }) {
     handleMarkAllRead,
     handleDeleteAll,
     handleDelete,
-    handleMarkRead,
+    handleToggleRead,
   };
 
   return (
@@ -118,10 +159,15 @@ function NotificationDataLoader({ children }) {
   );
 }
 
-// AppHeader가 모바일용/PC용 두 Notification 트리를 이걸로 감싸서 알림 데이터를 하나만 공유하게 한다.
-// open이 아닐 땐 children(트리거 버튼들)만 그대로 렌더 — 열릴 때만 Loader가 마운트되어 fetch가 한 번만 일어난다.
-export function NotificationDataProvider({ open, children }) {
-  return open ? <NotificationDataLoader>{children}</NotificationDataLoader> : children;
+// 모바일/PC 두 Notification 트리를 감싸서 알림 데이터를 공유시킨다 — open일 때만 Loader를 마운트한다
+export function NotificationDataProvider({ open, onUnreadCountChange, children }) {
+  return open ? (
+    <NotificationDataLoader onUnreadCountChange={onUnreadCountChange}>
+      {children}
+    </NotificationDataLoader>
+  ) : (
+    children
+  );
 }
 
 // 알림 패널의 실제 UI. 데이터는 NotificationDataProvider가 공급하고, 스크롤 감지만 인스턴스별로 갖는다
@@ -137,7 +183,7 @@ function NotificationPanel({ mobile }) {
     handleMarkAllRead,
     handleDeleteAll,
     handleDelete,
-    handleMarkRead,
+    handleToggleRead,
   } = useNotificationData();
 
   // 목록 스크롤 영역이 바닥까지 내려가면(=실제 스크롤이 일어났을 때만) 다음 페이지를 불러온다
@@ -157,8 +203,7 @@ function NotificationPanel({ mobile }) {
     return () => root.removeEventListener("scroll", onScroll);
   }, [hasMore, loadMore]);
 
-  // 모바일 전체화면 패널처럼 목록 영역이 커서 첫 페이지만으론 스크롤 자체가 안 생기면, 스크롤을
-  // 기다리지 않고 바로 다음 페이지를 채워서 스크롤이 가능해질 때까지(또는 더 없을 때까지) 이어 받는다
+  // 첫 페이지만으론 스크롤 자체가 안 생기는 경우(모바일 전체화면 등) 스크롤 없이 바로 다음 페이지를 채운다
   useEffect(() => {
     if (!hasMore || isLoadingMore) return;
 
@@ -197,7 +242,7 @@ function NotificationPanel({ mobile }) {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                onClick={() => handleMarkRead(notification.id)}
+                onClick={() => handleToggleRead(notification)}
                 className={`font-sans-400 relative flex h-26.75 cursor-pointer flex-col justify-between border-b border-gray-300 p-5 text-sm text-white ${
                   notification.isRead ? "bg-gray-500" : "bg-[#222222]"
                 }`}
