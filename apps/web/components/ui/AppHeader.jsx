@@ -17,6 +17,8 @@ const MENU_LINKS = [
 export default function AppHeader() {
   const { currentUser, isLoading, logout } = useCurrentUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // 모바일/태블릿·PC 두 군데에 따로 렌더링되는 Notification 인스턴스가 같은 열림 상태를 쓰도록 여기서 관리
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   // 메뉴가 열려 있는 동안 뒤 페이지 스크롤 막기
   useEffect(() => {
@@ -55,14 +57,23 @@ export default function AppHeader() {
               <Image src="/logo.png" alt="최애 멍냥" width={182} height={61} priority />
             </Link>
 
-            {!isLoading && !currentUser && (
-              <Link
-                href="/login"
-                className="justify-self-end font-sans-400 text-[12px] text-gray-200 hover:text-white"
-              >
-                로그인
-              </Link>
-            )}
+            {!isLoading &&
+              (currentUser ? (
+                <div className="justify-self-end">
+                  <Notification
+                    unreadCount={currentUser.unreadCount}
+                    open={isNotifOpen}
+                    onOpenChange={setIsNotifOpen}
+                  />
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="justify-self-end font-sans-400 text-[12px] text-gray-200 hover:text-white"
+                >
+                  로그인
+                </Link>
+              ))}
           </div>
 
           {/* 태블릿 이상: 로고(좌) - 사용자 정보/로그인(우) */}
@@ -78,7 +89,11 @@ export default function AppHeader() {
                     {currentUser.point?.toLocaleString("ko-KR") ?? "err"} P
                   </span>
 
-                  <Notification unreadCount={currentUser.unreadCount} />
+                  <Notification
+                    unreadCount={currentUser.unreadCount}
+                    open={isNotifOpen}
+                    onOpenChange={setIsNotifOpen}
+                  />
 
                   <Profile currentUser={currentUser} />
 
