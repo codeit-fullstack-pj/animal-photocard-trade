@@ -109,7 +109,7 @@ export default function PhotoCard({
               </span>
 
               <div className="flex items-center gap-[6px]">
-                <strong className="font-sans-400 text-[10px] leading-3.5 text-[#FFC146] tablet:text-[20px]">
+                <strong className="font-sans-400 text-[10px] leading-3.5 text-yellow-button tablet:text-[20px]">
                   {Number(point).toLocaleString("ko-KR")}
                 </strong>
 

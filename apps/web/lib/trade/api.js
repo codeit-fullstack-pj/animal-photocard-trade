@@ -1,6 +1,4 @@
 import { apiFetch } from "@/lib/api-client";
-import { mockCards } from "@/mocks/cards";
-import { mockExchanges } from "@/mocks/exchanges";
 
 //POST /salse/{saleId}/exchanges
 export function createExchangeProposal(saleId, { offerCardId, message }) {
@@ -19,15 +17,8 @@ export async function purchaseCard(saleId) {
 
 //GET /sales/{saleId}/exchanges
 export async function getSaleExchanges(saleId) {
-  //mock으로 채워놓고 추후 fetch로 변경
-  await new Promise((resolve) => setTimeout(resolve, 300));
-
-  return mockExchanges
-    .filter((exchange) => exchange.saleId === saleId)
-    .map((exchange) => ({
-      ...exchange,
-      offerCard: mockCards.find((card) => card.id === exchange.offerCardId),
-    }));
+  const { exchanges } = await apiFetch(`sales/${saleId}/exchanges`);
+  return exchanges;
 }
 
 //POST /exchanges/{exchangeId}/cancel

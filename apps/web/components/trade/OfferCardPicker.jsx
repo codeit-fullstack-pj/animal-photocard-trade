@@ -55,13 +55,15 @@ export default function OfferCardPicker({ onSelect }) {
   }, [error, hasNextPage, loadNextPage]);
 
   return (
-    <div>
-      <h2 className="font-primary-bold text-[24px] leading-none text-gray-300">마이갤러리</h2>
-      <h3 className="font-primary-bold mt-10 text-[46px] leading-none text-white">
+    <div className="flex h-[calc(100%+1.25rem)] flex-col overflow-hidden tablet:h-full">
+      <h2 className="hidden font-primary-bold tablet:text-[16px] pc:text-[24px] leading-none text-gray-300 tablet:block">
+        마이갤러리
+      </h2>
+      <h3 className="hidden font-primary-bold mt-10 tablet:text-[40px] pc:text-[46px] leading-none text-white tablet:block">
         교환할 포토카드 선택하기
       </h3>
-      <div className="mt-5 border-t-2 border-gray-100" />
-      <div className="mt-6 flex items-center justify-start gap-7">
+      <div className="hidden mt-5 border-t-2 border-gray-100 tablet:block" />
+      <div className="mb-5 flex items-center justify-start gap-2 tablet:mt-5 tablet:mb-0 tablet:gap-7">
         <TradeSearchBar value={keyword} onChange={setKeyword} />
         <TradeFilter
           selected={selectedCategory}
@@ -69,7 +71,7 @@ export default function OfferCardPicker({ onSelect }) {
           options={CATEGORY_OPTIONS}
         />
       </div>
-      <div className="mt-10 h-117.5">
+      <div className="min-h-0 flex-1 mt-0 tablet:mt-10">
         {error && cards.length === 0 ? (
           <div className="col-span-full text-center text-white">
             <p role="alert">{error}</p>
@@ -86,7 +88,7 @@ export default function OfferCardPicker({ onSelect }) {
         ) : (
           <ul
             ref={scrollRef}
-            className="-mr-15 grid h-full grid-cols-2 gap-1.75 overflow-y-auto pr-15 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-400 tablet:gap-4 pc:gap-5 min-[642px]:max-[900px]:grid-cols-3"
+            className="-mr-2 grid h-full grid-cols-2 gap-1.75 overflow-y-auto pr-1.5 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-400 tablet:gap-4 tablet:[&::-webkit-scrollbar]:w-1.5 pc:gap-5 pc:[&::-webkit-scrollbar]:w-2"
           >
             {cards.map((card) => (
               <li key={card.id}>

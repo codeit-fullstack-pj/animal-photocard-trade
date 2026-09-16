@@ -15,7 +15,7 @@ const VARIANT_STYLE = {
   },
   fail: {
     accentText: "실패",
-    accentClassName: "text-[#FFC146]",
+    accentClassName: "text-yellow-button",
     buttonClassName: "bg-white text-black",
   },
 };
