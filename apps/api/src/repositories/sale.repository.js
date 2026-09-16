@@ -1,14 +1,56 @@
 import { prisma } from "../lib/prisma.js";
 
+// 판매 유형과 품절 포함 여부에 맞는 조회 조건을 생성
+function getSaleStatusWhere({ includeSoldOut, status }) {
+  let activeStatusWhere = {
+    status: "ON_SALE",
+  };
+
+  // 판매 중은 대기 중인 교환 제안이 없는 판매글만 조회
+  if (status === "ON_SALE") {
+    activeStatusWhere = {
+      status: "ON_SALE",
+      exchanges: {
+        none: {
+          status: "PENDING",
+        },
+      },
+    };
+  }
+
+  // 교환 제시 중은 대기 중인 교환 제안이 있는 판매글만 조회
+  if (status === "ON_EXCHANGE") {
+    activeStatusWhere = {
+      status: "ON_SALE",
+      exchanges: {
+        some: {
+          status: "PENDING",
+        },
+      },
+    };
+  }
+
+  // 품절 포함을 체크하지 않으면 판매 중인 목록만 반환
+  if (includeSoldOut !== "true") {
+    return activeStatusWhere;
+  }
+
+  // 품절 포함을 체크하면 기존 목록에 품절된 판매글도 함께 반환
+  return {
+    OR: [activeStatusWhere, { status: "SOLD_OUT" }],
+  };
+}
+
 // 판매 목록과 연결된 카드, 판매자, 교환 정보를 조회
 export function findSales({
   category,
   keyword,
-  soldOut,
+  includeSoldOut,
   status,
   sellerId,
   orderBy,
   cursor,
+  page,
   limit,
 }) {
   return prisma.sale.findMany({
@@ -18,42 +60,13 @@ export function findSales({
         sellerId,
       }),
 
-      // 품절만 보기일 때 판매 완료된 판매글만 조회
-      ...(soldOut === "true" && {
-        status: "SOLD_OUT",
-      }),
+      // 취소된 판매글은 판매 목록에서 제외
+      NOT: {
+        status: "CANCELED",
+      },
 
-      // 판매 중인 판매글만 조회하고 대기 중인 교환 제안은 제외
-      ...(status === "ON_SALE" && {
-        AND: [
-          {
-            status: "ON_SALE",
-          },
-          {
-            exchanges: {
-              none: {
-                status: "PENDING",
-              },
-            },
-          },
-        ],
-      }),
-
-      // 대기 중인 교환 제안이 있는 판매글만 조회
-      ...(status === "ON_EXCHANGE" && {
-        AND: [
-          {
-            status: "ON_SALE",
-          },
-          {
-            exchanges: {
-              some: {
-                status: "PENDING",
-              },
-            },
-          },
-        ],
-      }),
+      // 판매 유형과 품절 포함 여부를 함께 적용
+      ...getSaleStatusWhere({ includeSoldOut, status }),
 
       // 카테고리 또는 검색어가 있으면 연결된 카드 정보를 기준으로 조회
       ...((category || keyword) && {
@@ -120,15 +133,60 @@ export function findSales({
                   ]
                 : [{ createdAt: "desc" }, { id: "asc" }],
 
-    // cursor가 있으면 해당 판매글 다음부터 조회
-    ...(cursor && {
-      cursor: {
-        id: cursor,
-      },
-      skip: 1,
-    }),
+    // page 방식이면 페이지 위치만큼 건너뛰고, 아니면 기존 cursor 방식을 사용
+    ...(page !== undefined
+      ? {
+          skip: (page - 1) * limit,
+        }
+      : cursor
+        ? {
+            cursor: {
+              id: cursor,
+            },
+            skip: 1,
+          }
+        : {}),
 
-    take: limit + 1,
+    // page 방식은 요청한 개수만, cursor 방식은 다음 페이지 확인용으로 1개 더 조회
+    take: page !== undefined ? limit : limit + 1,
+  });
+}
+
+// 현재 판매 목록 필터 조건에 해당하는 전체 판매글 개수를 조회
+export function countSales({ category, keyword, includeSoldOut, status, sellerId }) {
+  return prisma.sale.count({
+    where: {
+      // 판매자 조건이 있으면 해당 판매자의 판매글만 조회
+      ...(sellerId && {
+        sellerId,
+      }),
+
+      // 취소된 판매글은 전체 개수 계산에서도 제외
+      NOT: {
+        status: "CANCELED",
+      },
+
+      // 판매 유형과 품절 포함 여부를 함께 적용
+      ...getSaleStatusWhere({ includeSoldOut, status }),
+
+      // 카테고리 또는 검색어가 있으면 연결된 카드 정보를 기준으로 조회
+      ...((category || keyword) && {
+        card: {
+          ...(keyword && {
+            name: {
+              contains: keyword,
+              mode: "insensitive",
+            },
+          }),
+
+          ...(category && {
+            image: {
+              category,
+            },
+          }),
+        },
+      }),
+    },
   });
 }
 
@@ -151,5 +209,24 @@ export function closeSaleIfOnSale(tx, id, { status, closedAt }) {
       status,
       closedAt,
     },
+  });
+}
+
+// FOR UPDATE로 Sale 행을 잠근다. card.repository.js의 lockCardForUpdate와 같은 방식
+export function lockSaleForUpdate(tx, saleId) {
+  return tx.$queryRaw`SELECT * FROM "Sale" WHERE id = ${saleId} FOR UPDATE`;
+}
+
+// 이 카드로 status가 ON_SALE인 Sale이 있는지 (claim 확인의 절반)
+export function findOnSaleByCardId(tx, cardId) {
+  return tx.sale.findFirst({ where: { cardId, status: "ON_SALE" } });
+}
+
+// 교환 제시 목록 조회(listExchanges) 전용
+// 판매글 존재 확인 + 요청자가 판매자인지 판단할 sellerId만 조회
+export function findSaleSellerById(saleId) {
+  return prisma.sale.findUnique({
+    where: { id: saleId },
+    select: { id: true, sellerId: true },
   });
 }

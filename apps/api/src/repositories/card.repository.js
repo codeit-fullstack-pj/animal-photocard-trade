@@ -53,3 +53,8 @@ export function transferCardOwner(tx, cardId, sellerId, buyerId) {
     data: { ownerId: buyerId },
   });
 }
+
+// 교환 제시(createExchange) 트랜잭션 전용 — 존재 확인 + 소유자 확인용 단순 조회
+export function findCardById(tx, cardId) {
+  return tx.card.findUnique({ where: { id: cardId } });
+}
