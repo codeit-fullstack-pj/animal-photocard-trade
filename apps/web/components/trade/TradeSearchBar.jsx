@@ -10,7 +10,7 @@ export default function TradeSearchBar({ value, onChange }) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="검색"
-        className="font-sans-400 w-full bg-transparent text-base text-white placeholder:text-gray-200 focus:outline-none"
+        className="font-sans-400 w-full bg-transparent text-sm text-white placeholder:text-gray-200 focus:outline-none"
       />
       <Image src="/search.png" alt="검색" width={20} height={20} />
     </label>

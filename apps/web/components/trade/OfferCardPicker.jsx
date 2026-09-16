@@ -5,7 +5,7 @@ import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 import TradeFilter from "@/components/trade/TradeFilter";
 import TradeSearchBar from "@/components/trade/TradeSearchBar";
 import { useInfiniteFetch } from "@/hooks/useInfiniteFetch";
-import { fetchMockMyCards } from "@/lib/api/mockMyCards.js";
+import { fetchMockMyCards, getMockCategoryCounts } from "@/lib/api/mockMyCards.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const CATEGORY_OPTIONS = [
@@ -29,6 +29,11 @@ export default function OfferCardPicker({ onSelect }) {
   const queryParams = useMemo(
     () => ({ keyword: debounceKeyword, categories: selectedCategory }),
     [debounceKeyword, selectedCategory],
+  );
+
+  const categoryCounts = useMemo(
+    () => getMockCategoryCounts(debounceKeyword),
+    [debounceKeyword],
   );
 
   const { cards, isLoading, error, hasNextPage, loadNextPage, retry } = useInfiniteFetch(
@@ -69,6 +74,7 @@ export default function OfferCardPicker({ onSelect }) {
           selected={selectedCategory}
           onChange={setSelectedCategory}
           options={CATEGORY_OPTIONS}
+          optionCounts={categoryCounts}
         />
       </div>
       <div className="min-h-0 flex-1 mt-0 tablet:mt-10">

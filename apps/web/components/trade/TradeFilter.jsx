@@ -3,7 +3,9 @@
 import Image from "next/image";
 import { useState } from "react";
 
-export default function TradeFilter({ options, selected, onChange }) {
+import OfferCategorySheet from "./OfferCategorySheet";
+
+export default function TradeFilter({ options, selected, onChange, optionCounts }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleToggle = (value) => {
@@ -25,8 +27,17 @@ export default function TradeFilter({ options, selected, onChange }) {
         <Image src="/down.png" alt="" width={20} height={20} className="hidden tablet:block" />
       </button>
 
+      <OfferCategorySheet
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        options={options}
+        selected={selected}
+        onChange={onChange}
+        optionCounts={optionCounts}
+      />
+
       {isOpen && (
-        <ul className="absolute top-full right-0 z-10 mt-1 w-30 border border-gray-200 bg-gray-500 py-4 px-3.75 flex flex-col gap-3.75 rounded-xs">
+        <ul className="absolute top-full right-0 z-10 mt-1 hidden w-30 border border-gray-200 bg-gray-500 py-4 px-3.75 flex-col gap-3.75 rounded-xs tablet:flex">
           {options.map((option) => (
             <li key={option.value}>
               <label className="flex items-center justify-between">
