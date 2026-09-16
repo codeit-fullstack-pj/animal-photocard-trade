@@ -153,3 +153,22 @@ export function closeSaleIfOnSale(tx, id, { status, closedAt }) {
     },
   });
 }
+
+// FOR UPDATE로 Sale 행을 잠근다. card.repository.js의 lockCardForUpdate와 같은 방식
+export function lockSaleForUpdate(tx, saleId) {
+  return tx.$queryRaw`SELECT * FROM "Sale" WHERE id = ${saleId} FOR UPDATE`;
+}
+
+// 이 카드로 status가 ON_SALE인 Sale이 있는지 (claim 확인의 절반)
+export function findOnSaleByCardId(tx, cardId) {
+  return tx.sale.findFirst({ where: { cardId, status: "ON_SALE" } });
+}
+
+// 교환 제시 목록 조회(listExchanges) 전용
+// 판매글 존재 확인 + 요청자가 판매자인지 판단할 sellerId만 조회
+export function findSaleSellerById(saleId) {
+  return prisma.sale.findUnique({
+    where: { id: saleId },
+    select: { id: true, sellerId: true },
+  });
+}
