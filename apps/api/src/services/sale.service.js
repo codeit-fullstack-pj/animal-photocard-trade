@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 import { ApiError } from "../lib/api-error.js";
 import { prisma } from "../lib/prisma.js";
 import * as cardRepository from "../repositories/card.repository.js";
@@ -10,26 +12,54 @@ import * as userRepository from "../repositories/user.repository.js";
 export async function getSales({
   category,
   keyword,
-  soldOut,
+  includeSoldOut,
   status,
   sellerId,
   orderBy,
   cursor,
+  page,
   limit = 20,
 }) {
-  const sales = await saleRepository.findSales({
-    category,
-    keyword,
-    soldOut,
-    status,
-    sellerId,
-    orderBy,
-    cursor,
-    limit,
-  });
+  // page 방식은 판매 목록과 전체 개수를 함께 조회하고 cursor 방식은 목록만 조회
+  const [sales, totalCount] =
+    page !== undefined
+      ? await Promise.all([
+          saleRepository.findSales({
+            category,
+            keyword,
+            includeSoldOut,
+            status,
+            sellerId,
+            orderBy,
+            cursor,
+            page,
+            limit,
+          }),
+          saleRepository.countSales({
+            category,
+            keyword,
+            includeSoldOut,
+            status,
+            sellerId,
+          }),
+        ])
+      : [
+          await saleRepository.findSales({
+            category,
+            keyword,
+            includeSoldOut,
+            status,
+            sellerId,
+            orderBy,
+            cursor,
+            page,
+            limit,
+          }),
+          undefined,
+        ];
 
-  // 요청한 개수보다 1개 더 조회됐으면 다음 페이지가 존재
-  const hasNextPage = sales.length > limit;
+  // cursor 방식에서만 한 개 더 조회한 결과로 다음 페이지 존재 여부를 확인
+  const hasNextPage = page === undefined && sales.length > limit;
 
   // 실제 응답에는 요청한 개수만 포함
   const pageSales = hasNextPage ? sales.slice(0, limit) : sales;
@@ -76,6 +106,12 @@ export async function getSales({
   return {
     lists,
     nextCursor,
+
+    // page 방식일 때만 전체 개수와 전체 페이지 수를 반환
+    ...(page !== undefined && {
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+    }),
   };
 }
 
@@ -88,7 +124,7 @@ export async function purchaseCard({ saleId, buyer }) {
   const { id: buyerId, nickname: buyerNickname } = buyer;
 
   return prisma.$transaction(async (tx) => {
-    // 판매글 존재 여부와 본인 판매글 구매 여부를 확인
+    //선 검증 fail fast [판매글 존재 여부, 구매자와 판매자 일치 여부]
     const sale = await saleRepository.findSaleById(tx, saleId);
 
     if (!sale) {
@@ -173,4 +209,109 @@ export async function purchaseCard({ saleId, buyer }) {
       ...saleUpdate,
     };
   });
+}
+
+/**
+ * 교환 제시 트랜잭션 처리순서
+ * CARD LOCK → SALE LOCK
+ * 교환 생성 → 알림 생성
+ */
+export async function createExchange({ saleId, offerCardId, message, offerer }) {
+  return prisma.$transaction(async (tx) => {
+    //선 검증 fail fast. 아래에서 한번 더 검증
+    const saleExists = await saleRepository.findSaleById(tx, saleId);
+    if (!saleExists) throw new ApiError(404, "SALE_NOT_FOUND", "판매글을 찾을 수 없습니다.");
+    const offerCardExists = await cardRepository.findCardById(tx, offerCardId);
+    if (!offerCardExists) throw new ApiError(404, "CARD_NOT_FOUND", "카드를 찾을 수 없습니다.");
+
+    // 제안카드와 판매글 잠금
+    await cardRepository.lockCardForUpdate(tx, offerCardId);
+    await saleRepository.lockSaleForUpdate(tx, saleId);
+
+    // 판매와 제안카드 여부 재조회
+    const sale = await saleRepository.findSaleById(tx, saleId);
+    const offerCard = await cardRepository.findCardById(tx, offerCardId);
+
+    if (offerCard.ownerId !== offerer.id)
+      throw new ApiError(403, "NOT_CARD_OWNER", "본인 소유의 카드만 제시할 수 있습니다.");
+    if (sale.sellerId === offerer.id)
+      throw new ApiError(403, "SELF_EXCHANGE_NOT_ALLOWED", "자신의 판매글에는 제시할 수 없습니다.");
+    if (sale.status !== "ON_SALE")
+      throw new ApiError(409, "SALE_NOT_ON_SALE", "판매 중인 판매글이 아닙니다.");
+
+    // 이미 판매중이거나 교환 제시중인 카드 조회
+    const onSale = await saleRepository.findOnSaleByCardId(tx, offerCardId);
+    if (onSale) throw new ApiError(409, "CARD_ALREADY_CLAIMED", "이미 판매 중인 카드입니다.");
+    const pendingExchange = await exchangeRepository.findPendingExchangeByOfferCardId(
+      tx,
+      offerCardId,
+    );
+    if (pendingExchange)
+      throw new ApiError(409, "CARD_ALREADY_CLAIMED", "이미 교환 제시 중인 카드입니다.");
+
+    // 교환 중복여부 조회 및 생성 및 저장
+    let exchange;
+    try {
+      exchange = await exchangeRepository.createExchange(tx, { saleId, offerCardId, message });
+    } catch (error) {
+      //보수적 방어
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")
+        throw new ApiError(409, "DUPLICATE_EXCHANGE", "이미 같은 카드로 제시한 교환이 있습니다.");
+      throw error;
+    }
+
+    //교환 제시 알림 생성
+    await notificationRepository.createManyNotifications(tx, [
+      {
+        userId: sale.sellerId,
+        type: "EXCHANGE_RECEIVED",
+        content: `${offerer.nickname}님이 '${sale.card.tag} ${sale.card.name}'에 교환을 제시했습니다`,
+        targetId: saleId,
+      },
+    ]);
+    return {
+      exchangeId: exchange.id,
+      status: exchange.status,
+      createdAt: exchange.createdAt,
+    };
+  });
+}
+
+//교환 목록 조회 응답 모양
+function toExchangeResponse(exchange) {
+  const { offerCard } = exchange;
+
+  return {
+    id: exchange.id,
+    status: exchange.status,
+    message: exchange.message,
+    createdAt: exchange.createdAt,
+    respondedAt: exchange.respondedAt,
+    offerer: {
+      id: offerCard.owner.id,
+      nickname: offerCard.owner.nickname,
+    },
+    offerCard: {
+      id: offerCard.id,
+      name: offerCard.name,
+      tag: offerCard.tag,
+      description: offerCard.description,
+      filterType: offerCard.filterType,
+      imageUrl: offerCard.image.imageUrl,
+      category: offerCard.image.category,
+      score: offerCard.image.score,
+    },
+  };
+}
+//판매글의 PENDING 교환 제시 목록을 조회
+export async function listExchanges({ saleId, viewer }) {
+  const sale = await saleRepository.findSaleSellerById(saleId);
+
+  if (!sale) throw new ApiError(404, "SALE_NOT_FOUND", "판매글을 찾을 수 없습니다.");
+
+  const isSeller = sale.sellerId === viewer.id;
+  const exchanges = await exchangeRepository.findPendingExchangesBySaleId(
+    isSeller ? { saleId } : { saleId, offererId: viewer.id },
+  );
+  return { exchanges: exchanges.map(toExchangeResponse) };
 }

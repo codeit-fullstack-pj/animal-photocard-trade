@@ -5,6 +5,7 @@ import express from "express";
 import { errorHandler, notFoundHandler } from "./middlewares/error-handler.js";
 import { authRouter } from "./routes/auth.routes.js";
 import { cardRouter } from "./routes/card.routes.js";
+import { exchangeRouter } from "./routes/exchange.routes.js";
 import { healthRouter } from "./routes/health.routes.js";
 import { imageRouter } from "./routes/image.routes.js";
 import { notificationRouter } from "./routes/notification.routes.js";
@@ -29,6 +30,9 @@ app.use("/api/v1", cardRouter);
 app.use("/api/v1/sales", saleRouter);
 
 app.use("/api/v1/notification", notificationRouter);
+
+// 교환 제시 취소 등 교환 관련 API 라우터를 등록
+app.use("/api/v1/exchanges", exchangeRouter);
 
 app.use("/api/v1", userRouter);
 app.use("/api/v1/auth", authRouter);
