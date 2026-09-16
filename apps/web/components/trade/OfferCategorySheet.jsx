@@ -34,7 +34,10 @@ export default function OfferCategorySheet({
   }
 
   const selectedValue = selected[0] ?? null;
-  const totalCount = Object.values(optionCounts ?? {}).reduce((sum, count) => sum + (count ?? 0), 0);
+  const totalCount = Object.values(optionCounts ?? {}).reduce(
+    (sum, count) => sum + (count ?? 0),
+    0,
+  );
   const displayCount = selectedValue ? (optionCounts?.[selectedValue] ?? 0) : totalCount;
 
   function handleSelect(value) {

@@ -31,10 +31,7 @@ export default function OfferCardPicker({ onSelect }) {
     [debounceKeyword, selectedCategory],
   );
 
-  const categoryCounts = useMemo(
-    () => getMockCategoryCounts(debounceKeyword),
-    [debounceKeyword],
-  );
+  const categoryCounts = useMemo(() => getMockCategoryCounts(debounceKeyword), [debounceKeyword]);
 
   const { cards, isLoading, error, hasNextPage, loadNextPage, retry } = useInfiniteFetch(
     fetchMockMyCards,
