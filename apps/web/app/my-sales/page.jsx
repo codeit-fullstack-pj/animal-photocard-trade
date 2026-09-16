@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-import AppHeader from "@/components/ui/AppHeader";
 import PhotoCard from "../../components/card/PhotoCard";
+import MySalesMobileFilter from "@/components/card/MySalesMobileFilter";
+import RandomPointLauncher from "@/components/point/RandomPointLauncher";
+import AppHeader from "@/components/ui/AppHeader";
 import MobileHeader from "@/components/ui/MobileHeader";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -226,6 +228,15 @@ export default function MySalesPage() {
     setCurrentPage(1);
   };
 
+  // 모바일 필터에서 선택한 값을 실제 판매 목록 필터에 적용
+  const handleMobileFilterApply = ({ categories, saleTypes, includeSoldOut }) => {
+    setSelectedCategories(categories);
+    setSelectedSaleTypes(saleTypes);
+    setIsSoldOutIncluded(includeSoldOut);
+    setCurrentPage(1);
+    setIsMobileFilterOpen(false);
+  };
+
   return (
     <main className="min-h-screen bg-black">
       {/* 모바일에서는 뒤로가기와 페이지 제목이 있는 전용 헤더를 표시 */}
@@ -237,6 +248,9 @@ export default function MySalesPage() {
       <div className="hidden tablet:block">
         <AppHeader />
       </div>
+
+      {/* 로그인한 사용자에게 랜덤 포인트 진입 선물상자를 표시 */}
+      {currentUser?.id && <RandomPointLauncher />}
 
       <div className="mx-auto w-full max-w-[1240px] px-[20px] pt-[20px] tablet:px-[40px] tablet:pt-[140px] pc:px-0 pc:pt-[168px]">
         {/* 태블릿 이상에서만 페이지 제목과 보유 카드 정보를 표시 */}
@@ -298,77 +312,20 @@ export default function MySalesPage() {
                 >
                   <Image src="/filter.png" alt="" width={24} height={24} />
                 </button>
-
-                {/* 모바일 필터 목록 */}
-                {isMobileFilterOpen && (
-                  <div className="absolute top-[44px] left-0 z-30 w-[220px] rounded-[2px] border border-gray-200 bg-black p-[16px] tablet:hidden">
-                    {/* 카테고리 */}
-                    <div>
-                      <p className="font-sans-700 mb-[12px] text-[14px] text-white">카테고리</p>
-
-                      <label className="font-sans-400 flex h-[36px] items-center justify-between text-[14px] text-white">
-                        강아지
-                        <input
-                          type="checkbox"
-                          checked={selectedCategories.includes("DOG")}
-                          onChange={() => handleCategoryChange("DOG")}
-                          className="h-[16px] w-[16px] accent-white"
-                        />
-                      </label>
-
-                      <label className="font-sans-400 flex h-[36px] items-center justify-between text-[14px] text-white">
-                        고양이
-                        <input
-                          type="checkbox"
-                          checked={selectedCategories.includes("CAT")}
-                          onChange={() => handleCategoryChange("CAT")}
-                          className="h-[16px] w-[16px] accent-white"
-                        />
-                      </label>
-                    </div>
-
-                    {/* 판매 유형 */}
-                    <div className="mt-[16px] border-t border-gray-400 pt-[16px]">
-                      <p className="font-sans-700 mb-[12px] text-[14px] text-white">판매유형</p>
-
-                      <label className="font-sans-400 flex h-[36px] items-center justify-between text-[14px] text-white">
-                        판매 중
-                        <input
-                          type="checkbox"
-                          checked={selectedSaleTypes.includes("SALE")}
-                          onChange={() => handleSaleTypeChange("SALE")}
-                          className="h-[16px] w-[16px] accent-white"
-                        />
-                      </label>
-
-                      <label className="font-sans-400 flex h-[36px] items-center justify-between text-[14px] text-white">
-                        교환 제시 중
-                        <input
-                          type="checkbox"
-                          checked={selectedSaleTypes.includes("EXCHANGE")}
-                          onChange={() => handleSaleTypeChange("EXCHANGE")}
-                          className="h-[16px] w-[16px] accent-white"
-                        />
-                      </label>
-                    </div>
-
-                    {/* 품절 여부 */}
-                    <label className="font-sans-700 mt-[16px] flex h-[36px] items-center justify-between border-t border-gray-400 pt-[16px] text-[14px] text-white">
-                      품절 포함
-                      <input
-                        type="checkbox"
-                        checked={isSoldOutIncluded}
-                        onChange={(event) => {
-                          setIsSoldOutIncluded(event.target.checked);
-                          setCurrentPage(1);
-                        }}
-                        className="h-[16px] w-[16px] accent-white"
-                      />
-                    </label>
-                  </div>
-                )}
               </div>
 
+              {isMobileFilterOpen && (
+                <MySalesMobileFilter
+                  isOpen={isMobileFilterOpen}
+                  onClose={() => setIsMobileFilterOpen(false)}
+                  categories={selectedCategories}
+                  saleTypes={selectedSaleTypes}
+                  includeSoldOut={isSoldOutIncluded}
+                  sellerId={currentUser?.id}
+                  keyword={searchKeyword}
+                  onApply={handleMobileFilterApply}
+                />
+              )}
               <div className="relative w-[200px]">
                 <button
                   type="button"
