@@ -12,26 +12,54 @@ import * as userRepository from "../repositories/user.repository.js";
 export async function getSales({
   category,
   keyword,
-  soldOut,
+  includeSoldOut,
   status,
   sellerId,
   orderBy,
   cursor,
+  page,
   limit = 20,
 }) {
-  const sales = await saleRepository.findSales({
-    category,
-    keyword,
-    soldOut,
-    status,
-    sellerId,
-    orderBy,
-    cursor,
-    limit,
-  });
+  // page 방식은 판매 목록과 전체 개수를 함께 조회하고 cursor 방식은 목록만 조회
+  const [sales, totalCount] =
+    page !== undefined
+      ? await Promise.all([
+          saleRepository.findSales({
+            category,
+            keyword,
+            includeSoldOut,
+            status,
+            sellerId,
+            orderBy,
+            cursor,
+            page,
+            limit,
+          }),
+          saleRepository.countSales({
+            category,
+            keyword,
+            includeSoldOut,
+            status,
+            sellerId,
+          }),
+        ])
+      : [
+          await saleRepository.findSales({
+            category,
+            keyword,
+            includeSoldOut,
+            status,
+            sellerId,
+            orderBy,
+            cursor,
+            page,
+            limit,
+          }),
+          undefined,
+        ];
 
-  // 요청한 개수보다 1개 더 조회됐으면 다음 페이지가 존재
-  const hasNextPage = sales.length > limit;
+  // cursor 방식에서만 한 개 더 조회한 결과로 다음 페이지 존재 여부를 확인
+  const hasNextPage = page === undefined && sales.length > limit;
 
   // 실제 응답에는 요청한 개수만 포함
   const pageSales = hasNextPage ? sales.slice(0, limit) : sales;
@@ -78,6 +106,12 @@ export async function getSales({
   return {
     lists,
     nextCursor,
+
+    // page 방식일 때만 전체 개수와 전체 페이지 수를 반환
+    ...(page !== undefined && {
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+    }),
   };
 }
 
