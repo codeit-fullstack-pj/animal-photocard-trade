@@ -1,10 +1,51 @@
 import { prisma } from "../lib/prisma.js";
 
+// 판매 유형과 품절 포함 여부에 맞는 조회 조건을 생성
+function getSaleStatusWhere({ includeSoldOut, status }) {
+  let activeStatusWhere = {
+    status: "ON_SALE",
+  };
+
+  // 판매 중은 대기 중인 교환 제안이 없는 판매글만 조회
+  if (status === "ON_SALE") {
+    activeStatusWhere = {
+      status: "ON_SALE",
+      exchanges: {
+        none: {
+          status: "PENDING",
+        },
+      },
+    };
+  }
+
+  // 교환 제시 중은 대기 중인 교환 제안이 있는 판매글만 조회
+  if (status === "ON_EXCHANGE") {
+    activeStatusWhere = {
+      status: "ON_SALE",
+      exchanges: {
+        some: {
+          status: "PENDING",
+        },
+      },
+    };
+  }
+
+  // 품절 포함을 체크하지 않으면 판매 중인 목록만 반환
+  if (includeSoldOut !== "true") {
+    return activeStatusWhere;
+  }
+
+  // 품절 포함을 체크하면 기존 목록에 품절된 판매글도 함께 반환
+  return {
+    OR: [activeStatusWhere, { status: "SOLD_OUT" }],
+  };
+}
+
 // 판매 목록과 연결된 카드, 판매자, 교환 정보를 조회
 export function findSales({
   category,
   keyword,
-  soldOut,
+  includeSoldOut,
   status,
   sellerId,
   orderBy,
@@ -24,42 +65,8 @@ export function findSales({
         status: "CANCELED",
       },
 
-      // 품절 여부에 따라 판매 완료 또는 판매 중인 판매글을 조회
-      ...(soldOut !== undefined && {
-        status: soldOut === "true" ? "SOLD_OUT" : "ON_SALE",
-      }),
-
-      // 판매 중인 판매글만 조회하고 대기 중인 교환 제안은 제외
-      ...(status === "ON_SALE" && {
-        AND: [
-          {
-            status: "ON_SALE",
-          },
-          {
-            exchanges: {
-              none: {
-                status: "PENDING",
-              },
-            },
-          },
-        ],
-      }),
-
-      // 대기 중인 교환 제안이 있는 판매글만 조회
-      ...(status === "ON_EXCHANGE" && {
-        AND: [
-          {
-            status: "ON_SALE",
-          },
-          {
-            exchanges: {
-              some: {
-                status: "PENDING",
-              },
-            },
-          },
-        ],
-      }),
+      // 판매 유형과 품절 포함 여부를 함께 적용
+      ...getSaleStatusWhere({ includeSoldOut, status }),
 
       // 카테고리 또는 검색어가 있으면 연결된 카드 정보를 기준으로 조회
       ...((category || keyword) && {
@@ -146,7 +153,7 @@ export function findSales({
 }
 
 // 현재 판매 목록 필터 조건에 해당하는 전체 판매글 개수를 조회
-export function countSales({ category, keyword, soldOut, status, sellerId }) {
+export function countSales({ category, keyword, includeSoldOut, status, sellerId }) {
   return prisma.sale.count({
     where: {
       // 판매자 조건이 있으면 해당 판매자의 판매글만 조회
@@ -159,42 +166,8 @@ export function countSales({ category, keyword, soldOut, status, sellerId }) {
         status: "CANCELED",
       },
 
-      // 품절 여부에 따라 판매 완료 또는 판매 중인 판매글을 조회
-      ...(soldOut !== undefined && {
-        status: soldOut === "true" ? "SOLD_OUT" : "ON_SALE",
-      }),
-
-      // 판매 중인 판매글만 조회하고 대기 중인 교환 제안은 제외
-      ...(status === "ON_SALE" && {
-        AND: [
-          {
-            status: "ON_SALE",
-          },
-          {
-            exchanges: {
-              none: {
-                status: "PENDING",
-              },
-            },
-          },
-        ],
-      }),
-
-      // 대기 중인 교환 제안이 있는 판매글만 조회
-      ...(status === "ON_EXCHANGE" && {
-        AND: [
-          {
-            status: "ON_SALE",
-          },
-          {
-            exchanges: {
-              some: {
-                status: "PENDING",
-              },
-            },
-          },
-        ],
-      }),
+      // 판매 유형과 품절 포함 여부를 함께 적용
+      ...getSaleStatusWhere({ includeSoldOut, status }),
 
       // 카테고리 또는 검색어가 있으면 연결된 카드 정보를 기준으로 조회
       ...((category || keyword) && {

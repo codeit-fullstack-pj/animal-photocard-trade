@@ -13,7 +13,7 @@ export async function getSales(req, res) {
   const limit = req.query.limit === undefined ? 20 : Number(req.query.limit);
   const category = req.query.category;
   const keyword = req.query.keyword?.trim() || undefined;
-  const soldOut = req.query.soldOut;
+  const includeSoldOut = req.query.includeSoldOut;
   const status = req.query.status;
   const sellerId = req.query.sellerId;
   const orderBy = req.query.orderBy;
@@ -40,9 +40,9 @@ export async function getSales(req, res) {
     throw new ApiError(400, "VALIDATION_ERROR", "status는 ON_SALE 또는 ON_EXCHANGE여야 합니다");
   }
 
-  // 품절 여부는 true 또는 false만 허용
-  if (soldOut !== undefined && !["true", "false"].includes(soldOut)) {
-    throw new ApiError(400, "VALIDATION_ERROR", "soldOut은 true 또는 false여야 합니다");
+  // 품절 포함 여부는 true 또는 false만 허용
+  if (includeSoldOut !== undefined && !["true", "false"].includes(includeSoldOut)) {
+    throw new ApiError(400, "VALIDATION_ERROR", "includeSoldOut은 true 또는 false여야 합니다");
   }
 
   // 정렬은 관상 지수, 포인트, 등록일 기준의 6가지 값만 허용
@@ -71,7 +71,7 @@ export async function getSales(req, res) {
   const { lists, nextCursor, totalCount, totalPages } = await saleService.getSales({
     category,
     keyword,
-    soldOut,
+    includeSoldOut,
     status,
     sellerId,
     orderBy,

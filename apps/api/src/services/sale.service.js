@@ -12,7 +12,7 @@ import * as userRepository from "../repositories/user.repository.js";
 export async function getSales({
   category,
   keyword,
-  soldOut,
+  includeSoldOut,
   status,
   sellerId,
   orderBy,
@@ -27,7 +27,7 @@ export async function getSales({
           saleRepository.findSales({
             category,
             keyword,
-            soldOut,
+            includeSoldOut,
             status,
             sellerId,
             orderBy,
@@ -38,7 +38,7 @@ export async function getSales({
           saleRepository.countSales({
             category,
             keyword,
-            soldOut,
+            includeSoldOut,
             status,
             sellerId,
           }),
@@ -47,7 +47,7 @@ export async function getSales({
           await saleRepository.findSales({
             category,
             keyword,
-            soldOut,
+            includeSoldOut,
             status,
             sellerId,
             orderBy,

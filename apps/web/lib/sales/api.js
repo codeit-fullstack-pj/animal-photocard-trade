@@ -5,7 +5,7 @@ export function getSales({
   limit,
   category,
   keyword,
-  soldOut,
+  includeSoldOut,
   status,
   sellerId,
   orderBy,
@@ -17,7 +17,9 @@ export function getSales({
   if (limit !== undefined) params.set("limit", String(limit));
   if (category) params.set("category", category);
   if (keyword) params.set("keyword", keyword);
-  if (soldOut !== undefined) params.set("soldOut", String(soldOut));
+  if (includeSoldOut !== undefined) {
+    params.set("includeSoldOut", String(includeSoldOut));
+  }
   if (status) params.set("status", status);
   if (sellerId) params.set("sellerId", sellerId);
   if (orderBy) params.set("orderBy", orderBy);

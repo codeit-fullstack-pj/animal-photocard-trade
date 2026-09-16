@@ -41,8 +41,8 @@ export default function MySalesPage() {
   // 선택한 판매 중/교환 제시 중 유형을 관리
   const [selectedSaleTypes, setSelectedSaleTypes] = useState([]);
 
-  // 품절된 포토카드만 표시할지 관리
-  const [isSoldOutOnly, setIsSoldOutOnly] = useState(false);
+  // 품절된 포토카드도 함께 표시할지 관리
+  const [isSoldOutIncluded, setIsSoldOutIncluded] = useState(false);
 
   // 정렬 드롭다운의 열림/닫힘 상태를 관리
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -161,7 +161,7 @@ export default function MySalesPage() {
           category,
           keyword: searchKeyword.trim() || undefined,
           status,
-          soldOut: isSoldOutOnly ? true : selectedSaleTypes.length === 2 ? false : undefined,
+          includeSoldOut: isSoldOutIncluded,
           orderBy: selectedSort,
         });
 
@@ -195,7 +195,7 @@ export default function MySalesPage() {
     searchKeyword,
     selectedCategories,
     selectedSaleTypes,
-    isSoldOutOnly,
+    isSoldOutIncluded,
     selectedSort,
   ]);
 
@@ -354,12 +354,12 @@ export default function MySalesPage() {
 
                     {/* 품절 여부 */}
                     <label className="font-sans-700 mt-[16px] flex h-[36px] items-center justify-between border-t border-gray-400 pt-[16px] text-[14px] text-white">
-                      품절여부
+                      품절 포함
                       <input
                         type="checkbox"
-                        checked={isSoldOutOnly}
+                        checked={isSoldOutIncluded}
                         onChange={(event) => {
-                          setIsSoldOutOnly(event.target.checked);
+                          setIsSoldOutIncluded(event.target.checked);
                           setCurrentPage(1);
                         }}
                         className="h-[16px] w-[16px] accent-white"
@@ -501,12 +501,12 @@ export default function MySalesPage() {
 
               {/* 품절된 포토카드 표시 여부 */}
               <label className="font-sans-700 flex h-[50px] items-center gap-[8px] text-[16px] text-white">
-                품절여부
+                품절 포함
                 <input
                   type="checkbox"
-                  checked={isSoldOutOnly}
+                  checked={isSoldOutIncluded}
                   onChange={(event) => {
-                    setIsSoldOutOnly(event.target.checked);
+                    setIsSoldOutIncluded(event.target.checked);
                     setCurrentPage(1);
                   }}
                   className="h-[16px] w-[16px] accent-white"
