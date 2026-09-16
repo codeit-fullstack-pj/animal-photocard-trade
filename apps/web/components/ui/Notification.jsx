@@ -1,61 +1,259 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
+import { getNotifications } from "@/lib/notification/api";
 import styles from "./Notification.module.css";
 
-// 무한 스크롤 테스트용 — 한 번에 더 불러오는 개수
+// 무한 스크롤 시 한 번에 요청하는 개수(= GET /notification limit)
 const PAGE_SIZE = 5;
 
-// TODO: 알림 백엔드 나오면 실제 목록 조회(페이지네이션)로 교체. 지금은 스크롤 테스트용으로
-// 넉넉하게 mock을 만들어둔다 — 실제로는 서버가 페이지 단위로 내려주고, 여기서 이어붙이면 된다
-function buildMockNotifications() {
-  const base = [
-    {
-      id: "mock-1",
-      content:
-        "회원님이 등록하신 판매글에 새로운 교환 신청이 도착했어요. 신청 내용을 확인하고 수락 또는 거절해 주세요. 24시간 내에 응답하지 않으면 자동으로 취소될 수 있어요.",
-      timestamp: "방금 전",
-      status: "UNREAD",
-    },
-    {
-      id: "mock-2",
-      content: "판매글이 판매 완료됐어요",
-      timestamp: "10분 전",
-      status: "READ",
-    },
-    {
-      id: "mock-3",
-      content: "삭제된 알림이에요 — 목록에는 안 보여야 해요",
-      timestamp: "1일 전",
-      status: "DELETED",
-    },
-  ];
+function formatRelativeTime(isoString) {
+  const diffMs = Date.now() - new Date(isoString).getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "방금 전";
+  if (diffMin < 60) return `${diffMin}분 전`;
 
-  for (let i = 4; i <= 24; i += 1) {
-    base.push({
-      id: `mock-${i}`,
-      content: `테스트용 알림 ${i}번째 내용이에요. 무한 스크롤 동작 확인용입니다.`,
-      timestamp: `${i}일 전`,
-      status: i % 3 === 0 ? "READ" : "UNREAD",
-    });
-  }
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return `${diffHour}시간 전`;
 
-  return base;
+  const diffDay = Math.floor(diffHour / 24);
+  return `${diffDay}일 전`;
 }
 
-/**
- * 알림 벨을 누르면 그 바로 아래에 붙는 알림 드롭다운. Profile.jsx/Dropdown.jsx와 같은 패턴
- * (트리거+패널을 한 컴포넌트가 같이 소유, 바깥 클릭·Esc로 닫힘)을 쓴다.
- * 목록은 무한 스크롤 — 패널 안 스크롤 영역 바닥에 닿으면 다음 페이지만큼 더 보여준다.
- * AppHeader가 모바일용/태블릿·PC용 두 인스턴스를 따로 렌더링하는데, open/onOpenChange를 주면
- * 열림 상태를 그 부모가 들고 있는 하나의 state로 공유한다(컨트롤드) — 안 주면 기존처럼
- * 컴포넌트 내부 state로 스스로 여닫는다(언컨트롤드).
- * mobile=true면(모바일 헤더 안 트리거 전용) 열렸을 때 패널이 헤더 바로 아래를 100% 너비로
- * 덮는다 — 그동안 트리거(벨)는 AppHeader가 보여주는 뒤로가기+"알림" 타이틀 바로 덮이니 숨긴다.
- * @param {{ unreadCount: number, mobile?: boolean, open?: boolean, onOpenChange?: (open: boolean) => void }} props
- */
+const NotificationDataContext = createContext(null);
+
+function useNotificationData() {
+  return useContext(NotificationDataContext);
+}
+
+// open이 될 때만 새로 마운트되어 state가 자연 초기화되며, 실제 fetch/페이지네이션/읽음·삭제를 전담한다
+function NotificationDataLoader({ children }) {
+  const [notifications, setNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [error, setError] = useState(null);
+  // undefined = 아직 첫 페이지를 안 불러옴, null = 다음 페이지 없음, 문자열 = 다음 페이지 cursor
+  const [nextCursor, setNextCursor] = useState(undefined);
+  const hasMore = Boolean(nextCursor);
+  // isLoadingMore(state)는 반영이 비동기라, 같은 렌더 틱에 loadMore가 연달아 불리면(StrictMode 이중
+  // 호출 등) 가드를 뚫고 같은 페이지를 두 번 요청해 중복 항목이 생길 수 있다. ref로 즉시 막는다
+  const isLoadingMoreRef = useRef(false);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getNotifications({ limit: PAGE_SIZE })
+      .then((result) => {
+        if (ignore) return;
+        setNotifications(result.lists);
+        setNextCursor(result.nextCursor);
+      })
+      .catch(() => {
+        if (!ignore) setError("알림을 불러오지 못했어요");
+      })
+      .finally(() => {
+        if (!ignore) setIsLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const loadMore = useCallback(() => {
+    if (isLoadingMoreRef.current || !nextCursor) return;
+    isLoadingMoreRef.current = true;
+
+    setIsLoadingMore(true);
+    getNotifications({ cursor: nextCursor, limit: PAGE_SIZE })
+      .then((result) => {
+        setNotifications((prev) => {
+          // 혹시라도 같은 id가 다시 오면(중복 요청 등) React key 중복을 막기 위해 걸러낸다
+          const existingIds = new Set(prev.map((n) => n.id));
+          return [...prev, ...result.lists.filter((n) => !existingIds.has(n.id))];
+        });
+        setNextCursor(result.nextCursor);
+      })
+      .catch(() => setError("알림을 더 불러오지 못했어요"))
+      .finally(() => {
+        isLoadingMoreRef.current = false;
+        setIsLoadingMore(false);
+      });
+  }, [nextCursor]);
+
+  // TODO: 읽음/삭제 API가 생기면 서버 호출로 교체 — 지금은 로컬 상태만 바꿈
+  function handleMarkAllRead() {
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  }
+
+  function handleDeleteAll() {
+    setNotifications([]);
+  }
+
+  function handleDelete(id) {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  }
+
+  function handleMarkRead(id) {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+  }
+
+  const value = {
+    notifications,
+    isLoading,
+    isLoadingMore,
+    error,
+    hasMore,
+    loadMore,
+    handleMarkAllRead,
+    handleDeleteAll,
+    handleDelete,
+    handleMarkRead,
+  };
+
+  return (
+    <NotificationDataContext.Provider value={value}>{children}</NotificationDataContext.Provider>
+  );
+}
+
+// AppHeader가 모바일용/PC용 두 Notification 트리를 이걸로 감싸서 알림 데이터를 하나만 공유하게 한다.
+// open이 아닐 땐 children(트리거 버튼들)만 그대로 렌더 — 열릴 때만 Loader가 마운트되어 fetch가 한 번만 일어난다.
+export function NotificationDataProvider({ open, children }) {
+  return open ? <NotificationDataLoader>{children}</NotificationDataLoader> : children;
+}
+
+// 알림 패널의 실제 UI. 데이터는 NotificationDataProvider가 공급하고, 스크롤 감지만 인스턴스별로 갖는다
+function NotificationPanel({ mobile }) {
+  const listRef = useRef(null);
+  const {
+    notifications,
+    isLoading,
+    isLoadingMore,
+    error,
+    hasMore,
+    loadMore,
+    handleMarkAllRead,
+    handleDeleteAll,
+    handleDelete,
+    handleMarkRead,
+  } = useNotificationData();
+
+  // 목록 스크롤 영역이 바닥까지 내려가면(=실제 스크롤이 일어났을 때만) 다음 페이지를 불러온다
+  useEffect(() => {
+    if (!hasMore) return;
+
+    const root = listRef.current;
+    if (!root) return;
+
+    function onScroll() {
+      const atBottom = root.scrollHeight - root.scrollTop - root.clientHeight <= 1;
+      console.log("[스크롤 바닥 체크]", atBottom);
+      if (atBottom) loadMore();
+    }
+
+    root.addEventListener("scroll", onScroll);
+    return () => root.removeEventListener("scroll", onScroll);
+  }, [hasMore, loadMore]);
+
+  // 모바일 전체화면 패널처럼 목록 영역이 커서 첫 페이지만으론 스크롤 자체가 안 생기면, 스크롤을
+  // 기다리지 않고 바로 다음 페이지를 채워서 스크롤이 가능해질 때까지(또는 더 없을 때까지) 이어 받는다
+  useEffect(() => {
+    if (!hasMore || isLoadingMore) return;
+
+    const root = listRef.current;
+    if (!root) return;
+
+    if (root.scrollHeight <= root.clientHeight) loadMore();
+  }, [hasMore, isLoadingMore, notifications, loadMore]);
+
+  return (
+    <div
+      className={
+        mobile
+          ? "fixed inset-x-0 top-14 bottom-0 z-40 flex w-full flex-col bg-gray-500 py-0 px-0 text-left"
+          : "absolute top-full right-0 z-10 w-75 h-auto rounded-xs bg-gray-500 py-0 px-0 text-left"
+      }
+    >
+      {isLoading ? (
+        <div className="flex h-26.75 w-full items-center justify-center">
+          <span className="font-sans-400 text-sm text-white">불러오는 중...</span>
+        </div>
+      ) : error && notifications.length === 0 ? (
+        <div className="flex h-26.75 w-full items-center justify-center">
+          <span className="font-sans-400 text-sm text-white">{error}</span>
+        </div>
+      ) : notifications.length === 0 ? (
+        <div className="flex h-26.75 w-full items-center justify-center">
+          <span className="font-sans-400 text-sm text-white">받은 알림이 없습니다</span>
+        </div>
+      ) : (
+        <>
+          <div
+            ref={listRef}
+            className={`${styles.scrollbarHide} overflow-y-auto ${mobile ? "flex-1" : "max-h-80"}`}
+          >
+            {notifications.map((notification) => (
+              <div
+                key={notification.id}
+                onClick={() => handleMarkRead(notification.id)}
+                className={`font-sans-400 relative flex h-26.75 cursor-pointer flex-col justify-between border-b border-gray-300 p-5 text-sm text-white ${
+                  notification.isRead ? "bg-gray-500" : "bg-[#222222]"
+                }`}
+              >
+                <Image
+                  src="/x.png"
+                  alt=""
+                  width={20}
+                  height={20}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(notification.id);
+                  }}
+                  className="absolute top-5 right-5 cursor-pointer"
+                />
+                <span
+                  className={`font-sans-400 line-clamp-2 pr-6 text-sm ${
+                    notification.isRead ? "text-gray-300" : "text-white"
+                  }`}
+                >
+                  {notification.content}
+                </span>
+                <span className="font-sans-300 text-xs text-gray-300">
+                  {formatRelativeTime(notification.createdAt)}
+                </span>
+              </div>
+            ))}
+
+            {isLoadingMore && (
+              <div className="flex h-10 w-full items-center justify-center">
+                <span className="font-sans-400 text-xs text-gray-300">불러오는 중...</span>
+              </div>
+            )}
+          </div>
+          <div className="mt-0 flex h-12 items-center justify-between border-t border-solid border-[#393939]">
+            <div
+              onClick={handleMarkAllRead}
+              className="font-sans-400 flex flex-1 cursor-pointer items-center justify-center text-sm text-gray-200 hover:text-white"
+            >
+              전체 읽음 처리
+            </div>
+            <span className="h-full w-px bg-[#393939]" aria-hidden="true" />
+            <div
+              onClick={handleDeleteAll}
+              className="font-sans-400 flex flex-1 cursor-pointer items-center justify-center text-sm text-gray-200 hover:text-white"
+            >
+              전체 지우기
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// open/onOpenChange를 주면 AppHeader가 모바일·PC 두 인스턴스의 열림 상태를 공유시킬 수 있다(컨트롤드)
 export default function Notification({
   unreadCount = 0,
   mobile = false,
@@ -66,8 +264,6 @@ export default function Notification({
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isControlled ? openProp : internalOpen;
   const rootRef = useRef(null);
-  const listRef = useRef(null);
-  const sentinelRef = useRef(null);
 
   const setOpen = useCallback(
     (value) => {
@@ -79,45 +275,11 @@ export default function Notification({
     [isControlled, openProp, internalOpen, onOpenChange],
   );
 
-  const [notifications, setNotifications] = useState(buildMockNotifications);
-  const visibleNotifications = notifications.filter((n) => n.status !== "DELETED");
-
-  // 무한 스크롤: 실제로는 전부 로컬에 있지만, "더 불러온 것처럼" 보여주는 개수만 늘려간다.
-  // 진짜 API가 생기면 이 숫자만큼 요청해서 notifications 뒤에 이어붙이는 방식으로 바꾸면 된다
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const pagedNotifications = visibleNotifications.slice(0, visibleCount);
-  const hasMore = visibleCount < visibleNotifications.length;
-
-  // TODO: 백엔드 나오면 여기서 읽음 처리 API 호출로 교체. 지금은 현재 불러와둔(get 된) 목록만 로컬로 바꿈
-  function handleMarkAllRead() {
-    setNotifications((prev) =>
-      prev.map((n) => (n.status === "DELETED" ? n : { ...n, status: "READ" })),
-    );
-  }
-
-  // TODO: 백엔드 나오면 여기서 삭제 API 호출로 교체. 지금은 현재 불러와둔(get 된) 목록만 로컬로 바꿈
-  function handleDeleteAll() {
-    setNotifications((prev) => prev.map((n) => ({ ...n, status: "DELETED" })));
-  }
-
-  // TODO: 백엔드 나오면 여기서 개별 삭제 API 호출로 교체. 지금은 현재 불러와둔(get 된) 목록만 로컬로 바꿈
-  function handleDelete(id) {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, status: "DELETED" } : n)));
-  }
-
-  // TODO: 백엔드 나오면 여기서 읽음 처리 API 호출로 교체. 지금은 현재 불러와둔(get 된) 목록만 로컬로 바꿈
-  function handleMarkRead(id) {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, status: "READ" } : n)));
-  }
-
   useEffect(() => {
     if (!open) return;
 
     function onPointerDown(e) {
-      // AppHeader가 모바일용/태블릿·PC용 두 Notification 인스턴스를 항상 같이 마운트해두고 open state를
-      // 공유하기 때문에, 각자의 rootRef만 기준으로 "바깥"을 판단하면 한쪽 패널 안을 눌러도 다른 쪽
-      // 인스턴스가 "내 바깥"이라고 오판해서 공유 state를 꺼버린다. data-notification-root가 붙은
-      // 루트(둘 중 어느 쪽이든) 안이면 "안쪽"으로 본다.
+      // 모바일·PC 두 인스턴스가 open을 공유하므로, 내 rootRef가 아니라 어느 쪽 루트든 안이면 "안쪽"으로 본다
       if (!e.target.closest?.("[data-notification-root]")) setOpen(false);
     }
     function onKeyDown(e) {
@@ -131,27 +293,6 @@ export default function Notification({
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [open, setOpen]);
-
-  // 무한 스크롤: 목록 스크롤 영역(root) 바닥의 sentinel이 보이면 한 페이지만큼 더 노출한다
-  useEffect(() => {
-    if (!open || !hasMore) return;
-
-    const sentinel = sentinelRef.current;
-    const root = listRef.current;
-    if (!sentinel || !root) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, visibleNotifications.length));
-        }
-      },
-      { root, threshold: 1 },
-    );
-    observer.observe(sentinel);
-
-    return () => observer.disconnect();
-  }, [open, hasMore, visibleNotifications.length]);
 
   const mobileFull = mobile && open;
 
@@ -169,98 +310,26 @@ export default function Notification({
           aria-expanded={open}
           aria-label="알림"
           onClick={() => setOpen((v) => !v)}
-          className="relative flex h-[20px] w-[20px] items-center justify-center"
+          className="relative flex h-[24px] w-[24px] items-center justify-center"
         >
           <Image
             src={unreadCount > 0 ? "/alarm_active.png" : "/alarm_default.png"}
             alt=""
-            width={20}
-            height={20}
+            width={24}
+            height={24}
           />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-red px-0.5 font-sans-500 text-[9px] leading-none text-white">
+            <span
+              style={{ height: 14, minWidth: 14 }}
+              className="absolute -top-0.5 -right-1 flex items-center justify-center rounded-full bg-red px-0.5 font-sans-500 text-[9px] leading-none text-white"
+            >
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
         </button>
       )}
 
-      {open && (
-        <div
-          className={
-            mobile
-              ? "fixed inset-x-0 top-14 bottom-0 z-40 flex w-full flex-col bg-gray-500 py-0 px-0 text-left"
-              : "absolute top-full right-0 z-10 w-75 h-auto rounded-xs bg-gray-500 py-0 px-0 text-left"
-          }
-        >
-          {visibleNotifications.length === 0 ? (
-            <div className="flex h-26.75 w-full items-center justify-center">
-              <span className="font-sans-400 text-sm text-white">받은 알림이 없습니다</span>
-            </div>
-          ) : (
-            <>
-              <div
-                ref={listRef}
-                className={`${styles.scrollbarHide} overflow-y-auto ${mobile ? "flex-1" : "max-h-80"}`}
-              >
-                {pagedNotifications.map((notification) => (
-                  // TODO: 알림 항목 UI — 지금은 스타일 확인용으로 내용만 임시로 찍음
-                  <div
-                    key={notification.id}
-                    onClick={() => handleMarkRead(notification.id)}
-                    className={`font-sans-400 relative flex h-26.75 cursor-pointer flex-col justify-between border-b border-gray-300 p-5 text-sm text-white ${
-                      notification.status === "READ" ? "bg-gray-500" : "bg-[#222222]"
-                    }`}
-                  >
-                    <Image
-                      src="/x.png"
-                      alt=""
-                      width={20}
-                      height={20}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(notification.id);
-                      }}
-                      className="absolute top-5 right-5 cursor-pointer"
-                    />
-                    <span
-                      className={`font-sans-400 line-clamp-2 pr-6 text-sm ${
-                        notification.status === "READ" ? "text-gray-300" : "text-white"
-                      }`}
-                    >
-                      {notification.content}
-                    </span>
-                    <span className="font-sans-300 text-xs text-gray-300">
-                      {notification.timestamp}
-                    </span>
-                  </div>
-                ))}
-
-                {hasMore && (
-                  <div ref={sentinelRef} className="flex h-10 w-full items-center justify-center">
-                    <span className="font-sans-400 text-xs text-gray-300">불러오는 중...</span>
-                  </div>
-                )}
-              </div>
-              <div className="mt-0 flex h-12 items-center justify-between border-t border-solid border-[#393939]">
-                <div
-                  onClick={handleMarkAllRead}
-                  className="font-sans-400 flex flex-1 cursor-pointer items-center justify-center text-sm text-gray-200 hover:text-white"
-                >
-                  전체 읽음 처리
-                </div>
-                <span className="h-full w-px bg-[#393939]" aria-hidden="true" />
-                <div
-                  onClick={handleDeleteAll}
-                  className="font-sans-400 flex flex-1 cursor-pointer items-center justify-center text-sm text-gray-200 hover:text-white"
-                >
-                  전체 지우기
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      )}
+      {open && <NotificationPanel mobile={mobile} />}
     </div>
   );
 }
