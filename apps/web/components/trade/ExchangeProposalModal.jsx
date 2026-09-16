@@ -39,6 +39,7 @@ export default function ExchangeProposalModal({ saleId, isOpen, onClose }) {
     <ResponsiveModalShell
       isOpen={isOpen}
       onClose={onClose}
+      onBack={selectedCard ? () => setSelectedCard(null) : undefined}
       title="교환할 포토카드 선택하기"
       isSubmitting={isSubmitting}
     >
