@@ -24,7 +24,7 @@ const SOLD_OUT_OPTIONS = [
   },
 ];
 
-export default function MarketMobileFilter({
+export default function MobileFilter({
   isOpen,
   onClose,
   categories,
@@ -110,12 +110,12 @@ export default function MarketMobileFilter({
           className="
             relative
             flex
-            h-[80px]
+            h-[52px]
             items-center
             justify-center
           "
         >
-          <h2 className="text-[20px] font-bold leading-none">필터</h2>
+          <h2 className="text-[16px] font-bold leading-none">필터</h2>
 
           <button
             type="button"
@@ -123,14 +123,14 @@ export default function MarketMobileFilter({
             aria-label="필터 닫기"
             className="
               absolute
-              right-[28px]
+              right-[15px]
               top-1/2
               flex
-              size-[32px]
+              size-[24px]
               -translate-y-1/2
               items-center
               justify-center
-              text-[36px]
+              text-[24px]
               font-light
               leading-none
               text-white
@@ -143,7 +143,7 @@ export default function MarketMobileFilter({
         {/* ========================================
             탭
         ======================================== */}
-        <div className="flex h-[100px] border-b border-[#242424]">
+        <div className="flex gap-[16px] h-[52px] pl-[16px] border-b border-[#161616]">
           {/* 카테고리 */}
           <button
             type="button"
@@ -151,10 +151,10 @@ export default function MarketMobileFilter({
             className="
               relative
               flex
-              w-1/2
+              w-[84px]
               items-center
               justify-center
-              text-[20px]
+              text-[14px]
               font-medium
             "
           >
@@ -183,10 +183,10 @@ export default function MarketMobileFilter({
             className="
               relative
               flex
-              w-1/2
+              w-[87]
               items-center
               justify-center
-              text-[20px]
+              text-[14px]
               font-medium
             "
           >
@@ -212,7 +212,7 @@ export default function MarketMobileFilter({
         {/* ========================================
             내용
         ======================================== */}
-        <div className="min-h-[280px] px-[60px] py-[24px]">
+        <div className="min-h-[160px] px-[32px] py-[16px]">
           {/* ======================================
               카테고리
           ====================================== */}
@@ -228,7 +228,7 @@ export default function MarketMobileFilter({
                     onClick={() => handleCategorySelect(option.value)}
                     className="
                       flex
-                      h-[92px]
+                      h-[52px]
                       w-full
                       items-center
                       justify-between
@@ -238,14 +238,14 @@ export default function MarketMobileFilter({
                     <span
                       className={
                         isSelected
-                          ? "text-[20px] font-medium text-[#9B51E5]"
-                          : "text-[20px] font-medium text-[#9A9A9A]"
+                          ? "text-[14px] font-medium text-[#A656F5]"
+                          : "text-[14px] font-medium text-[#A4A4A4]"
                       }
                     >
                       {option.label}
                     </span>
 
-                    <span className="text-[18px] text-[#BDBDBD]">{totalCount}개</span>
+                    <span className="text-[14px] text-[#A4A4A4]">{totalCount}개</span>
                   </button>
                 );
               })}
@@ -267,7 +267,7 @@ export default function MarketMobileFilter({
                     onClick={() => handleSoldOutSelect(option.value)}
                     className="
                       flex
-                      h-[92px]
+                      h-[52px]
                       w-full
                       items-center
                       justify-between
@@ -277,14 +277,14 @@ export default function MarketMobileFilter({
                     <span
                       className={
                         isSelected
-                          ? "text-[20px] font-medium text-[#9B51E5]"
-                          : "text-[20px] font-medium text-[#9A9A9A]"
+                          ? "text-[14px] font-medium text-[#A656F5]"
+                          : "text-[14px] font-medium text-[#A4A4A4]"
                       }
                     >
                       {option.label}
                     </span>
 
-                    <span className="text-[18px] text-[#BDBDBD]">{totalCount}개</span>
+                    <span className="text-[14px] text-[#A4A4A4]">{totalCount}개</span>
                   </button>
                 );
               })}
@@ -299,10 +299,9 @@ export default function MarketMobileFilter({
           className="
             flex
             items-center
-            gap-[48px]
-            px-[60px]
-            pb-[36px]
-            pt-[8px]
+            gap-[11px]
+            px-[16px]
+            pb-[40px]
           "
         >
           {/* 초기화 */}
@@ -312,13 +311,13 @@ export default function MarketMobileFilter({
             aria-label="필터 초기화"
             className="
               flex
-              size-[40px]
+              size-[54px]
               shrink-0
               items-center
               justify-center
-              text-[34px]
+              text-[24px]
               font-light
-              text-[#666]
+              text-[#5A5A5A]
             "
           >
             ↻
@@ -330,13 +329,13 @@ export default function MarketMobileFilter({
             onClick={onApply}
             className="
               flex
-              h-[64px]
+              h-[55px]
               flex-1
               items-center
               justify-center
               rounded-[2px]
-              bg-[#9B51E5]
-              text-[20px]
+              bg-[#A656F5]
+              text-[16px]
               font-bold
               text-white
             "

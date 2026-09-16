@@ -1,4 +1,4 @@
-import MarketCard from "./MarketCard";
+import PhotoCard from "@/components/card/PhotoCard";
 
 export default function MarketCardList({ cards, onCardClick }) {
   return (
@@ -17,7 +17,21 @@ export default function MarketCardList({ cards, onCardClick }) {
       "
     >
       {cards.map((card) => (
-        <MarketCard key={card.id} card={card} onCardClick={onCardClick} />
+        <li key={card.id} className="w-full min-w-0">
+          <PhotoCard
+            variant="sale"
+            title={card.title ?? card.name}
+            tag={card.tag}
+            imageUrl={card.imageUrl}
+            category={card.category}
+            score={card.score}
+            filterType={card.filterType}
+            point={card.point ?? card.price}
+            status={card.status}
+            isSoldOut={card.isSoldOut}
+            onClick={() => onCardClick?.(card)}
+          />
+        </li>
       ))}
     </ul>
   );

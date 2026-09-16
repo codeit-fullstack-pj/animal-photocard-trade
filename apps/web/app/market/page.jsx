@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 
 import MarketHeader from "@/components/market/MarketHeader";
 import MarketFilters from "@/components/market/MarketFilters";
-import MarketMobileFilter from "@/components/market/MarketMobileFilter";
 import MarketCardList from "@/components/market/MarketCardList";
 import MarketEmpty from "@/components/market/MarketEmpty";
+import MobileFilter from "@/components/card/MobileFilter";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import AppHeader from "@/components/ui/AppHeader";
 
@@ -386,7 +386,7 @@ export default function MarketPage() {
       {/* ========================================
           모바일 필터 Bottom Sheet
       ======================================== */}
-      <MarketMobileFilter
+      <MobileFilter
         isOpen={isMobileFilterOpen}
         onClose={handleCloseMobileFilter}
         categories={tempCategories}
