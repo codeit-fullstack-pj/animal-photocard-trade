@@ -22,12 +22,16 @@ export default function PhotoCard({
   score,
   filterType,
   variant,
+  onClick,
 }) {
   const isDot = filterType === DOT_FILTER_TYPE;
 
   return (
     <article
+      onClick={onClick}
       className={`w-full tracking-tight rounded-lg p-1.25 tablet:rounded-[10px] tablet:p-3.25 ${
+        onClick ? "cursor-pointer" : ""
+      } ${
         variant === "owned"
           ? "h-70.5 tablet:h-139.25 pc:h-146.5"
           : "h-67.5 tablet:h-133.5 pc:h-137.5"
