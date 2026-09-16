@@ -20,14 +20,14 @@ export default function AppHeader() {
   // 모바일/태블릿·PC 두 군데에 따로 렌더링되는 Notification 인스턴스가 같은 열림 상태를 쓰도록 여기서 관리
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
-  // 메뉴가 열려 있는 동안 뒤 페이지 스크롤 막기
+  // 메뉴 또는 모바일 알림 전체 화면이 열려 있는 동안 뒤 페이지 스크롤 막기
   useEffect(() => {
-    if (!isMenuOpen) return;
+    if (!isMenuOpen && !isNotifOpen) return;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isNotifOpen]);
 
   function handleLogout() {
     setIsMenuOpen(false);
@@ -42,38 +42,59 @@ export default function AppHeader() {
     <>
       <header className="h-[56px] w-full bg-[#0F0F0F] tablet:h-[64px] pc:h-[80px]">
         <div className="mx-auto h-full w-full max-w-[1240px] px-[16px] tablet:px-[24px] pc:px-0">
-          {/* 모바일: 햄버거(좌) - 로고(가운데) - 로그인 또는 빈칸(우) */}
-          <div className="grid h-full grid-cols-[1fr_auto_1fr] items-center tablet:hidden">
-            <button
-              type="button"
-              onClick={() => setIsMenuOpen(true)}
-              aria-label="메뉴 열기"
-              className="flex h-[24px] w-[24px] items-center justify-self-start"
-            >
-              <Image src="/menu.png" alt="" width={24} height={24} />
-            </button>
+          {/* 모바일: 햄버거(좌) - 로고(가운데) - 로그인 또는 빈칸(우). Notification은 항상 마운트해 둬야
+              알림이 열려 있는 동안(패널이 fixed로 화면을 덮는 동안)에도 사라지지 않는다 — 그 위를
+              뒤로가기+"알림" 타이틀 바(MobileHeader 스타일)로 덮어서 트리거 줄만 가린다 */}
+          <div className="relative h-full tablet:hidden">
+            <div className="grid h-full grid-cols-[1fr_auto_1fr] items-center">
+              <button
+                type="button"
+                onClick={() => setIsMenuOpen(true)}
+                aria-label="메뉴 열기"
+                className="flex h-[24px] w-[24px] items-center justify-self-start"
+              >
+                <Image src="/menu.png" alt="" width={24} height={24} />
+              </button>
 
-            <Link href="/" aria-label="최애 멍냥 홈" className="justify-self-center">
-              <Image src="/logo.png" alt="최애 멍냥" width={182} height={61} priority />
-            </Link>
+              <Link href="/" aria-label="최애 멍냥 홈" className="justify-self-center">
+                <Image src="/logo.png" alt="최애 멍냥" width={182} height={61} priority />
+              </Link>
 
-            {!isLoading &&
-              (currentUser ? (
-                <div className="justify-self-end">
-                  <Notification
-                    unreadCount={currentUser.unreadCount}
-                    open={isNotifOpen}
-                    onOpenChange={setIsNotifOpen}
-                  />
-                </div>
-              ) : (
-                <Link
-                  href="/login"
-                  className="justify-self-end font-sans-400 text-[12px] text-gray-200 hover:text-white"
+              {!isLoading &&
+                (currentUser ? (
+                  <div className="justify-self-end">
+                    <Notification
+                      unreadCount={currentUser.unreadCount}
+                      mobile
+                      open={isNotifOpen}
+                      onOpenChange={setIsNotifOpen}
+                    />
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="justify-self-end font-sans-400 text-[12px] text-gray-200 hover:text-white"
+                  >
+                    로그인
+                  </Link>
+                ))}
+            </div>
+
+            {isNotifOpen && (
+              <div className="absolute inset-x-0 top-0 z-10 flex h-15 w-full items-center bg-[#0F0F0F]">
+                <button
+                  type="button"
+                  onClick={() => setIsNotifOpen(false)}
+                  aria-label="뒤로가기"
+                  className="flex shrink-0 items-center"
                 >
-                  로그인
-                </Link>
-              ))}
+                  <Image src="/backspace.png" alt="" width={24} height={24} />
+                </button>
+                <h1 className="flex-1 text-center font-primary-bold text-xl text-white">알림</h1>
+                {/* 뒤로가기 버튼 너비만큼 오른쪽에도 빈 공간을 둬서 타이틀이 실제로 가운데 오게 한다 */}
+                <div className="size-6 shrink-0" aria-hidden="true" />
+              </div>
+            )}
           </div>
 
           {/* 태블릿 이상: 로고(좌) - 사용자 정보/로그인(우) */}
