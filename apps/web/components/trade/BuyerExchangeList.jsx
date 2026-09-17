@@ -3,9 +3,7 @@
 import PhotoCard from "@/components/card/PhotoCard";
 import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 import ConfirmModal from "@/components/ui/ConfirmModal";
-// TODO: 상세 페이지에 실제 API 가 붙으면 getMockSaleExchanges 를 getSaleExchanges 로 되돌린다
-import { getMockSaleExchanges } from "@/lib/api/mockSaleExchanges";
-import { cancelExchangeProposal } from "@/lib/trade/api";
+import { cancelExchangeProposal, getSaleExchanges } from "@/lib/trade/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -23,7 +21,7 @@ export default function BuyerExchangeList({ saleId }) {
   useEffect(() => {
     const loadExchanges = async () => {
       try {
-        const result = await getMockSaleExchanges(saleId);
+        const result = await getSaleExchanges(saleId);
         setExchanges(result);
         setError("");
       } catch {

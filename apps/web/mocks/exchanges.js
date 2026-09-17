@@ -23,9 +23,9 @@ export const mockExchanges = [
     saleId: "sale-001",
     offerCardId: "card-004",
     message: "제가 가진 카드로 교환을 제안합니다.",
-    status: "PENDING",
+    status: "REJECTED",
     createdAt: "2026-09-01T12:00:00.000Z",
-    respondedAt: null,
+    respondedAt: "2026-09-01T15:30:00.000Z",
   },
 
   // sale-002
