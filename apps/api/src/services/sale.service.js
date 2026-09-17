@@ -344,7 +344,32 @@ export async function getSaleById(id) {
   if (!sale) {
     throw new ApiError(404, "SALE_NOT_FOUND", "판매글을 찾을 수 없습니다.");
   }
-  return sale;
+
+  // getSales(목록)와 동일하게, card는 image 관계를 평평하게 편 응답 형태로 변환한다
+  // (exchanges[].offerCard는 프론트가 그대로 중첩 구조를 기대해서 raw 그대로 둔다)
+  const hasPendingExchange = sale.exchanges.some((exchange) => exchange.status === "PENDING");
+
+  return {
+    id: sale.id,
+    card: {
+      id: sale.card.id,
+      name: sale.card.name,
+      tag: sale.card.tag,
+      score: sale.card.image.score,
+      image: sale.card.image.imageUrl,
+      filterType: sale.card.filterType,
+      category: sale.card.image.category,
+    },
+    seller: { id: sale.seller.id, nickname: sale.seller.nickname },
+    description: sale.description,
+    canExchange: sale.canExchange,
+    price: Number(sale.price),
+    status: sale.status === "ON_SALE" && hasPendingExchange ? "ON_EXCHANGE" : sale.status,
+    createdAt: sale.createdAt,
+    updatedAt: sale.updatedAt,
+    closedAt: sale.closedAt,
+    exchanges: sale.exchanges,
+  };
 }
 
 // 판매글 수정: 존재 확인 후, 전달받은 data로 Repository의 수정 함수 호출

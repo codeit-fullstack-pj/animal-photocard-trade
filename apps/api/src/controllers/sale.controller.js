@@ -229,7 +229,7 @@ export async function getSaleById(req, res) {
   }
 
   const sale = await saleService.getSaleById(params.id);
-  res.json(sale);
+  res.json({ data: sale });
 }
 
 // PATCH /sales/:id — body에서 수정 허용된 필드(description/canExchange/price)만 골라서 전달

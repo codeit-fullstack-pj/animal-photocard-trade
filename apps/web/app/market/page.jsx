@@ -378,7 +378,7 @@ export default function MarketPage() {
     try {
       await getCurrentUser();
 
-      router.push(`/my-sales/${card.id}`);
+      router.push(`/market/${card.id}`);
     } catch (error) {
       if (error?.status === 401) {
         setIsLoginModalOpen(true);

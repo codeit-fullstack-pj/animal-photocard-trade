@@ -10,7 +10,7 @@ const ExchangeListView = ({ sale, currentUser, isSeller }) => {
   });
 
   return (
-    <div className="absolute right-84.75 top-362.5 w-308.75">
+    <div className="w-full">
       <div className="grid grid-cols-2 gap-6">
         {saleExchanges.map((exchange) => {
           // 신청자가 제시한 카드, 그 카드 주인(=신청자) — 이미 데이터 안에 다 포함되어 있음

@@ -30,13 +30,14 @@ export default function MobileFilter({
   categories,
   setCategories,
   soldOut,
-  setSoldOut,
+  setSoldOut = () => {},
   totalCount = 0,
   categoryCounts = {
     DOG: 0,
     CAT: 0,
   },
   onApply,
+  showSoldOut = true,
 }) {
   const [activeTab, setActiveTab] = useState("category");
 
@@ -192,10 +193,11 @@ export default function MobileFilter({
           </button>
 
           {/* 품절 여부 */}
-          <button
-            type="button"
-            onClick={() => setActiveTab("soldOut")}
-            className="
+          {showSoldOut && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("soldOut")}
+              className="
               relative
               flex
               w-[87px]
@@ -204,14 +206,14 @@ export default function MobileFilter({
               text-[14px]
               font-medium
             "
-          >
-            <span className={activeTab === "soldOut" ? "text-white" : "text-[#8A8A8A]"}>
-              품절 여부
-            </span>
+            >
+              <span className={activeTab === "soldOut" ? "text-white" : "text-[#8A8A8A]"}>
+                품절 여부
+              </span>
 
-            {activeTab === "soldOut" && (
-              <span
-                className="
+              {activeTab === "soldOut" && (
+                <span
+                  className="
                   absolute
                   bottom-0
                   left-[11%]
@@ -219,9 +221,10 @@ export default function MobileFilter({
                   h-[2px]
                   bg-white
                 "
-              />
-            )}
-          </button>
+                />
+              )}
+            </button>
+          )}
         </div>
 
         {/* 내용 */}
@@ -266,7 +269,7 @@ export default function MobileFilter({
           )}
 
           {/* 품절 여부 */}
-          {activeTab === "soldOut" && (
+          {showSoldOut && activeTab === "soldOut" && (
             <div className="flex flex-col">
               {SOLD_OUT_OPTIONS.map((option) => {
                 const isSelected = soldOut === option.value;

@@ -40,3 +40,8 @@ export function createSale({ cardId, description, canExchange, price }) {
     body: { cardId, description, canExchange, price },
   });
 }
+
+// 판매글 상세 조회
+export function getSale(id) {
+  return apiFetch(`/sales/${id}`);
+}
