@@ -79,6 +79,12 @@ export default function MarketPage() {
   // 전체 카드 개수
   const [totalCount, setTotalCount] = useState(0);
 
+  // 카테고리별 카드 개수
+  const [categoryCounts, setCategoryCounts] = useState({
+    DOG: 0,
+    CAT: 0,
+  });
+
   // 로그인 모달
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
@@ -118,6 +124,49 @@ export default function MarketPage() {
   /**
    * GET /sales
    */
+  const fetchCategoryCounts = useCallback(async () => {
+    try {
+      const fetchCount = async (category) => {
+        const params = new URLSearchParams();
+
+        // 실제 카드 목록이 아니라 개수만 필요하므로 1개만 요청
+        params.set("limit", "1");
+        params.set("category", category);
+
+        // 검색어가 있다면 검색 결과 기준으로 카운팅
+        if (keyword.trim()) {
+          params.set("keyword", keyword.trim());
+        }
+
+        // 품절 포함 여부도 동일하게 적용
+        params.set("includeSoldOut", String(isSoldOutIncluded));
+
+        const result = await apiFetch(`/sales?${params.toString()}`);
+        console.log("================================");
+        console.log("category:", category);
+        console.log("요청 URL:", `/sales?${params.toString()}`);
+        console.log("API 응답:", result);
+        console.log("totalCount:", result?.totalCount);
+        console.log("================================");
+        return typeof result?.totalCount === "number" ? result.totalCount : 0;
+      };
+
+      const [dogCount, catCount] = await Promise.all([fetchCount("DOG"), fetchCount("CAT")]);
+
+      setCategoryCounts({
+        DOG: dogCount,
+        CAT: catCount,
+      });
+    } catch (error) {
+      console.error("카테고리별 판매 개수 조회 실패:", error);
+
+      setCategoryCounts({
+        DOG: 0,
+        CAT: 0,
+      });
+    }
+  }, [keyword, isSoldOutIncluded]);
+
   const fetchSales = useCallback(
     async ({ cursor = null, append = false } = {}) => {
       // 이미 요청 중이면 중복 요청 방지
@@ -231,7 +280,9 @@ export default function MarketPage() {
       cursor: null,
       append: false,
     });
-  }, [fetchSales]);
+
+    fetchCategoryCounts();
+  }, [fetchSales, fetchCategoryCounts]);
 
   /**
    * 모바일 필터 열기
@@ -418,6 +469,7 @@ export default function MarketPage() {
         setSoldOut={setTempIsSoldOutIncluded}
         totalCount={totalCount}
         onApply={handleApplyMobileFilter}
+        categoryCounts={categoryCounts}
       />
 
       {/* ========================================

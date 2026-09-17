@@ -73,14 +73,15 @@ export default function MarketFilters({
 
   // ========================================
   // 카테고리 선택
-  // API는 category 하나만 지원하므로
-  // 강아지 / 고양이 중 하나만 선택
+  // DOG / CAT 모두 선택 가능
   // ========================================
   const handleCategoryChange = (category) => {
     if (categories.includes(category)) {
-      setCategories([]);
+      // 이미 선택되어 있으면 제거
+      setCategories(categories.filter((item) => item !== category));
     } else {
-      setCategories([category]);
+      // 선택되어 있지 않으면 추가
+      setCategories([...categories, category]);
     }
   };
 
@@ -190,10 +191,10 @@ export default function MarketFilters({
         className="
           relative
           z-50
+          ml-[29px]
           hidden
           shrink-0
           tablet:block
-          ml-[29px]
         "
       >
         {/* 카테고리 버튼 */}
@@ -233,63 +234,36 @@ export default function MarketFilters({
               py-[6px]
             "
           >
-            {/* 강아지 */}
-            <label
-              className="
-                font-sans-400
-                flex
-                h-[40px]
-                cursor-pointer
-                items-center
-                justify-between
-                px-[16px]
-                text-[16px]
-                text-white
-              "
-            >
-              <span>강아지</span>
-
-              <input
-                type="checkbox"
-                checked={categories.includes("DOG")}
-                onChange={() => handleCategoryChange("DOG")}
+            {CATEGORY_OPTIONS.map((category) => (
+              <label
+                key={category.value}
                 className="
-                  h-[16px]
-                  w-[16px]
+                  font-sans-400
+                  flex
+                  h-[40px]
                   cursor-pointer
-                  accent-white
+                  items-center
+                  justify-between
+                  px-[16px]
+                  text-[16px]
+                  text-white
                 "
-              />
-            </label>
+              >
+                <span>{category.label}</span>
 
-            {/* 고양이 */}
-            <label
-              className="
-                font-sans-400
-                flex
-                h-[40px]
-                cursor-pointer
-                items-center
-                justify-between
-                px-[16px]
-                text-[16px]
-                text-white
-              "
-            >
-              <span>고양이</span>
-
-              <input
-                type="checkbox"
-                checked={categories.includes("CAT")}
-                onChange={() => handleCategoryChange("CAT")}
-                className="
-                  h-[16px]
-                  w-[16px]
-                  cursor-pointer
-                  accent-white
-                "
-              />
-            </label>
+                <input
+                  type="checkbox"
+                  checked={categories.includes(category.value)}
+                  onChange={() => handleCategoryChange(category.value)}
+                  className="
+                    h-[16px]
+                    w-[16px]
+                    cursor-pointer
+                    accent-white
+                  "
+                />
+              </label>
+            ))}
           </div>
         )}
       </div>
@@ -299,16 +273,16 @@ export default function MarketFilters({
       ======================================== */}
       <label
         className="
-        hidden
-        tablet:flex
-        tablet:h-12
-        tablet:shrink-0
-        tablet:cursor-pointer
-        tablet:items-center
-        tablet:gap-2
-        tablet:text-[14px]
-        tablet:text-white
-      "
+          hidden
+          tablet:flex
+          tablet:h-12
+          tablet:shrink-0
+          tablet:cursor-pointer
+          tablet:items-center
+          tablet:gap-2
+          tablet:text-[14px]
+          tablet:text-white
+        "
       >
         <span className="whitespace-nowrap">품절 포함</span>
 
@@ -317,11 +291,11 @@ export default function MarketFilters({
           checked={soldOut}
           onChange={(event) => setSoldOut(event.target.checked)}
           className="
-          size-4
-          shrink-0
-          cursor-pointer
-          accent-[#9b51e5]
-        "
+            size-4
+            shrink-0
+            cursor-pointer
+            accent-[#A656F5]
+          "
         />
       </label>
 

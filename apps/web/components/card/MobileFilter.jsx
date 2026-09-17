@@ -32,6 +32,10 @@ export default function MobileFilter({
   soldOut,
   setSoldOut,
   totalCount = 0,
+  categoryCounts = {
+    DOG: 0,
+    CAT: 0,
+  },
   onApply,
 }) {
   const [activeTab, setActiveTab] = useState("category");
@@ -43,21 +47,21 @@ export default function MobileFilter({
   /**
    * 카테고리 선택
    *
-   * API가 category 하나만 지원하므로
-   * 강아지 / 고양이 중 하나만 선택한다.
+   * [] = 전체
+   * ["DOG"] = 강아지
+   * ["CAT"] = 고양이
+   * ["DOG", "CAT"] = 강아지 + 고양이
    */
   const handleCategorySelect = (category) => {
-    setCategories([category]);
+    if (categories.includes(category)) {
+      setCategories(categories.filter((item) => item !== category));
+    } else {
+      setCategories([...categories, category]);
+    }
   };
 
   /**
    * 품절 여부 선택
-   *
-   * false = 품절 제외
-   * true = 품절 포함
-   *
-   * 실제 API 요청에서는 부모 page.jsx에서
-   * includeSoldOut 값으로 전달한다.
    */
   const handleSoldOutSelect = (value) => {
     setSoldOut(value);
@@ -65,9 +69,6 @@ export default function MobileFilter({
 
   /**
    * 초기화
-   *
-   * 현재 Bottom Sheet의 임시 상태만 초기화한다.
-   * "적용" 버튼을 눌러야 실제 필터에 반영된다.
    */
   const handleReset = () => {
     setCategories([]);
@@ -75,15 +76,24 @@ export default function MobileFilter({
   };
 
   /**
-   * 현재 선택된 카테고리
+   * 전체 카테고리 개수
+   *
+   * 카테고리를 하나도 선택하지 않았으면
+   * 강아지 + 고양이 전체 개수를 표시
    */
-  const selectedCategory = categories[0] ?? null;
+  const allCategoryCount = (categoryCounts.DOG ?? 0) + (categoryCounts.CAT ?? 0);
+
+  /**
+   * 현재 선택된 카테고리의 카드 개수
+   */
+  const selectedCount =
+    categories.length === 0
+      ? allCategoryCount
+      : categories.reduce((total, category) => total + (categoryCounts[category] ?? 0), 0);
 
   return (
     <div className="fixed inset-0 z-50 tablet:hidden">
-      {/* ========================================
-          배경
-      ======================================== */}
+      {/* 배경 */}
       <button
         type="button"
         aria-label="필터 닫기"
@@ -91,9 +101,7 @@ export default function MobileFilter({
         className="absolute inset-0 bg-black/60"
       />
 
-      {/* ========================================
-          Bottom Sheet
-      ======================================== */}
+      {/* Bottom Sheet */}
       <section
         className="
           absolute
@@ -105,9 +113,7 @@ export default function MobileFilter({
           text-white
         "
       >
-        {/* ========================================
-            헤더
-        ======================================== */}
+        {/* 헤더 */}
         <div
           className="
             relative
@@ -142,9 +148,7 @@ export default function MobileFilter({
           </button>
         </div>
 
-        {/* ========================================
-            탭
-        ======================================== */}
+        {/* 탭 */}
         <div
           className="
             flex
@@ -220,17 +224,15 @@ export default function MobileFilter({
           </button>
         </div>
 
-        {/* ========================================
-            내용
-        ======================================== */}
+        {/* 내용 */}
         <div className="min-h-[160px] px-[32px] py-[16px]">
-          {/* ======================================
-              카테고리
-          ====================================== */}
+          {/* 카테고리 */}
           {activeTab === "category" && (
             <div className="flex flex-col">
               {CATEGORY_OPTIONS.map((option) => {
-                const isSelected = selectedCategory === option.value;
+                const isSelected = categories.includes(option.value);
+
+                const count = categoryCounts[option.value] ?? 0;
 
                 return (
                   <button
@@ -256,16 +258,14 @@ export default function MobileFilter({
                       {option.label}
                     </span>
 
-                    <span className="text-[14px] text-[#A4A4A4]">{totalCount}개</span>
+                    <span className="text-[14px] text-[#A4A4A4]">{count}개</span>
                   </button>
                 );
               })}
             </div>
           )}
 
-          {/* ======================================
-              품절 여부
-          ====================================== */}
+          {/* 품절 여부 */}
           {activeTab === "soldOut" && (
             <div className="flex flex-col">
               {SOLD_OUT_OPTIONS.map((option) => {
@@ -303,9 +303,7 @@ export default function MobileFilter({
           )}
         </div>
 
-        {/* ========================================
-            하단
-        ======================================== */}
+        {/* 하단 */}
         <div
           className="
             flex
@@ -351,7 +349,7 @@ export default function MobileFilter({
               text-white
             "
           >
-            {totalCount}개 포토카드 보기
+            {selectedCount}개 포토카드 보기
           </button>
         </div>
       </section>

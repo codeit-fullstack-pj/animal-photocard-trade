@@ -20,43 +20,27 @@ export async function getSales({
   page,
   limit = 20,
 }) {
-  // page 방식은 판매 목록과 전체 개수를 함께 조회하고 cursor 방식은 목록만 조회
-  const [sales, totalCount] =
-    page !== undefined
-      ? await Promise.all([
-          saleRepository.findSales({
-            category,
-            keyword,
-            includeSoldOut,
-            status,
-            sellerId,
-            orderBy,
-            cursor,
-            page,
-            limit,
-          }),
-          saleRepository.countSales({
-            category,
-            keyword,
-            includeSoldOut,
-            status,
-            sellerId,
-          }),
-        ])
-      : [
-          await saleRepository.findSales({
-            category,
-            keyword,
-            includeSoldOut,
-            status,
-            sellerId,
-            orderBy,
-            cursor,
-            page,
-            limit,
-          }),
-          undefined,
-        ];
+  const [sales, totalCount] = await Promise.all([
+    saleRepository.findSales({
+      category,
+      keyword,
+      includeSoldOut,
+      status,
+      sellerId,
+      orderBy,
+      cursor,
+      page,
+      limit,
+    }),
+
+    saleRepository.countSales({
+      category,
+      keyword,
+      includeSoldOut,
+      status,
+      sellerId,
+    }),
+  ]);
 
   // cursor 방식에서만 한 개 더 조회한 결과로 다음 페이지 존재 여부를 확인
   const hasNextPage = page === undefined && sales.length > limit;
@@ -106,10 +90,9 @@ export async function getSales({
   return {
     lists,
     nextCursor,
+    totalCount,
 
-    // page 방식일 때만 전체 개수와 전체 페이지 수를 반환
     ...(page !== undefined && {
-      totalCount,
       totalPages: Math.ceil(totalCount / limit),
     }),
   };
