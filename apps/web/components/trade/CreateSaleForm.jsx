@@ -5,13 +5,13 @@ import { useState } from "react";
 import ScaledPhotoCard from "@/components/card/ScaledPhotoCard";
 import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 
-export default function ExchangeProposalForm({ selectedCard, onBack, onSubmit, isSubmitting }) {
+export default function CreateSaleForm({ selectedCard, onBack, onSubmit, isSubmitting }) {
   const [message, setMessage] = useState("");
 
   return (
     <div className="flex h-full flex-col">
       <h2 className="hidden pc:mb-8 pc:block font-primary-bold text-2xl text-white">
-        교환할 포토카드 선택하기
+        나의 포토카드 판매하기
       </h2>
 
       <div className="flex flex-1 flex-col pc:flex-row pc:gap-10">
@@ -20,11 +20,11 @@ export default function ExchangeProposalForm({ selectedCard, onBack, onSubmit, i
         </div>
 
         <div className="flex flex-none flex-col pc:flex-1">
-          <p className="font-sans-600 text-base text-white">교환 제시 내용</p>
+          <p className="font-sans-600 text-base text-white">판매글 설명</p>
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
-            placeholder="내용을 입력해 주세요"
+            placeholder="카드 소개글을 입력해 주세요"
             className="font-sans-400 mt-2 min-h-30 flex-1 resize-none rounded-xs border border-gray-200 bg-transparent p-4 text-sm text-white placeholder:text-gray-200 focus:border-purple focus:outline-none pc:h-60 pc:flex-none"
           />
 
@@ -43,7 +43,7 @@ export default function ExchangeProposalForm({ selectedCard, onBack, onSubmit, i
               disabled={isSubmitting}
               className="font-sans-700 h-12.5 flex-7 rounded-xs bg-yellow-button text-base text-black disabled:opacity-50 pc:flex-1"
             >
-              교환 신청하기
+              판매하기
             </button>
           </div>
         </div>

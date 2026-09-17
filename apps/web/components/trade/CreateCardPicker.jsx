@@ -13,7 +13,7 @@ const CATEGORY_OPTIONS = [
   { value: "CAT", label: "고양이" },
 ];
 
-export default function OfferCardPicker({ onSelect }) {
+export default function CreateCardPicker({ onSelect }) {
   const [keyword, setKeyword] = useState("");
   const [debounceKeyword, setDebouncedKeyword] = useState("");
   const [selectedCategory, setSelectedCategory] = useState([]);
@@ -62,7 +62,7 @@ export default function OfferCardPicker({ onSelect }) {
         마이갤러리
       </h2>
       <h3 className="hidden font-primary-bold mt-10 tablet:text-[40px] pc:text-[46px] leading-none text-white tablet:block">
-        교환할 포토카드 선택하기
+        나의 포토카드 판매하기
       </h3>
       <div className="hidden mt-5 border-t-2 border-gray-100 tablet:block" />
       <div className="mb-5 flex items-center justify-start gap-2 tablet:mt-5 tablet:mb-0 tablet:gap-7">

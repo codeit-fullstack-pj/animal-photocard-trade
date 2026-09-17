@@ -1,6 +1,6 @@
 "use client";
 
-import PhotoCard from "@/components/card/PhotoCard";
+import ScaledPhotoCard from "@/components/card/ScaledPhotoCard";
 import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { cancelExchangeProposal, getSaleExchanges } from "@/lib/trade/api";
@@ -70,7 +70,7 @@ export default function BuyerExchangeList({ saleId }) {
               <p className="font-sans-400 w-full rounded-xs border border-gray-200 bg-gray-500 px-4 py-3 text-sm text-white">
                 {exchange.message || "교환을 신청합니다."}
               </p>
-              <PhotoCard {...cardToPhotoCardProps(exchange.offerCard)} />
+              <ScaledPhotoCard {...cardToPhotoCardProps(exchange.offerCard)} />
               <button
                 type="button"
                 onClick={() => setCancelTarget(exchange)}

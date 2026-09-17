@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-import PhotoCard from "../../components/card/PhotoCard";
+import ScaledPhotoCard from "../../components/card/ScaledPhotoCard";
 import MySalesMobileFilter from "@/components/card/MySalesMobileFilter";
 import RandomPointLauncher from "@/components/point/RandomPointLauncher";
 import AppHeader from "@/components/ui/AppHeader";
@@ -521,7 +521,7 @@ export default function MySalesPage() {
           <section className="mx-auto mt-[32px] grid w-full max-w-[335px] grid-cols-2 gap-[12px] tablet:max-w-[664px] tablet:gap-[20px] pc:mt-[40px] pc:max-w-none pc:grid-cols-3">
             {" "}
             {sales.map((sale) => (
-              <PhotoCard
+              <ScaledPhotoCard
                 key={sale.id}
                 variant="sale"
                 status={

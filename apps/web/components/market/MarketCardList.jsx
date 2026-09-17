@@ -1,4 +1,4 @@
-import PhotoCard from "@/components/card/PhotoCard";
+import ScaledPhotoCard from "@/components/card/ScaledPhotoCard";
 
 export default function MarketCardList({ cards, onCardClick }) {
   return (
@@ -18,7 +18,7 @@ export default function MarketCardList({ cards, onCardClick }) {
     >
       {cards.map((card) => (
         <li key={card.id} className="w-full min-w-0">
-          <PhotoCard
+          <ScaledPhotoCard
             variant="sale"
             title={card.title ?? card.name}
             tag={card.tag}

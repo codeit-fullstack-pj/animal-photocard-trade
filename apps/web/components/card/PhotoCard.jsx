@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+import AutoFitText from "@/components/gallery/AutoFitText";
+
 import { SCORE_CONFIG } from "./scoreConfig";
 
 // filterType(1~4, useImageVariants.js VARIANTS 순서와 동일: 원본·세피아·모노·도트) 별 렌더링 방식.
@@ -10,6 +12,9 @@ const FILTER_CONFIG = { 2: "sepia(0.7)", 3: "grayscale(1)" };
 const DOT_FILTER_TYPE = 4;
 const DOT_IMAGE_SIZES = "40px";
 
+// 이 컴포넌트는 항상 400px 고정 폭(w-100)으로 그려진다. 화면 크기별 대응은 여기서 브레이크포인트로
+// 하지 않고, 부모(ScaledPhotoCard)가 실제 컨테이너 폭을 재서 transform: scale()로 전체를 통째로
+// 축소/확대한다 — gallery/PhotoCard.jsx + GalleryCardItem.jsx와 같은 방식.
 export default function PhotoCard({
   status,
   title,
@@ -29,12 +34,8 @@ export default function PhotoCard({
   return (
     <article
       onClick={onClick}
-      className={`w-full tracking-tight rounded-lg p-1.25 tablet:rounded-[10px] tablet:p-3.25 ${
-        onClick ? "cursor-pointer" : ""
-      } ${
-        variant === "owned"
-          ? "h-70.5 tablet:h-139.25 pc:h-146.5"
-          : "h-67.5 tablet:h-133.5 pc:h-137.5"
+      className={`w-100 tracking-tight rounded-[10px] p-3.25 ${onClick ? "cursor-pointer" : ""} ${
+        variant === "owned" ? "h-146.5" : "h-137.5"
       }`}
       style={{
         background:
@@ -43,12 +44,12 @@ export default function PhotoCard({
     >
       {/* 콘텐츠 영역 */}
       <div
-        className="flex h-full flex-col rounded-[2px] px-1.5 pt-2.75 pb-1.5 tablet:px-2.75 tablet:pt-3.75 tablet:pb-2.75 pc:py-4.75"
+        className="flex h-full flex-col rounded-[2px] px-2.75 py-4.75"
         style={{
           background: "linear-gradient(180deg, #636363 0%, #313131 100%)",
         }}
       >
-        <div className="relative aspect-168/116 max-h-29 w-full shrink-0 overflow-hidden rounded-[5px] tablet:aspect-344/233 tablet:max-h-58.25 tablet:rounded-[10px] pc:aspect-400/232 pc:max-h-58">
+        <div className="relative aspect-400/232 w-full shrink-0 overflow-hidden rounded-[10px]">
           {/* 이미지 */}
           {imageUrl ? (
             <Image
@@ -56,26 +57,28 @@ export default function PhotoCard({
               alt={title}
               fill
               sizes={isDot ? DOT_IMAGE_SIZES : "353px"}
-              className="rounded-[5px] border border-[#424242] object-cover tablet:rounded-[10px] tablet:border-[3px]"
+              className="rounded-[10px] border-[3px] border-[#424242] object-cover"
               style={
                 isDot ? { imageRendering: "pixelated" } : { filter: FILTER_CONFIG[filterType] }
               }
             />
           ) : (
-            <div className="font-sans-400 flex h-full items-center justify-center text-[13px] text-[#A4A4A4]">
-              포토카드 이미지
+            <div className="flex h-full items-center justify-center px-2">
+              <AutoFitText className="font-sans-400 text-[13px] text-[#A4A4A4]">
+                포토카드 이미지
+              </AutoFitText>
             </div>
           )}
 
           {/* 판매 중은 흰색, 교환 제시 중은 노란색으로 표시 */}
           {!isSoldOut && status && (
-            <span
-              className={`font-sans-500 absolute top-1.5 left-1.5 z-10 bg-black/50 px-1 py-0.5 text-[8px] tablet:top-3 tablet:left-3 tablet:px-2 tablet:py-1.25 tablet:text-[12px] ${
+            <AutoFitText
+              className={`font-sans-500 absolute top-3 left-3 z-10 max-w-[calc(100%-1.5rem)] bg-black/50 px-2 py-1.25 text-[12px] ${
                 status === "판매 중" ? "text-white" : "text-[#FFF3A4]"
               }`}
             >
               {status}
-            </span>
+            </AutoFitText>
           )}
 
           {/* 품절 표시 */}
@@ -87,12 +90,15 @@ export default function PhotoCard({
         </div>
 
         {/* 이름 */}
-        <h2 className="font-sans-700 mt-1.75 w-4/5 text-[11px] leading-3.5 text-white tablet:mt-2.5 tablet:text-[20px] tablet:leading-6.5 pc:text-[22px]">
+        <AutoFitText
+          as="h2"
+          className="font-sans-700 mt-2.5 w-4/5 text-[22px] leading-6.5 text-white"
+        >
           {tag} {title}
-        </h2>
+        </AutoFitText>
 
         {/* 관상 지수 */}
-        <div className="mt-2 space-y-0.75 tablet:mt-3 tablet:space-y-1.5">
+        <div className="mt-3 space-y-1.5">
           {SCORE_CONFIG[category]?.map(({ key, label }) => {
             const scoreValue = score?.axes?.find((axis) => axis.field === key)?.value ?? 0;
 
@@ -102,23 +108,26 @@ export default function PhotoCard({
 
         {/* 판매카드 포인트 표기 */}
         {variant === "sale" && (
-          <div className="mt-1.75 border-t border-[#1D1D1D] pt-1.75 tablet:mt-3 tablet:pt-2">
+          <div className="mt-3 border-t border-[#1D1D1D] pt-2">
             <div className="flex items-center justify-between">
-              <span className="font-sans-400 text-[7px] text-white tablet:text-[12px]">
+              <AutoFitText className="font-sans-400 text-[12px] text-white">
                 구매 포인트
-              </span>
+              </AutoFitText>
 
-              <div className="flex items-center gap-[6px]">
-                <strong className="font-sans-400 text-[10px] leading-3.5 text-yellow-button tablet:text-[20px]">
+              <div className="flex min-w-0 items-center gap-[6px]">
+                <AutoFitText
+                  as="strong"
+                  className="font-sans-400 text-[20px] leading-3.5 text-yellow-button"
+                >
                   {Number(point).toLocaleString("ko-KR")}
-                </strong>
+                </AutoFitText>
 
                 <Image
                   src="/cardpoint.png"
                   alt="포인트"
                   width={16}
                   height={16}
-                  className="h-auto w-2 translate-y-[3px] tablet:w-4"
+                  className="h-auto w-4 translate-y-[3px]"
                 />
               </div>
             </div>
@@ -127,8 +136,8 @@ export default function PhotoCard({
 
         {/* 설명카드 소개 표기 */}
         {variant === "owned" && (
-          <div className="pt-2 tablet:pt-3 pc:pt-5">
-            <p className="font-sans-400 text-[7px] leading-2.25 break-all text-gray-200 tablet:text-[12px] tablet:leading-4.25 pc:text-[14px]">
+          <div className="pt-5">
+            <p className="font-sans-400 text-[14px] leading-4.25 break-all text-gray-200">
               {description}
             </p>
           </div>
@@ -136,13 +145,7 @@ export default function PhotoCard({
 
         {/* 하단 공통 서비스 로고 */}
         <div className="mt-auto flex justify-center">
-          <Image
-            src="/logo.png"
-            alt="최애 멍냥"
-            width={96}
-            height={24}
-            className="h-2.5 w-10 tablet:h-5 tablet:w-20 pc:h-6 pc:w-24"
-          />
+          <Image src="/logo.png" alt="최애 멍냥" width={96} height={24} className="h-6 w-24" />
         </div>
       </div>
     </article>
@@ -151,19 +154,17 @@ export default function PhotoCard({
 
 function ScoreRow({ label, value }) {
   return (
-    <div className="grid w-full grid-cols-[50px_1fr_23px] items-center gap-x-1 tablet:grid-cols-[100px_1fr_45px] tablet:gap-x-2.5">
-      <span className="font-sans-500 text-[7px] whitespace-nowrap text-white tablet:text-[14px]">
-        {label}
-      </span>
+    <div className="grid w-full grid-cols-[100px_1fr_45px] items-center gap-x-2.5">
+      <AutoFitText className="font-sans-500 text-[14px] text-white">{label}</AutoFitText>
 
       {/* 관상 지수 막대 */}
-      <div className="h-1 overflow-hidden rounded-full bg-white tablet:h-2">
+      <div className="h-2 overflow-hidden rounded-full bg-white">
         <div className="h-full rounded-full bg-[#A656F5]" style={{ width: `${value}%` }} />
       </div>
 
-      <span className="font-sans-600 text-right text-[7px] whitespace-nowrap text-white tablet:text-[14px]">
+      <AutoFitText className="font-sans-600 text-right text-[14px] text-white">
         {value}%
-      </span>
+      </AutoFitText>
     </div>
   );
 }

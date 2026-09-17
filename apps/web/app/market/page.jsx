@@ -8,6 +8,7 @@ import MarketFilters from "@/components/market/MarketFilters";
 import MarketCardList from "@/components/market/MarketCardList";
 import MarketEmpty from "@/components/market/MarketEmpty";
 import MobileFilter from "@/components/card/MobileFilter";
+import CreateSaleModal from "@/components/trade/CreateSaleModal";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import AppHeader from "@/components/ui/AppHeader";
 
@@ -87,6 +88,9 @@ export default function MarketPage() {
 
   // 로그인 모달
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // 판매글 생성 모달
+  const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
 
   // IntersectionObserver
   const observerRef = useRef(null);
@@ -413,7 +417,7 @@ export default function MarketPage() {
           pc:pb-[80px]
         "
       >
-        <MarketHeader />
+        <MarketHeader onOpenSaleModal={() => setIsSaleModalOpen(true)} />
 
         {/* ========================================
             검색 / 필터 / 정렬
@@ -470,6 +474,15 @@ export default function MarketPage() {
         totalCount={totalCount}
         onApply={handleApplyMobileFilter}
         categoryCounts={categoryCounts}
+      />
+
+      {/* ========================================
+          판매글 생성 모달
+      ======================================== */}
+      <CreateSaleModal
+        saleId="sale-001"
+        isOpen={isSaleModalOpen}
+        onClose={() => setIsSaleModalOpen(false)}
       />
 
       {/* ========================================

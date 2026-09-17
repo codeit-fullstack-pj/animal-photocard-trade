@@ -1,6 +1,4 @@
-import Link from "next/link";
-
-export default function MarketHeader() {
+export default function MarketHeader({ onOpenSaleModal }) {
   return (
     <section className="pt-[16px]">
       <div
@@ -36,8 +34,9 @@ export default function MarketHeader() {
         </h1>
 
         {/* 판매하기 버튼 */}
-        <Link
-          href="/my-sales"
+        <button
+          type="button"
+          onClick={onOpenSaleModal}
           className="
             fixed
             bottom-[40px]
@@ -64,7 +63,7 @@ export default function MarketHeader() {
           "
         >
           나의 포토카드 판매하기
-        </Link>
+        </button>
       </div>
     </section>
   );

@@ -42,23 +42,12 @@ export default function TradeFilter({ options, selected, onChange, optionCounts 
             <li key={option.value}>
               <label className="flex items-center justify-between">
                 <span className="font-sans-400 text-base text-white">{option.label}</span>
-                <span className="relative inline-flex size-4 shrink-0 items-center justify-center">
-                  <input
-                    type="checkbox"
-                    checked={selected.includes(option.value)}
-                    onChange={() => handleToggle(option.value)}
-                    className="size-4 appearance-none border border-[#D9D9D9] bg-white"
-                  />
-                  {selected.includes(option.value) && (
-                    <Image
-                      src="/filter_checked.png"
-                      alt=""
-                      width={10}
-                      height={10}
-                      className="pointer-events-none absolute inset-0 m-auto"
-                    />
-                  )}
-                </span>
+                <input
+                  type="checkbox"
+                  checked={selected.includes(option.value)}
+                  onChange={() => handleToggle(option.value)}
+                  className="size-4 shrink-0 accent-purple-button"
+                />
               </label>
             </li>
           ))}
