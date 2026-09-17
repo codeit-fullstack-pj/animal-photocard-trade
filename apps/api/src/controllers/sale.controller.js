@@ -84,10 +84,9 @@ export async function getSales(req, res) {
     data: {
       lists,
       nextCursor,
+      totalCount,
 
-      // page 방식일 때만 전체 개수와 전체 페이지 수를 응답에 포함
       ...(page !== undefined && {
-        totalCount,
         totalPages,
       }),
     },
