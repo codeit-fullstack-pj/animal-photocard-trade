@@ -200,7 +200,7 @@ export async function purchaseCard({ saleId, buyer }) {
         userId: exchange.offerCard.ownerId,
         type: "SALE_SOLDOUT_EXCHANGE",
         content: `'${sale.card.tag} ${sale.card.name}'에 제안한 교환이 취소되었습니다`,
-        targetId: null,
+        targetId: saleId,
       })),
       {
         userId: sale.sellerId,
