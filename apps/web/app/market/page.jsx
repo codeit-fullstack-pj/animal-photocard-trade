@@ -376,12 +376,9 @@ export default function MarketPage() {
    */
   const handleCardClick = async (card) => {
     try {
-      const currentUser = await getCurrentUser();
+      await getCurrentUser();
 
-      // 여기서 판매 정보와 로그인한 사용자 정보를 기준으로
-      // 어떤 모달을 보여줄지 결정
-      console.log("선택한 판매글:", card);
-      console.log("현재 사용자:", currentUser);
+      router.push(`/my-sales/${card.id}`);
     } catch (error) {
       if (error?.status === 401) {
         setIsLoginModalOpen(true);

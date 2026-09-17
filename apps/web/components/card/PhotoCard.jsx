@@ -117,7 +117,7 @@ export default function PhotoCard({
               <div className="flex min-w-0 items-center gap-[6px]">
                 <AutoFitText
                   as="strong"
-                  className="font-sans-400 text-[20px] leading-3.5 text-yellow-button"
+                  className="font-sans-400 text-[20px] leading-6 text-yellow-button"
                 >
                   {Number(point).toLocaleString("ko-KR")}
                 </AutoFitText>
