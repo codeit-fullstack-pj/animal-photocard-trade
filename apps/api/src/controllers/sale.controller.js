@@ -162,3 +162,46 @@ export async function listExchanges(req, res) {
 
   res.json({ data: result });
 }
+
+const SaleIdParams = type({
+  id: Uuid,
+});
+
+// GET /sales/:id — URL 파라미터에서 id 꺼내서 조회, 결과 그대로 응답
+export async function getSaleById(req, res) {
+  const [paramsError, params] = validate(req.params, SaleIdParams);
+  if (paramsError) {
+    throw new ApiError(400, "VALIDATION_ERROR", "id는 UUID 형식이어야 합니다");
+  }
+
+  const sale = await saleService.getSaleById(params.id);
+  res.json(sale);
+}
+
+// PATCH /sales/:id — body에서 수정 허용된 필드(description/canExchange/price)만 골라서 전달
+// (cardId, sellerId, status 등은 여기서 안 걸러지므로 절대 반영 안 됨)
+export async function updateSale(req, res) {
+  const [paramsError, params] = validate(req.params, SaleIdParams);
+  if (paramsError) {
+    throw new ApiError(400, "VALIDATION_ERROR", "id는 UUID 형식이어야 합니다");
+  }
+
+  const data = {
+    description: req.body.description,
+    canExchange: req.body.canExchange,
+    price: req.body.price,
+  };
+  const sale = await saleService.updateSale(params.id, data);
+  res.json({ data: sale });
+}
+
+// PATCH /sales/:id/cancel — body 없이 id만으로 캔슬 실행, { data: ... } 형태로 응답
+export async function cancelSale(req, res) {
+  const [paramsError, params] = validate(req.params, SaleIdParams);
+  if (paramsError) {
+    throw new ApiError(400, "VALIDATION_ERROR", "id는 UUID 형식이어야 합니다");
+  }
+
+  const result = await saleService.cancelSale(params.id);
+  res.json({ data: result });
+}

@@ -16,3 +16,12 @@ saleRouter.post("/:saleId/exchanges", requireAuth, saleController.createExchange
 
 // GET /sales/:saleId/exchanges — 판매글의 교환 제시 목록 (보는 사람에 따라 결과가 다르다)
 saleRouter.get("/:saleId/exchanges", requireAuth, saleController.listExchanges);
+
+// 판매글 상세 조회
+saleRouter.get("/:id", saleController.getSaleById);
+
+// 판매글 수정
+saleRouter.patch("/:id", saleController.updateSale);
+
+// 판매글 취소
+saleRouter.patch("/:id/cancel", saleController.cancelSale);

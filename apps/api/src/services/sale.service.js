@@ -281,3 +281,39 @@ export async function listExchanges({ saleId, viewer }) {
   );
   return { exchanges: exchanges.map(toExchangeResponse) };
 }
+
+// 판매글 조회: 존재하지 않으면 404 에러, 있으면 그대로 반환
+export async function getSaleById(id) {
+  const sale = await saleRepository.findSaleWithExchangesById(id);
+  if (!sale) {
+    throw new ApiError(404, "SALE_NOT_FOUND", "판매글을 찾을 수 없습니다.");
+  }
+  return sale;
+}
+
+// 판매글 수정: 존재 확인 후, 전달받은 data로 Repository의 수정 함수 호출
+export async function updateSale(id, data) {
+  const sale = await saleRepository.findSaleWithExchangesById(id);
+  if (!sale) {
+    throw new ApiError(404, "SALE_NOT_FOUND", "판매글을 찾을 수 없습니다.");
+  }
+  return saleRepository.updateSaleById(id, data);
+}
+
+// 판매글 취소: 존재 확인 후, 트랜잭션(판매글 취소 + 교환신청 일괄 취소) 실행
+// 트랜잭션 결과(배열)에서 각각 판매글 결과, 교환신청 취소 개수를 꺼내 응답 형태로 가공
+export async function cancelSale(id) {
+  const sale = await saleRepository.findSaleWithExchangesById(id);
+  if (!sale) {
+    throw new ApiError(404, "SALE_NOT_FOUND", "판매글을 찾을 수 없습니다.");
+  }
+
+  const [canceledSale, exchangeResult] = await saleRepository.cancelSaleTransaction(id);
+
+  return {
+    id: canceledSale.id,
+    status: canceledSale.status,
+    closedAt: canceledSale.closedAt,
+    canceledExchangeCount: exchangeResult.count,
+  };
+}
