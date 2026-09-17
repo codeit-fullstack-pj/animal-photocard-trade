@@ -6,7 +6,7 @@ export default function MarketHeader() {
       <div
         className="
           flex
-          h-[60px]
+          h-[20px]
           items-start
           justify-end
 
@@ -29,7 +29,7 @@ export default function MarketHeader() {
             tablet:leading-none
             tablet:tracking-[-1px]
 
-            pc:text-[48px]
+            pc:text-[62px]
           "
         >
           마켓플레이스
@@ -37,7 +37,7 @@ export default function MarketHeader() {
 
         {/* 판매하기 버튼 */}
         <Link
-          href="/market/sell"
+          href="/my-sales"
           className="
             fixed
             bottom-[40px]
@@ -49,7 +49,7 @@ export default function MarketHeader() {
             items-center
             justify-center
             rounded-[2px]
-            bg-[#9b51e5]
+            bg-[#A656F5]
             text-[18px]
             font-bold
             text-white
