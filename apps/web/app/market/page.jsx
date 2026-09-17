@@ -378,6 +378,7 @@ export default function MarketPage() {
       // 어떤 모달을 보여줄지 결정
       console.log("선택한 판매글:", card);
       console.log("현재 사용자:", currentUser);
+      router.push(`/market/${card.id}`);
     } catch (error) {
       if (error?.status === 401) {
         setIsLoginModalOpen(true);

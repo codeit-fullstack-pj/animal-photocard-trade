@@ -13,7 +13,7 @@ const ExchangeListView = ({ sale, currentUser, isSeller }) => {
   });
 
   return (
-    <div className="absolute right-[339px] top-[1450px] w-[1235px]">
+    <div className="w-full">
       <div className="grid grid-cols-2 gap-6">
         {saleExchanges.map((exchange) => {
           const offerCard = mockCards.find((c) => c.id === exchange.offerCardId);

@@ -16,8 +16,17 @@ export default function ConfirmModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-      <div className="relative flex w-full max-w-90 flex-col items-center gap-4 rounded-[20px] bg-gray-500 p-8 text-center tablet:max-w-105 tablet:gap-5 tablet:p-10 pc:max-w-115">
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      {/* dim — 여기를 누르면 닫힌다 */}
+      <button
+        type="button"
+        aria-label="닫기"
+        onClick={onClose}
+        disabled={isSubmitting}
+        className="absolute inset-0 cursor-default bg-black/70"
+      />
+
+      <div className="relative z-10 flex w-full max-w-90 flex-col items-center gap-4 rounded-[20px] bg-gray-500 p-8 text-center tablet:max-w-105 tablet:gap-5 tablet:p-10 pc:max-w-115">
         <button
           type="button"
           onClick={onClose}
@@ -38,7 +47,7 @@ export default function ConfirmModal({
               type="button"
               onClick={onConfirm}
               disabled={isSubmitting}
-              className="font-sans-600 h-12.5 flex-1 rounded-xs bg-purple-button text-sm text-black disabled:opacity-50 tablet:h-14 tablet:text-base"
+              className="font-sans-600 h-12.5 flex-1 rounded-xs bg-purple-button text-sm text-white disabled:opacity-50 tablet:h-14 tablet:text-base"
             >
               {confirmLabel}
             </button>
@@ -56,7 +65,7 @@ export default function ConfirmModal({
             type="button"
             onClick={onConfirm}
             disabled={isSubmitting}
-            className="font-sans-600 mt-2 h-12.5 w-full rounded-xs bg-purple-button text-sm text-black disabled:opacity-50 tablet:h-14 tablet:text-base"
+            className="font-sans-600 mt-2 h-12.5 w-full rounded-xs bg-purple-button text-sm text-white disabled:opacity-50 tablet:h-14 tablet:text-base"
           >
             {confirmLabel}
           </button>
