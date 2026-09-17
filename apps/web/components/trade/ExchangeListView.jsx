@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 // 판매글에 걸린 교환 신청 목록을 보여주는 컴포넌트
 const ExchangeListView = ({ sale, currentUser, isSeller }) => {
   // sale.exchanges: 이미 "이 판매글에 딸린 것만" 백엔드에서 걸러서 옴
@@ -8,7 +10,7 @@ const ExchangeListView = ({ sale, currentUser, isSeller }) => {
   });
 
   return (
-    <div className="absolute right-[339px] top-[1450px] w-[1235px]">
+    <div className="absolute right-84.75 top-362.5 w-308.75">
       <div className="grid grid-cols-2 gap-6">
         {saleExchanges.map((exchange) => {
           // 신청자가 제시한 카드, 그 카드 주인(=신청자) — 이미 데이터 안에 다 포함되어 있음
@@ -24,11 +26,15 @@ const ExchangeListView = ({ sale, currentUser, isSeller }) => {
 
               {/* 제시 카드 정보 */}
               <div className="bg-[#1a1a1f] rounded-xl overflow-hidden">
-                <img
-                  src={offerCard.image.imageUrl}
-                  alt={offerCard.name}
-                  className="w-full h-[180px] object-cover"
-                />
+                <div className="relative w-full h-45">
+                  <Image
+                    src={offerCard.image.imageUrl}
+                    alt={offerCard.name}
+                    fill
+                    sizes="(min-width: 768px) 400px, 100vw"
+                    className="object-cover"
+                  />
+                </div>
                 <div className="p-4">
                   <p className="text-sm font-semibold text-white mb-2">
                     {offerCard.tag} {offerCard.name}
@@ -40,7 +46,7 @@ const ExchangeListView = ({ sale, currentUser, isSeller }) => {
                       <span className="w-16 text-gray-400">{axis.field}</span>
                       <div className="flex-1 h-1.5 bg-white rounded-full">
                         <div
-                          className="h-1.5 bg-[#a656f5] rounded-full"
+                          className="h-1.5 bg-purple-button rounded-full"
                           style={{ width: `${axis.value}%` }}
                         />
                       </div>
