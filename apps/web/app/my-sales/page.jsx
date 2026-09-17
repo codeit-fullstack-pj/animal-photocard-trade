@@ -531,14 +531,16 @@ export default function MySalesPage() {
                       ? "판매 중"
                       : undefined
                 }
-                title={sale.card.name}
-                tag={sale.card.tag}
-                imageUrl={sale.card.image}
-                filterType={sale.card.filterType}
                 point={sale.price}
                 isSoldOut={sale.status === "SOLD_OUT"}
-                category={sale.card.category}
-                score={sale.card.score}
+                card={{
+                  name: sale.card.name,
+                  tag: sale.card.tag,
+                  imageUrl: sale.card.image,
+                  filterType: sale.card.filterType,
+                  category: sale.card.category,
+                  score: sale.card.score,
+                }}
               />
             ))}
           </section>

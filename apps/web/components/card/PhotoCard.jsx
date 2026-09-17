@@ -1,35 +1,35 @@
 import Image from "next/image";
 
 import AutoFitText from "@/components/gallery/AutoFitText";
+import DotHalftoneImage from "@/components/gallery/DotHalftoneImage";
 
 import { SCORE_CONFIG } from "./scoreConfig";
 
 // filterType(1~4, useImageVariants.js VARIANTS 순서와 동일: 원본·세피아·모노·도트) 별 렌더링 방식.
-// 세피아·모노는 CSS filter로 충분하지만, 도트는 filter로 흉내낼 수 없다.
-// 대신 next/image의 sizes를 일부러 아주 작게 줘서(실제 표시 크기보다 훨씬 작은 원본을 받아오게 한 뒤)
-// image-rendering: pixelated 로 확대해 블록져 보이게 한다 — fill이라 고정 px 스케일 트릭을 못 쓰기 때문
-const FILTER_CONFIG = { 2: "sepia(0.7)", 3: "grayscale(1)" };
+// 세피아·모노는 CSS filter로 충분하지만, 도트는 픽셀 밝기에 따라 점 크기가 달라지는 진짜
+// 망점(halftone)이라 CSS만으로는 불가능 — canvas로 그리는 DotHalftoneImage를 쓴다 (gallery/PhotoCard.jsx와 동일)
+const CSS_FILTERS = { 2: "sepia(0.7)", 3: "grayscale(1)" };
 const DOT_FILTER_TYPE = 4;
-const DOT_IMAGE_SIZES = "40px";
+const IMAGE_BOX_WIDTH = 400;
+const IMAGE_BOX_HEIGHT = 232;
 
 // 이 컴포넌트는 항상 400px 고정 폭(w-100)으로 그려진다. 화면 크기별 대응은 여기서 브레이크포인트로
 // 하지 않고, 부모(ScaledPhotoCard)가 실제 컨테이너 폭을 재서 transform: scale()로 전체를 통째로
 // 축소/확대한다 — gallery/PhotoCard.jsx + GalleryCardItem.jsx와 같은 방식.
-export default function PhotoCard({
-  status,
-  title,
-  tag,
-  description,
-  point,
-  imageUrl,
-  isSoldOut,
-  category,
-  score,
-  filterType,
-  variant,
-  onClick,
-}) {
-  const isDot = filterType === DOT_FILTER_TYPE;
+/**
+ * @param {{ card: {
+ *   name: string,
+ *   tag?: string,
+ *   category: "DOG" | "CAT",
+ *   imageUrl: string,
+ *   filterType?: number,
+ *   description?: string | null,
+ *   score?: { axes: { field: string, value: number }[] },
+ * }, status?: string, point?: number, isSoldOut?: boolean, variant?: "owned" | "sale", onClick?: () => void }} props
+ */
+export default function PhotoCard({ card, status, point, isSoldOut, variant, onClick }) {
+  const isDot = card.filterType === DOT_FILTER_TYPE;
+  const cssFilter = CSS_FILTERS[card.filterType];
 
   return (
     <article
@@ -49,20 +49,25 @@ export default function PhotoCard({
           background: "linear-gradient(180deg, #636363 0%, #313131 100%)",
         }}
       >
-        <div className="relative aspect-400/232 w-full shrink-0 overflow-hidden rounded-[10px]">
+        <div className="relative aspect-400/232 w-full shrink-0 overflow-hidden rounded-[10px] bg-[#535353]">
           {/* 이미지 */}
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={title}
-              fill
-              sizes={isDot ? DOT_IMAGE_SIZES : "353px"}
-              className="rounded-[10px] border-[3px] border-[#424242] object-cover"
-              style={
-                isDot ? { imageRendering: "pixelated" } : { filter: FILTER_CONFIG[filterType] }
-              }
+          {card.imageUrl && !isDot && (
+            <div
+              role="img"
+              aria-label={`${card.name} 포토카드 이미지`}
+              style={{ backgroundImage: `url(${card.imageUrl})`, filter: cssFilter }}
+              className="h-full w-full bg-cover bg-center"
             />
-          ) : (
+          )}
+          {card.imageUrl && isDot && (
+            <DotHalftoneImage
+              src={card.imageUrl}
+              alt={`${card.name} 포토카드 이미지`}
+              width={IMAGE_BOX_WIDTH}
+              height={IMAGE_BOX_HEIGHT}
+            />
+          )}
+          {!card.imageUrl && (
             <div className="flex h-full items-center justify-center px-2">
               <AutoFitText className="font-sans-400 text-[13px] text-[#A4A4A4]">
                 포토카드 이미지
@@ -94,13 +99,13 @@ export default function PhotoCard({
           as="h2"
           className="font-sans-700 mt-2.5 w-4/5 text-[22px] leading-6.5 text-white"
         >
-          {tag} {title}
+          {card.tag} {card.name}
         </AutoFitText>
 
         {/* 관상 지수 */}
         <div className="mt-3 space-y-1.5">
-          {SCORE_CONFIG[category]?.map(({ key, label }) => {
-            const scoreValue = score?.axes?.find((axis) => axis.field === key)?.value ?? 0;
+          {SCORE_CONFIG[card.category]?.map(({ key, label }) => {
+            const scoreValue = card.score?.axes?.find((axis) => axis.field === key)?.value ?? 0;
 
             return <ScoreRow key={key} label={label} value={scoreValue} />;
           })}
@@ -138,7 +143,7 @@ export default function PhotoCard({
         {variant === "owned" && (
           <div className="pt-5">
             <p className="font-sans-400 text-[14px] leading-4.25 break-all text-gray-200">
-              {description}
+              {card.description}
             </p>
           </div>
         )}

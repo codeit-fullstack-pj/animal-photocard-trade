@@ -19,14 +19,9 @@ export default function MarketCardList({ cards, onCardClick }) {
       {cards.map((card) => (
         <li key={card.id} className="w-full min-w-0">
           <ScaledPhotoCard
-            variant="sale"
-            title={card.title ?? card.name}
-            tag={card.tag}
-            imageUrl={card.imageUrl}
-            category={card.category}
-            score={card.score}
-            filterType={card.filterType}
-            point={card.point ?? card.price}
+            variant={card.variant}
+            card={card.card}
+            point={card.point}
             status={card.status}
             isSoldOut={card.isSoldOut}
             onClick={() => onCardClick?.(card)}

@@ -397,6 +397,7 @@ export default function MarketPage() {
 
       <main
         className="
+          isolate
           mx-auto
           min-h-screen
           w-full
@@ -476,7 +477,14 @@ export default function MarketPage() {
       {/* ========================================
           판매글 생성 모달
       ======================================== */}
-      <CreateSaleModal isOpen={isSaleModalOpen} onClose={() => setIsSaleModalOpen(false)} />
+      <CreateSaleModal
+        isOpen={isSaleModalOpen}
+        onClose={() => setIsSaleModalOpen(false)}
+        onCreated={() => {
+          fetchSales({ cursor: null, append: false });
+          fetchCategoryCounts();
+        }}
+      />
 
       {/* ========================================
           로그인 모달

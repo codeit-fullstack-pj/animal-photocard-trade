@@ -9,13 +9,15 @@ function getSaleStatusLabel(sale, hasPendingExchange) {
 export function cardToPhotoCardProps(card) {
   return {
     variant: "owned",
-    title: card.name,
-    tag: card.tag,
-    description: card.description,
-    imageUrl: card.imageUrl,
-    category: card.category,
-    score: card.score,
-    filterType: card.filterType,
+    card: {
+      name: card.name,
+      tag: card.tag,
+      description: card.description,
+      imageUrl: card.imageUrl,
+      category: card.category,
+      score: card.score,
+      filterType: card.filterType,
+    },
   };
 }
 
@@ -23,14 +25,16 @@ export function cardToPhotoCardProps(card) {
 export function saleToPhotoCardProps(sale, hasPendingExchange) {
   return {
     variant: "sale",
-    title: sale.card.name,
-    tag: sale.card.tag,
-    imageUrl: sale.card.image,
-    category: sale.card.category,
-    score: sale.card.score,
-    filterType: sale.card.filterType,
     point: sale.price,
     status: getSaleStatusLabel(sale, hasPendingExchange),
     isSoldOut: sale.status === "SOLD_OUT",
+    card: {
+      name: sale.card.name,
+      tag: sale.card.tag,
+      imageUrl: sale.card.image,
+      category: sale.card.category,
+      score: sale.card.score,
+      filterType: sale.card.filterType,
+    },
   };
 }
