@@ -8,6 +8,7 @@ import { cardRouter } from "./routes/card.routes.js";
 import { exchangeRouter } from "./routes/exchange.routes.js";
 import { healthRouter } from "./routes/health.routes.js";
 import { imageRouter } from "./routes/image.routes.js";
+import { notificationRouter } from "./routes/notification.routes.js";
 import { saleRouter } from "./routes/sale.routes.js";
 import { userRouter } from "./routes/user.routes.js";
 
@@ -27,6 +28,8 @@ app.use("/api/v1", cardRouter);
 
 // 판매 관련 API 라우터를 등록
 app.use("/api/v1/sales", saleRouter);
+
+app.use("/api/v1/notification", notificationRouter);
 
 // 교환 제시 취소 등 교환 관련 API 라우터를 등록
 app.use("/api/v1/exchanges", exchangeRouter);
