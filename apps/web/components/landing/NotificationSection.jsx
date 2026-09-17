@@ -24,7 +24,7 @@ export default function NotificationSection() {
               제 포카랑 교환해요 <span className="font-emoji">✋</span>
             </span>
             <span className="ml-10 rounded-[0.625rem] bg-gray-400 px-3 sm:px-06 md:px-6 lg:px-6 py-2 sm:py-4 md:py-4 lg:py-4 font-sans-400 text-xs text-white shadow-md sm:ml-16 sm:text-sm md:text-xs lg:text-sm lg:ml-8">
-              [스페인 여행] 포카 사고 싶어요! <span className="font-emoji">✋</span>
+              귀여운 마고 포카 사고 싶어요! <span className="font-emoji">⛰</span>
             </span>
           </div>
 

@@ -22,12 +22,16 @@ export default function PhotoCard({
   score,
   filterType,
   variant,
+  onClick,
 }) {
   const isDot = filterType === DOT_FILTER_TYPE;
 
   return (
     <article
+      onClick={onClick}
       className={`w-full tracking-tight rounded-lg p-1.25 tablet:rounded-[10px] tablet:p-3.25 ${
+        onClick ? "cursor-pointer" : ""
+      } ${
         variant === "owned"
           ? "h-70.5 tablet:h-139.25 pc:h-146.5"
           : "h-67.5 tablet:h-133.5 pc:h-137.5"
@@ -63,9 +67,13 @@ export default function PhotoCard({
             </div>
           )}
 
-          {/* 거래 중인 포토카드 상태 */}
+          {/* 판매 중은 흰색, 교환 제시 중은 노란색으로 표시 */}
           {!isSoldOut && status && (
-            <span className="font-sans-500 absolute top-1.5 left-1.5 z-10 bg-black/50 px-1 py-0.5 text-[8px] text-[#FFF3A4] tablet:top-3 tablet:left-3 tablet:px-2 tablet:py-1.25 tablet:text-[12px]">
+            <span
+              className={`font-sans-500 absolute top-1.5 left-1.5 z-10 bg-black/50 px-1 py-0.5 text-[8px] tablet:top-3 tablet:left-3 tablet:px-2 tablet:py-1.25 tablet:text-[12px] ${
+                status === "판매 중" ? "text-white" : "text-[#FFF3A4]"
+              }`}
+            >
               {status}
             </span>
           )}
@@ -101,7 +109,7 @@ export default function PhotoCard({
               </span>
 
               <div className="flex items-center gap-[6px]">
-                <strong className="font-sans-400 text-[10px] leading-3.5 text-[#FFC146] tablet:text-[20px]">
+                <strong className="font-sans-400 text-[10px] leading-3.5 text-yellow-button tablet:text-[20px]">
                   {Number(point).toLocaleString("ko-KR")}
                 </strong>
 
