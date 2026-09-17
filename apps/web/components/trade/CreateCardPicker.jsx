@@ -5,7 +5,7 @@ import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 import TradeFilter from "@/components/trade/TradeFilter";
 import TradeSearchBar from "@/components/trade/TradeSearchBar";
 import { useInfiniteFetch } from "@/hooks/useInfiniteFetch";
-import { fetchMockMyCards, getMockCategoryCounts } from "@/lib/api/mockMyCards.js";
+import { fetchMyCardsPage } from "@/lib/gallery/api";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const CATEGORY_OPTIONS = [
@@ -31,12 +31,12 @@ export default function CreateCardPicker({ onSelect }) {
     [debounceKeyword, selectedCategory],
   );
 
-  const categoryCounts = useMemo(() => getMockCategoryCounts(debounceKeyword), [debounceKeyword]);
-
-  const { cards, isLoading, error, hasNextPage, loadNextPage, retry } = useInfiniteFetch(
-    fetchMockMyCards,
+  const { cards, isLoading, error, hasNextPage, loadNextPage, retry, meta } = useInfiniteFetch(
+    fetchMyCardsPage,
     queryParams,
   );
+
+  const categoryCounts = meta.categoryCounts ?? {};
 
   useEffect(() => {
     const root = scrollRef.current;

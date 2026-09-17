@@ -299,6 +299,45 @@ export async function listExchanges({ saleId, viewer }) {
   return { exchanges: exchanges.map(toExchangeResponse) };
 }
 
+/**
+ * 판매글 등록 트랜잭션 처리순서
+ * CARD LOCK → 소유자 확인 → 중복 판매/교환 제시 확인 → 판매글 생성
+ */
+export async function createSale({ cardId, sellerId, description, canExchange, price }) {
+  return prisma.$transaction(async (tx) => {
+    const card = await cardRepository.findCardById(tx, cardId);
+    if (!card) throw new ApiError(404, "CARD_NOT_FOUND", "카드를 찾을 수 없습니다.");
+
+    await cardRepository.lockCardForUpdate(tx, cardId);
+
+    if (card.ownerId !== sellerId) {
+      throw new ApiError(403, "NOT_CARD_OWNER", "본인 소유의 카드만 판매할 수 있습니다.");
+    }
+
+    const onSale = await saleRepository.findOnSaleByCardId(tx, cardId);
+    if (onSale) throw new ApiError(409, "CARD_ALREADY_CLAIMED", "이미 판매 중인 카드입니다.");
+
+    const pendingExchange = await exchangeRepository.findPendingExchangeByOfferCardId(tx, cardId);
+    if (pendingExchange) {
+      throw new ApiError(409, "CARD_ALREADY_CLAIMED", "이미 교환 제시 중인 카드입니다.");
+    }
+
+    const sale = await saleRepository.createSale(tx, {
+      cardId,
+      sellerId,
+      description,
+      canExchange,
+      price,
+    });
+
+    return {
+      id: sale.id,
+      status: sale.status,
+      createdAt: sale.createdAt,
+    };
+  });
+}
+
 // 판매글 조회: 존재하지 않으면 404 에러, 있으면 그대로 반환
 export async function getSaleById(id) {
   const sale = await saleRepository.findSaleWithExchangesById(id);

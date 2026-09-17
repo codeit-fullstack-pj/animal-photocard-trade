@@ -5,33 +5,40 @@ import CreateCardPicker from "./CreateCardPicker";
 import CreateSaleForm from "@/components/trade/CreateSaleForm";
 import ResponsiveModalShell from "@/components/ui/ResponsiveModalShell";
 import { useRouter } from "next/navigation";
-import { createExchangeProposal } from "@/lib/trade/api";
+import { createSale } from "@/lib/sales/api";
 
-export default function CreateSaleModal({ saleId, isOpen, onClose }) {
+export default function CreateSaleModal({ isOpen, onClose }) {
   const [selectedCard, setSelectedCard] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
+  // 모달이 다시 열릴 때 이전에 고르던 카드/에러를 초기화 (렌더 중 조정 — React 권장 패턴)
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);
-    if (isOpen) setSelectedCard(null);
+    if (isOpen) {
+      setSelectedCard(null);
+      setError("");
+    }
   }
 
-  async function handleSubmit(message = undefined) {
-    const cardName = `${selectedCard.tag} ${selectedCard.name}`;
+  async function handleSubmit({ description, canExchange, price }) {
     setIsSubmitting(true);
+    setError("");
     try {
-      await createExchangeProposal(saleId, { offerCardId: selectedCard.id, message });
-      router.push(`/exchange/create-success?name=${encodeURIComponent(cardName)}`);
-    } catch (error) {
-      const code = error?.code ?? "UNKNOWN-ERROR";
-      router.push(
-        `/exchange/create-fail?code=${encodeURIComponent(code)}&name=${encodeURIComponent(cardName)}`,
-      );
+      await createSale({
+        cardId: selectedCard.id,
+        description,
+        canExchange,
+        price,
+      });
+      onClose();
+      router.refresh();
+    } catch (err) {
+      setError(err?.message ?? "판매글 등록에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
-      onClose();
     }
   }
 
@@ -49,6 +56,7 @@ export default function CreateSaleModal({ saleId, isOpen, onClose }) {
           onBack={() => setSelectedCard(null)}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
+          error={error}
         />
       ) : (
         <CreateCardPicker onSelect={setSelectedCard} />

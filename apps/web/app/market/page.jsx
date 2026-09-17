@@ -476,11 +476,7 @@ export default function MarketPage() {
       {/* ========================================
           판매글 생성 모달
       ======================================== */}
-      <CreateSaleModal
-        saleId="sale-001"
-        isOpen={isSaleModalOpen}
-        onClose={() => setIsSaleModalOpen(false)}
-      />
+      <CreateSaleModal isOpen={isSaleModalOpen} onClose={() => setIsSaleModalOpen(false)} />
 
       {/* ========================================
           로그인 모달

@@ -7,6 +7,7 @@ const initialState = {
   hasNextPage: false,
   isLoading: true,
   error: "",
+  meta: {},
 };
 
 const ACTION = {
@@ -29,6 +30,7 @@ function reducer(state, action) {
         ...state,
         cards: action.cards,
         hasNextPage: action.hasNextPage,
+        meta: action.meta ?? {},
         isLoading: false,
         error: "",
       };
@@ -81,6 +83,7 @@ export function useInfiniteFetch(fetchPage, queryParams) {
           type: ACTION.FIRST_PAGE_SUCCESS,
           cards: result.cards,
           hasNextPage: result.hasNextPage,
+          meta: result.meta,
         });
       } catch {
         if (!ignore) dispatch({ type: ACTION.FETCH_ERROR, message: "정보를 불러오지 못했어요" });
@@ -128,6 +131,7 @@ export function useInfiniteFetch(fetchPage, queryParams) {
     isLoading: state.isLoading,
     error: state.error,
     hasNextPage: state.hasNextPage,
+    meta: state.meta,
     loadNextPage,
     retry,
   };

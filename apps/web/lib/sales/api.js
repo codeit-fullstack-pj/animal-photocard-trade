@@ -32,3 +32,11 @@ export function getSales({
 
   return apiFetch(`/sales${queryString ? `?${queryString}` : ""}`);
 }
+
+// 판매글 등록
+export function createSale({ cardId, description, canExchange, price }) {
+  return apiFetch("/sales", {
+    method: "POST",
+    body: { cardId, description, canExchange, price },
+  });
+}

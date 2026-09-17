@@ -1,4 +1,4 @@
-import { optional, refine, size, string, type, validate } from "superstruct";
+import { boolean, number, optional, refine, size, string, type, validate } from "superstruct";
 
 import { ApiError } from "../lib/api-error.js";
 import * as saleService from "../services/sale.service.js";
@@ -7,6 +7,43 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 
 // 같은 uuid 검증 패턴이 params에 여러 번 나와서 상수로 뺌
 const Uuid = refine(string(), "uuid", (value) => UUID_PATTERN.test(value));
+
+// POST /sales 본문 형식
+const SaleCreateBody = type({
+  cardId: Uuid,
+  description: optional(size(string(), 0, 500)),
+  canExchange: optional(boolean()),
+  price: refine(number(), "price", (value) => Number.isInteger(value) && value >= 0),
+});
+
+const SALE_CREATE_VALIDATION_MESSAGES = {
+  cardId: "cardId는 UUID 형식이어야 합니다",
+  description: "description은 500자 이하 문자열이어야 합니다",
+  price: "price는 0 이상의 정수여야 합니다",
+};
+
+// POST /sales — 새 판매글을 등록
+export async function createSale(req, res) {
+  const [error, body] = validate(req.body, SaleCreateBody);
+  if (error) {
+    const field = error.path[0] ?? error.key;
+    throw new ApiError(
+      400,
+      "VALIDATION_ERROR",
+      SALE_CREATE_VALIDATION_MESSAGES[field] ?? "요청 값이 올바르지 않습니다",
+    );
+  }
+
+  const sale = await saleService.createSale({
+    cardId: body.cardId,
+    sellerId: req.user.id,
+    description: body.description,
+    canExchange: body.canExchange ?? false,
+    price: body.price,
+  });
+
+  res.status(201).json({ data: sale });
+}
 
 // GET /sales 쿼리 파라미터를 확인하고 판매 목록을 반환
 export async function getSales(req, res) {

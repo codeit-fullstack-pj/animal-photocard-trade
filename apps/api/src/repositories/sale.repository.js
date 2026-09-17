@@ -190,6 +190,13 @@ export function countSales({ category, keyword, includeSoldOut, status, sellerId
   });
 }
 
+// 판매글 하나를 새로 생성
+export function createSale(tx, { cardId, sellerId, description, canExchange, price }) {
+  return tx.sale.create({
+    data: { cardId, sellerId, description, canExchange, price },
+  });
+}
+
 // 판매글 ID로 판매글과 연결된 카드를 조회
 export function findSaleById(tx, id) {
   return tx.sale.findUnique({
