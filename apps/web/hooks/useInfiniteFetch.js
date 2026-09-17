@@ -94,7 +94,7 @@ export function useInfiniteFetch(fetchPage, queryParams) {
       requestEpochRef.current += 1;
       loadingRef.current = false;
     };
-  }, [queryParams, retryCount]);
+  }, [fetchPage, queryParams, retryCount]);
 
   //다음페이지로드
   const loadNextPage = useCallback(async () => {

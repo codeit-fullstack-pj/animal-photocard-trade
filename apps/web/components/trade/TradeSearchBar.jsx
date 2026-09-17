@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function TradeSearchBar({ value, onChange }) {
   return (
-    <label className="flex h-12.5 w-80 items-center justify-between border border-gray-200 px-4 focus-within:border-purple rounded-xs">
+    <label className="order-2 flex h-12 min-w-0 flex-1 items-center justify-between border border-gray-200 px-4 focus-within:border-purple rounded-xs tablet:order-0 tablet:h-12.5 tablet:w-80 tablet:flex-none">
       <input
         type="text"
         value={value}

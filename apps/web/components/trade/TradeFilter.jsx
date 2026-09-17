@@ -3,7 +3,9 @@
 import Image from "next/image";
 import { useState } from "react";
 
-export default function TradeFilter({ options, selected, onChange }) {
+import OfferCategorySheet from "./OfferCategorySheet";
+
+export default function TradeFilter({ options, selected, onChange, optionCounts }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleToggle = (value) => {
@@ -14,22 +16,32 @@ export default function TradeFilter({ options, selected, onChange }) {
   };
 
   return (
-    <div className="relative">
+    <div className="relative order-1 shrink-0 tablet:order-0">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="font-sans-600 flex h-12.5 w-30 items-center gap-3 flex-start text-sm text-white"
+        className="flex size-12 items-center justify-center gap-2 rounded-xs border border-white bg-black tablet:h-12.5 tablet:w-30 tablet:justify-start tablet:gap-3 tablet:border-0 tablet:px-4"
       >
-        카테고리
-        <Image src="/down.png" alt="" width={16} height={16} />
+        <Image src="/filter.png" alt="필터" width={20} height={20} className="tablet:hidden" />
+        <span className="font-sans-600 hidden text-base text-white tablet:block">카테고리</span>
+        <Image src="/down.png" alt="" width={20} height={20} className="hidden tablet:block" />
       </button>
 
+      <OfferCategorySheet
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        options={options}
+        selected={selected}
+        onChange={onChange}
+        optionCounts={optionCounts}
+      />
+
       {isOpen && (
-        <ul className="absolute top-12.5 right-0 z-10 w-30 border border-gray-200 bg-gray-500 py-4 px-3.75 flex flex-col gap-3.75 rounded-xs">
+        <ul className="absolute top-full right-0 z-10 mt-1 hidden w-30 border border-gray-200 bg-gray-500 py-4 px-3.75 flex-col gap-3.75 rounded-xs tablet:flex">
           {options.map((option) => (
             <li key={option.value}>
               <label className="flex items-center justify-between">
-                <span className="font-sans-400 text-sm text-white">{option.label}</span>
+                <span className="font-sans-400 text-base text-white">{option.label}</span>
                 <span className="relative inline-flex size-4 shrink-0 items-center justify-center">
                   <input
                     type="checkbox"
