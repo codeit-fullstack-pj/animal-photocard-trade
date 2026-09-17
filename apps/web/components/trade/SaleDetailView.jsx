@@ -1,30 +1,34 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-
-import ConfirmModal from "@/components/ui/ConfirmModal";
-
-import SellerActionButtons from "./SellerActionButtons.jsx";
-import BuyerActionButtons from "./BuyerActionButtons.jsx";
-import ExchangeListView from "./ExchangeListView.jsx";
-import ExchangeProposalModal from "./ExchangeProposalModal.jsx";
-import BuyerExchangeList from "./BuyerExchangeList.jsx";
-import { purchaseCard } from "@/lib/trade/api.js";
 import { useRouter } from "next/navigation";
-import Toast from "@/components/ui/Toast.jsx";
 
-const SaleDetailView = ({ sale, currentUser }) => {
-  const isSeller = currentUser.id === sale.seller.id;
+import PhotoCard from "@/components/card/PhotoCard";
+import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
+import BuyerActionButtons from "@/components/trade/BuyerActionButtons";
+import BuyerExchangeList from "@/components/trade/BuyerExchangeList";
+import ExchangeListView from "@/components/trade/ExchangeListView";
+import ExchangeProposalModal from "@/components/trade/ExchangeProposalModal";
+import SellerActionButtons from "@/components/trade/SellerActionButtons";
+import ConfirmModal from "@/components/ui/ConfirmModal";
+import Toast from "@/components/ui/Toast";
+import { purchaseCard } from "@/lib/trade/api";
+
+export default function SaleDetailView({ sale, currentUser }) {
   const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const router = useRouter();
 
+  const isSeller = currentUser.id === sale.seller.id;
+
   const cardName = `${sale.card.tag} ${sale.card.name}`;
 
-  //상세 구매버튼 (1차검증)
+  const cardProps = { ...cardToPhotoCardProps(sale.card), imageUrl: sale.card.image };
+
   function handlePurchaseClick() {
     if (currentUser.point < sale.price) {
       setToastMessage("보유 포인트가 부족합니다");
@@ -34,11 +38,9 @@ const SaleDetailView = ({ sale, currentUser }) => {
     setIsPurchaseModalOpen(true);
   }
 
-  //구매 모달 구매버튼 (실구매)
   async function handlePurchaseConfirm() {
     setIsPurchasing(true);
     try {
-      //구매 api
       await purchaseCard(sale.id);
       router.push(`/purchase/success?name=${encodeURIComponent(cardName)}`);
     } catch (error) {
@@ -53,93 +55,109 @@ const SaleDetailView = ({ sale, currentUser }) => {
   }
 
   return (
-    <main className="relative w-[1920px] min-h-[2185px] bg-[#161616] text-white">
+    <main className="mx-auto w-full max-w-310 px-4 pt-6 pb-20 tablet:px-5 tablet:pt-8 pc:px-0 pc:pt-15">
       <Toast isOpen={!!toastMessage} message={toastMessage} onClose={() => setToastMessage("")} />
 
-      <div className="absolute left-[340px] top-[140px]">
-        <Link href="/marketplace" className="text-2xl text-gray-300">
-          마켓플레이스
-        </Link>
+      {/* 모바일은 MobileHeader 가 같은 역할을 해서 숨긴다 */}
+      <Link
+        href="/market"
+        className="font-primary-bold hidden text-xl text-gray-300 tablet:block tablet:text-base pc:text-2xl"
+      >
+        마켓플레이스
+      </Link>
 
-        <h1 className="text-[40px] font-bold text-white mt-[60px]">{sale.card.tag}</h1>
-
-        <h1 className="text-[40px] font-bold text-white mt-[20px]">{sale.card.name}</h1>
-      </div>
-      <p className="absolute right-[340px] top-[340px] text-white">by {sale.seller.nickname}</p>
-
-      {/* 카드 이미지 박스 - mono gradient 테두리 */}
-      <div className="absolute left-[341px] top-[400px] w-[800px] h-[800px] rounded-[24px] p-[2px] bg-gradient-to-br from-white via-gray-400 to-gray-700">
-        <div className="w-full h-full rounded-[22px] bg-[#1a1a1f]" />
-      </div>
-
-      {/* 설명 */}
-      <p className="absolute left-[1181px] top-[405px] w-[400px] text-sm text-gray-300 leading-relaxed">
-        {sale.description}
-      </p>
-
-      {/* 구분선 */}
-      <div className="absolute right-[339px] top-[553px] w-[400px] h-[1px] bg-white" />
-
-      {/* 구매 포인트 */}
-      <div className="absolute left-[1181px] top-[593px] w-[400px] flex items-center justify-between">
-        <span className="text-sm text-white">구매 포인트</span>
-        <span className="text-lg font-bold">{sale.price} 🪙</span>
+      <div className="flex flex-col gap-2 tablet:mt-10 tablet:flex-row tablet:items-end tablet:justify-between tablet:gap-8 pc:mt-15">
+        <h1 className="font-sans-700 min-w-0 text-2xl leading-snug text-white tablet:flex-1 tablet:text-[38px] pc:text-[40px] pc:leading-13.5">
+          {sale.card.tag} {sale.card.name}
+        </h1>
+        <p className="font-sans-400 shrink-0 text-xl text-white pc:text-2xl">
+          by {sale.seller.nickname}
+        </p>
       </div>
 
-      {/* 교환희망여부 */}
-      <div className="absolute left-[1181px] top-[643px] w-[400px] flex items-center gap-[273px]">
-        <span className="text-sm text-white">교환희망여부</span>
-        <input
-          type="checkbox"
-          checked={sale.canExchange}
-          readOnly
-          className="accent-gray-300 w-4 h-4"
-        />
+      <div className="mt-6 grid gap-6 tablet:mt-10 pc:grid-cols-[minmax(0,1fr)_400px] pc:gap-8.5">
+        <div className="flex items-center justify-center rounded-2xl bg-[linear-gradient(70deg,#616161_0%,#878787_100%)] p-6 tablet:rounded-3xl tablet:p-10 pc:aspect-square">
+          <div className="w-full max-w-42 tablet:max-w-90">
+            <PhotoCard {...cardProps} />
+          </div>
+        </div>
+
+        <div className="flex flex-col">
+          <p className="font-sans-400 text-base leading-relaxed text-gray-200 tablet:text-lg">
+            {sale.description}
+          </p>
+
+          <div className="mt-6 border-t border-gray-400" />
+
+          <div className="mt-5 flex items-center justify-between tablet:mt-6 pc:mt-5">
+            <span className="font-sans-400 text-base text-white tablet:text-lg">구매 포인트</span>
+            <span className="flex items-center gap-1.5">
+              <strong className="font-sans-600 text-2xl text-yellow-button">
+                {Number(sale.price).toLocaleString("ko-KR")}
+              </strong>
+              <Image src="/cardpoint.png" alt="포인트" width={16} height={16} className="size-4" />
+            </span>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between">
+            <span className="font-sans-400 text-base text-white tablet:text-lg">교환희망여부</span>
+            <input
+              type="checkbox"
+              checked={sale.canExchange}
+              readOnly
+              className="size-5 accent-gray-300"
+            />
+          </div>
+
+          <div className="mt-10 pc:mt-auto">
+            {isSeller ? (
+              <SellerActionButtons />
+            ) : (
+              <BuyerActionButtons
+                onPurchaseClick={handlePurchaseClick}
+                onExchangeClick={() => setIsExchangeModalOpen(true)}
+              />
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* 버튼 */}
-      <div className="absolute left-[1181px] top-[1020px] w-[400px] flex flex-col gap-2 items-end">
+      <div className="mt-14 pc:mt-16">
         {isSeller ? (
-          <SellerActionButtons sale={sale} />
+          <section>
+            <h2 className="font-sans-700 text-xl text-white tablet:text-[28px] pc:text-[30px]">
+              교환 제시 목록
+            </h2>
+            <div className="mt-5 border-t border-gray-400 tablet:mt-4 pc:mt-5" />
+            {/* ExchangeListView 위치 */}
+            <div className="mt-8 tablet:mt-6 pc:mt-8">
+              <ExchangeListView sale={sale} currentUser={currentUser} isSeller={isSeller} />
+            </div>
+          </section>
         ) : (
-          <BuyerActionButtons
-            onPurchaseClick={handlePurchaseClick}
-            onExchangeClick={() => setIsExchangeModalOpen(true)}
-          />
+          <BuyerExchangeList saleId={sale.id} />
         )}
       </div>
-      {isSeller ? (
+
+      {!isSeller && (
         <>
-          <div className="absolute right-[339px] top-[1350px] w-[1235px] flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white">교환 제시 목록</h2>
-            <p className="text-sm text-gray-400">교환하실 카드를 눌러 교환할 수 있습니다</p>
-          </div>
-          <div className="absolute right-[339px] top-[1400px] w-[1235px] h-[1px] bg-white" />
-          <ExchangeListView sale={sale} currentUser={currentUser} isSeller={isSeller} />
+          <ExchangeProposalModal
+            saleId={sale.id}
+            isOpen={isExchangeModalOpen}
+            onClose={() => setIsExchangeModalOpen(false)}
+          />
+
+          <ConfirmModal
+            isOpen={isPurchaseModalOpen}
+            onClose={() => setIsPurchaseModalOpen(false)}
+            title="포토카드 구매"
+            description={`'${cardName}' 포토카드를 구매하시겠습니까?`}
+            confirmLabel="구매하기"
+            onConfirm={handlePurchaseConfirm}
+            isSubmitting={isPurchasing}
+          />
         </>
-      ) : (
-        <div className="absolute right-[339px] top-[1350px] w-[1235px]">
-          <BuyerExchangeList saleId={sale.id} />
-        </div>
       )}
-
-      <ExchangeProposalModal
-        saleId={sale.id}
-        isOpen={isExchangeModalOpen}
-        onClose={() => setIsExchangeModalOpen(false)}
-      />
-
-      <ConfirmModal
-        isOpen={isPurchaseModalOpen}
-        onClose={() => setIsPurchaseModalOpen(false)}
-        title="포토카드 구매"
-        description={`'${sale.card.tag} ${sale.card.name}' 포토카드를 구매하시겠습니까?`}
-        confirmLabel="구매하기"
-        onConfirm={handlePurchaseConfirm}
-        isSubmitting={isPurchasing}
-      />
     </main>
   );
-};
-
-export default SaleDetailView;
+}
