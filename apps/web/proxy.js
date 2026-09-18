@@ -10,7 +10,7 @@ export function proxy(request) {
   const { pathname } = request.nextUrl;
   const isLoggedIn = request.cookies.has(REFRESH_TOKEN_COOKIE);
 
-  if (isLoggedIn && (pathname === "/" || GUEST_ONLY_PATHS.includes(pathname))) {
+  if (isLoggedIn && GUEST_ONLY_PATHS.includes(pathname)) {
     return NextResponse.redirect(new URL("/market", request.url));
   }
 
