@@ -37,6 +37,7 @@ export default function MobileFilter({
     CAT: 0,
   },
   onApply,
+  onReset,
   showSoldOut = true,
 }) {
   const [activeTab, setActiveTab] = useState("category");
@@ -74,6 +75,8 @@ export default function MobileFilter({
   const handleReset = () => {
     setCategories([]);
     setSoldOut(false);
+
+    onReset?.();
   };
 
   /**
