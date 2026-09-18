@@ -1,6 +1,7 @@
 import { Noto_Sans_KR } from "next/font/google";
 import localFont from "next/font/local";
 
+import { AuthProvider } from "@/lib/auth/AuthProvider";
 import RandomPointGlobalLayer from "@/components/point/RandomPointGlobalLayer";
 import "./globals.css";
 
@@ -33,8 +34,10 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        {children}
-        <RandomPointGlobalLayer />
+        <AuthProvider>
+          {children}
+          <RandomPointGlobalLayer />
+        </AuthProvider>
       </body>
     </html>
   );
