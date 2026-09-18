@@ -76,13 +76,13 @@ export default function MarketFilters({
   // DOG / CAT 모두 선택 가능
   // ========================================
   const handleCategoryChange = (category) => {
-    if (categories.includes(category)) {
-      // 이미 선택되어 있으면 제거
-      setCategories(categories.filter((item) => item !== category));
-    } else {
-      // 선택되어 있지 않으면 추가
-      setCategories([...categories, category]);
-    }
+    setCategories((prevCategories) => {
+      if (prevCategories.includes(category)) {
+        return prevCategories.filter((item) => item !== category);
+      }
+
+      return [...prevCategories, category];
+    });
   };
 
   return (
@@ -129,7 +129,7 @@ export default function MarketFilters({
             min-w-0
             flex-1
             bg-transparent
-            text-[12px]
+            text-[14px]
             text-white
             outline-none
             placeholder:text-[#888]
