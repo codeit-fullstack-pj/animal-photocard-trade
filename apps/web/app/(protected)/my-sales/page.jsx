@@ -4,13 +4,13 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import ScaledPhotoCard from "../../components/card/ScaledPhotoCard";
+import ScaledPhotoCard from "@/components/card/ScaledPhotoCard";
 import MySalesMobileFilter from "@/components/card/MySalesMobileFilter";
 import AppHeader from "@/components/ui/AppHeader";
 import MobileHeader from "@/components/ui/MobileHeader";
 
-import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getSales } from "@/lib/sales/api";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 const SORT_OPTIONS = [
   { value: "SCORE_DESC", label: "관상 지수 높은 순" },
@@ -100,8 +100,8 @@ export default function MySalesPage() {
   const selectedSortLabel =
     SORT_OPTIONS.find((option) => option.value === selectedSort)?.label ?? "최근 등록 순";
 
-  // 현재 로그인한 사용자 정보를 조회
-  const { currentUser } = useCurrentUser();
+  // 전역 인증 상태에서 가져온다
+  const { currentUser } = useAuth();
 
   const router = useRouter();
 

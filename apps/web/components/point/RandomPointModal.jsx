@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import { ApiError } from "@/lib/api-client";
-import { getCurrentUser, refreshAccessToken } from "@/lib/auth/api";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import {
   getRemainingTimeToNextKstMidnight,
   isDrawnTodayInKst,
@@ -12,8 +12,7 @@ import {
 import { drawRandomPoint } from "@/lib/user/api";
 
 export default function RandomPointModal({ isOpen, onClose, onDrawSuccess, previewState = null }) {
-  // 모달을 열 때 다시 조회한 최신 사용자 정보를 관리
-  const [currentUser, setCurrentUser] = useState(undefined);
+  const { currentUser, isLoading: isUserLoading, reloadCurrentUser } = useAuth();
 
   // 사용자가 선택한 선물 상자 번호를 관리
   const [selectedBox, setSelectedBox] = useState(null);
@@ -33,55 +32,8 @@ export default function RandomPointModal({ isOpen, onClose, onDrawSuccess, previ
   // 마지막 추첨 시간이 한국 시간 기준 오늘인지 확인
   const hasDrawnToday = isDrawnTodayInKst(currentUser?.lastDrawAt);
 
-  // 현재 사용자 정보를 조회 중인지 확인
-  const isUserLoading = currentUser === undefined;
-
   // 오늘 이미 추첨한 사용자의 대기 상태를 확인
   const isWaitingView = previewState === "waiting" || (!isUserLoading && hasDrawnToday);
-
-  // 랜덤 포인트 모달을 열 때 현재 사용자 정보를 최신 상태로 다시 조회
-  useEffect(() => {
-    if (!isOpen) return;
-
-    let cancelled = false;
-
-    async function loadCurrentUser() {
-      try {
-        const { user } = await getCurrentUser();
-
-        if (!cancelled) {
-          setCurrentUser(user);
-        }
-      } catch (error) {
-        if (!(error instanceof ApiError) || error.status !== 401) {
-          if (!cancelled) {
-            setCurrentUser(null);
-          }
-          return;
-        }
-
-        try {
-          await refreshAccessToken();
-
-          const { user } = await getCurrentUser();
-
-          if (!cancelled) {
-            setCurrentUser(user);
-          }
-        } catch {
-          if (!cancelled) {
-            setCurrentUser(null);
-          }
-        }
-      }
-    }
-
-    loadCurrentUser();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen]);
 
   // 오늘 이미 추첨했다면 다음 KST 자정까지 남은 시간을 갱신
   useEffect(() => {
@@ -102,7 +54,6 @@ export default function RandomPointModal({ isOpen, onClose, onDrawSuccess, previ
 
   // 모달을 닫을 때 랜덤 포인트 관련 상태를 초기화
   function handleClose() {
-    setCurrentUser(undefined);
     setSelectedBox(null);
     setIsSubmitting(false);
     setErrorMessage("");
@@ -122,6 +73,8 @@ export default function RandomPointModal({ isOpen, onClose, onDrawSuccess, previ
 
       const result = await drawRandomPoint();
 
+      // 변경된 포인트와 마지막 추첨 시간을 전역 사용자 상태에 반영한다.
+      await reloadCurrentUser();
       // 추첨 결과를 부모 컴포넌트에 전달해 결과 모달로 전환
       onDrawSuccess?.(result);
     } catch (error) {
@@ -129,10 +82,8 @@ export default function RandomPointModal({ isOpen, onClose, onDrawSuccess, previ
       if (error instanceof ApiError) {
         if (error.code === "RANDOM_POINT_ALREADY_DRAWN") {
           try {
-            // 서버에서 이미 추첨했다고 판단하면 최신 사용자 정보를 다시 조회
-            const { user } = await getCurrentUser();
-
-            setCurrentUser(user);
+            // 서버 상태와 전역 사용자 상태가 다르면 최신 사용자 정보를 다시 반영한다.
+            await reloadCurrentUser();
             setSelectedBox(null);
           } catch {
             setErrorMessage("현재 랜덤 포인트 상태를 확인할 수 없습니다.");

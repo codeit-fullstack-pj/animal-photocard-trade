@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { useCurrentUser } from "@/hooks/useCurrentUser";
 import Profile from "@/components/ui/Profile";
 import Notification, { NotificationDataProvider } from "@/components/ui/Notification";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { useRouter } from "next/navigation";
 
 const MENU_LINKS = [
   { href: "/market", label: "마켓플레이스" },
@@ -15,7 +16,8 @@ const MENU_LINKS = [
 ];
 
 export default function AppHeader() {
-  const { currentUser, isLoading, logout } = useCurrentUser();
+  const router = useRouter();
+  const { currentUser, isLoading, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // 모바일/태블릿·PC 두 군데에 따로 렌더링되는 Notification 인스턴스가 같은 열림 상태를 쓰도록 여기서 관리
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -32,9 +34,16 @@ export default function AppHeader() {
     };
   }, [isMenuOpen, isNotifOpen]);
 
-  function handleLogout() {
+  async function handleLogout() {
     setIsMenuOpen(false);
-    logout();
+
+    try {
+      await logout();
+    } catch (error) {
+      console.error("로그아웃 실패", error);
+    } finally {
+      router.replace("/market");
+    }
   }
 
   function closeMenu() {
@@ -127,7 +136,7 @@ export default function AppHeader() {
 
                     <button
                       type="button"
-                      onClick={logout}
+                      onClick={handleLogout}
                       className="font-sans-500 text-[14px] text-[#DDDDDD]"
                     >
                       로그아웃

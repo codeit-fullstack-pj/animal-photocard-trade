@@ -14,8 +14,8 @@ const notoSansKr = Noto_Sans_KR({
 
 const baskinRobbins = localFont({
   src: [
-    { path: "./fonts/BaskinRobbins-Regular.woff2", weight: "400", style: "normal" },
-    { path: "./fonts/BaskinRobbins-Bold.woff2", weight: "700", style: "normal" },
+    { path: "../assets/fonts/BaskinRobbins-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../assets/fonts/BaskinRobbins-Bold.woff2", weight: "700", style: "normal" },
   ],
   variable: "--font-baskin-robbins",
   display: "swap",

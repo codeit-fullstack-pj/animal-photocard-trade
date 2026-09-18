@@ -6,9 +6,18 @@ import { useState } from "react";
 import FormField from "@/components/auth/FormField";
 import { ApiError } from "@/lib/api-client";
 import { signin } from "@/lib/auth/api";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
-export default function LoginForm() {
+//로그인 후 이동할 주소가 사이트 내부 경로인지 확인(안전성)
+function resolveNextPath(nextPath) {
+  if (typeof nextPath !== "string") return "/market";
+  if (!nextPath.startsWith("/") || nextPath.startsWith("//")) return "/market";
+  return nextPath;
+}
+
+export default function LoginForm({ nextPath }) {
   const router = useRouter();
+  const { login } = useAuth();
   const [values, setValues] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,8 +41,9 @@ export default function LoginForm() {
 
     setIsSubmitting(true);
     try {
-      await signin(values);
-      router.push("/market");
+      const { user } = await signin(values);
+      login(user);
+      router.replace(resolveNextPath(nextPath));
     } catch (error) {
       if (error instanceof ApiError && error.code === "INVALID_CREDENTIALS") {
         setErrors({ form: "이메일 또는 비밀번호가 올바르지 않아요." });

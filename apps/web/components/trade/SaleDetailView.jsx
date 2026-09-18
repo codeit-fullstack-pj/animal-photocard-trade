@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,7 +16,7 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 import Toast from "@/components/ui/Toast";
 import { purchaseCard } from "@/lib/trade/api";
 import { cancelSale } from "@/lib/sales/api";
-import { getCurrentUser } from "@/lib/auth/api";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 export default function SaleDetailView({ sale }) {
   const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
@@ -28,17 +28,9 @@ export default function SaleDetailView({ sale }) {
   const [cancelOutcome, setCancelOutcome] = useState(null);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isUserLoading, setIsUserLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    getCurrentUser()
-      .then((data) => setCurrentUser(data.user))
-      .catch(() => setCurrentUser(null))
-      .finally(() => setIsUserLoading(false));
-  }, []);
-
+  const { currentUser } = useAuth();
   const isSeller = currentUser?.id === sale.seller.id;
   const cardName = `${sale.card.tag} ${sale.card.name}`;
 
@@ -159,7 +151,7 @@ export default function SaleDetailView({ sale }) {
           </div>
 
           <div className="mt-10 pc:mt-auto">
-            {isUserLoading ? (
+            {isSeller ? (
               <div className="h-18 w-full rounded-xs bg-gray-700 tablet:h-18.75 pc:h-20" />
             ) : isSeller ? (
               <SellerActionButtons
@@ -177,7 +169,7 @@ export default function SaleDetailView({ sale }) {
       </div>
 
       <div className="mt-14 pc:mt-16">
-        {isUserLoading ? null : isSeller ? (
+        {isSeller ? (
           <section>
             <h2 className="font-sans-700 text-xl text-white tablet:text-[28px] pc:text-[30px]">
               교환 제시 목록
@@ -192,7 +184,7 @@ export default function SaleDetailView({ sale }) {
         )}
       </div>
 
-      {!isUserLoading && !isSeller && (
+      {!isSeller && (
         <>
           <ExchangeProposalModal
             saleId={sale.id}
