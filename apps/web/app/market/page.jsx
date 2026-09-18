@@ -11,7 +11,6 @@ import MobileFilter from "@/components/card/MobileFilter";
 import CreateSaleModal from "@/components/trade/CreateSaleModal";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import AppHeader from "@/components/ui/AppHeader";
-import RequireAuth from "@/components/auth/RequireAuth";
 
 import { apiFetch } from "@/lib/api-client";
 import { getCurrentUser } from "@/lib/auth/api";
@@ -96,10 +95,6 @@ export default function MarketPage() {
 
   // 판매글 생성 모달
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
-
-  // ========================================
-  // IntersectionObserver
-  // ========================================
 
   const observerRef = useRef(null);
 
@@ -268,6 +263,12 @@ export default function MarketPage() {
         // ========================================
 
         // API는 category 하나만 받을 수 있음
+        //
+        // []              → 전체
+        // ["DOG"]         → 강아지
+        // ["CAT"]         → 고양이
+        // ["DOG", "CAT"]  → 전체
+        //
         if (categories.length === 1) {
           params.set("category", categories[0]);
         }
@@ -397,6 +398,33 @@ export default function MarketPage() {
 
   /**
    * ========================================
+   * 모바일 필터 전체 초기화
+   * ========================================
+   *
+   * 카테고리
+   * 품절 여부
+   * 검색어
+   * 정렬
+   * 모두 기본값으로 초기화
+   */
+  const handleResetFilters = () => {
+    // 모바일 임시 상태 초기화
+    setTempCategories([]);
+    setTempIsSoldOutIncluded(false);
+
+    // 실제 적용 상태 초기화
+    setCategories([]);
+    setIsSoldOutIncluded(false);
+
+    // 검색어 초기화
+    setKeyword("");
+
+    // 정렬 초기화
+    setSort("최근 등록 순");
+  };
+
+  /**
+   * ========================================
    * 무한 스크롤
    * ========================================
    */
@@ -498,7 +526,7 @@ export default function MarketPage() {
   };
 
   return (
-    <RequireAuth>
+    <>
       <AppHeader />
 
       <main
@@ -577,6 +605,7 @@ export default function MarketPage() {
         setSoldOut={setTempIsSoldOutIncluded}
         totalCount={totalCount}
         onApply={handleApplyMobileFilter}
+        onReset={handleResetFilters}
         categoryCounts={categoryCounts}
       />
 
@@ -604,14 +633,9 @@ export default function MarketPage() {
         title="로그인이 필요합니다"
         description={"로그인 하시겠습니까?\n다양한 서비스를 편리하게 이용하실 수 있습니다."}
         confirmLabel="로그인"
-        onConfirm={() => {
-          setIsLoginModalOpen(false);
-          router.push("/login");
-        }}
-        onClose={() => {
-          setIsLoginModalOpen(false);
-        }}
+        onConfirm={handleLoginConfirm}
+        onClose={handleLoginCancel}
       />
-    </RequireAuth>
+    </>
   );
 }
