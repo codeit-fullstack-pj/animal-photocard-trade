@@ -1,5 +1,20 @@
 import { prisma } from "../lib/prisma.js";
 
+// sellerId(판매자) 또는 offererId(교환 제시자)로 조회 조건을 생성.
+// 둘 다 있으면 "내가 판매자이거나, 내가 대기 중인 교환을 제시한" 판매글을 OR로 묶는다
+function getParticipantWhere({ sellerId, offererId }) {
+  if (!sellerId && !offererId) return undefined;
+
+  return {
+    OR: [
+      ...(sellerId ? [{ sellerId }] : []),
+      ...(offererId
+        ? [{ exchanges: { some: { status: "PENDING", offerCard: { ownerId: offererId } } } }]
+        : []),
+    ],
+  };
+}
+
 // 판매 유형과 품절 포함 여부에 맞는 조회 조건을 생성
 function getSaleStatusWhere({ includeSoldOut, status }) {
   let activeStatusWhere = {
@@ -48,6 +63,7 @@ export function findSales({
   includeSoldOut,
   status,
   sellerId,
+  offererId,
   orderBy,
   cursor,
   page,
@@ -55,18 +71,17 @@ export function findSales({
 }) {
   return prisma.sale.findMany({
     where: {
-      // 판매자 조건이 있으면 해당 판매자의 판매글만 조회
-      ...(sellerId && {
-        sellerId,
-      }),
-
       // 취소된 판매글은 판매 목록에서 제외
       NOT: {
         status: "CANCELED",
       },
 
-      // 판매 유형과 품절 포함 여부를 함께 적용
-      ...getSaleStatusWhere({ includeSoldOut, status }),
+      // 판매자·교환 제시자 조건과 판매 유형/품절 조건이 각각 자체 OR/exchanges 조건을 가질 수
+      // 있어 같은 where 객체에 바로 스프레드하면 키가 덮어써진다 — AND 배열로 분리해서 합친다
+      AND: [
+        getParticipantWhere({ sellerId, offererId }),
+        getSaleStatusWhere({ includeSoldOut, status }),
+      ].filter(Boolean),
 
       // 카테고리 또는 검색어가 있으면 연결된 카드 정보를 기준으로 조회
       ...((category || keyword) && {
@@ -98,9 +113,18 @@ export function findSales({
 
       seller: true,
 
+      // offerCard까지 포함하는 이유: offererId로 조회할 때, 목록 카드에 상대방의 카드가 아니라
+      // "내가 제시한 카드"를 보여줘야 해서 서비스 레이어에서 이 중 내 offerCard를 골라 쓴다
       exchanges: {
         where: {
           status: "PENDING",
+        },
+        include: {
+          offerCard: {
+            include: {
+              image: true,
+            },
+          },
         },
       },
     },
@@ -153,21 +177,19 @@ export function findSales({
 }
 
 // 현재 판매 목록 필터 조건에 해당하는 전체 판매글 개수를 조회
-export function countSales({ category, keyword, includeSoldOut, status, sellerId }) {
+export function countSales({ category, keyword, includeSoldOut, status, sellerId, offererId }) {
   return prisma.sale.count({
     where: {
-      // 판매자 조건이 있으면 해당 판매자의 판매글만 조회
-      ...(sellerId && {
-        sellerId,
-      }),
-
       // 취소된 판매글은 전체 개수 계산에서도 제외
       NOT: {
         status: "CANCELED",
       },
 
-      // 판매 유형과 품절 포함 여부를 함께 적용
-      ...getSaleStatusWhere({ includeSoldOut, status }),
+      // findSales와 동일한 이유로 AND 배열로 분리해서 합친다
+      AND: [
+        getParticipantWhere({ sellerId, offererId }),
+        getSaleStatusWhere({ includeSoldOut, status }),
+      ].filter(Boolean),
 
       // 카테고리 또는 검색어가 있으면 연결된 카드 정보를 기준으로 조회
       ...((category || keyword) && {

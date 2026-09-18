@@ -91,10 +91,10 @@ export default function CreateCardPicker({ onSelect }) {
         ) : (
           <ul
             ref={scrollRef}
-            className="-mr-2 grid h-full grid-cols-2 gap-1.75 overflow-y-auto pr-1.5 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-400 tablet:gap-4 tablet:[&::-webkit-scrollbar]:w-1.5 pc:gap-5 pc:[&::-webkit-scrollbar]:w-2"
+            className="-mr-2 grid h-full grid-cols-2 content-start items-start gap-1.75 overflow-y-auto pr-1.5 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-400 tablet:gap-4 tablet:[&::-webkit-scrollbar]:w-1.5 pc:gap-5 pc:[&::-webkit-scrollbar]:w-2"
           >
             {cards.map((card) => (
-              <li key={card.id}>
+              <li key={card.id} className="h-auto">
                 <button
                   type="button"
                   onClick={() => onSelect(card)}

@@ -88,6 +88,7 @@ export default function MySalesMobileFilter({
       try {
         const commonParams = {
           sellerId,
+          offererId: sellerId,
           page: 1,
           limit: 1,
           keyword: keyword?.trim() || undefined,
@@ -174,6 +175,7 @@ export default function MySalesMobileFilter({
 
         const result = await getSales({
           sellerId,
+          offererId: sellerId,
           page: 1,
           limit: 1,
           keyword: keyword?.trim() || undefined,

@@ -92,6 +92,14 @@ export async function listCards({ ownerId, page, pageSize, orderBy, keyword, cat
   const baseWhere = {
     ownerId,
     ...(keyword ? { name: { contains: keyword, mode: "insensitive" } } : {}),
+    // 판매 중이거나(Sale.status=ON_SALE) 교환을 제시한(Exchange.status=PENDING) 카드는
+    // 마이갤러리에서 숨긴다 — 이미 판매·교환에 걸려 있어 지금 다시 팔거나 제시할 수 없는 카드라서
+    NOT: {
+      OR: [
+        { sales: { some: { status: "ON_SALE" } } },
+        { offeredExchanges: { some: { status: "PENDING" } } },
+      ],
+    },
   };
   const where = {
     ...baseWhere,

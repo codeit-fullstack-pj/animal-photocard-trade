@@ -17,7 +17,7 @@ export async function purchaseCard(saleId) {
 
 //GET /sales/{saleId}/exchanges
 export async function getSaleExchanges(saleId) {
-  const { exchanges } = await apiFetch(`sales/${saleId}/exchanges`);
+  const { exchanges } = await apiFetch(`/sales/${saleId}/exchanges`);
   return exchanges;
 }
 
