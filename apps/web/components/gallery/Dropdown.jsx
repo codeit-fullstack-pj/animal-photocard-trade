@@ -154,7 +154,7 @@ export default function Dropdown({
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-2 rounded-xs border bg-black text-left ${
           triggerImage
-            ? "size-8.75 justify-center border-white px-0 tablet:h-12 tablet:w-full tablet:justify-between tablet:border-0 tablet:px-4"
+            ? "size-8.75 justify-center border-white px-0 tablet:h-12 tablet:w-auto tablet:justify-start tablet:border-0 tablet:px-0"
             : "h-12 w-full justify-between border-gray-200 px-4"
         } ${className}`}
       >
@@ -168,7 +168,7 @@ export default function Dropdown({
           />
         )}
         <span
-          className={`min-w-0 flex-1 truncate ${!multiple && singleLabel ? "text-white" : placeholderClassName} ${
+          className={`min-w-0 truncate ${!multiple && singleLabel ? "text-white" : placeholderClassName} ${
             triggerImage ? "hidden tablet:block" : ""
           }`}
         >
