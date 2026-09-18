@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { useAuth } from "@/lib/auth/AuthProvider";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import Profile from "@/components/ui/Profile";
 import Notification, { NotificationDataProvider } from "@/components/ui/Notification";
 
@@ -15,7 +15,7 @@ const MENU_LINKS = [
 ];
 
 export default function AppHeader() {
-  const { currentUser, isLoading, logout } = useAuth();
+  const { currentUser, isLoading, logout } = useCurrentUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // 모바일/태블릿·PC 두 군데에 따로 렌더링되는 Notification 인스턴스가 같은 열림 상태를 쓰도록 여기서 관리
   const [isNotifOpen, setIsNotifOpen] = useState(false);

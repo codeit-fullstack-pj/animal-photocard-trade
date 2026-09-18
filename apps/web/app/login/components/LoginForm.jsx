@@ -6,11 +6,9 @@ import { useState } from "react";
 import FormField from "@/components/auth/FormField";
 import { ApiError } from "@/lib/api-client";
 import { signin } from "@/lib/auth/api";
-import { useAuth } from "@/lib/auth/AuthProvider";
 
 export default function LoginForm() {
   const router = useRouter();
-  const { login } = useAuth();
   const [values, setValues] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,8 +32,7 @@ export default function LoginForm() {
 
     setIsSubmitting(true);
     try {
-      const { user } = await signin(values);
-      login(user);
+      await signin(values);
       router.push("/market");
     } catch (error) {
       if (error instanceof ApiError && error.code === "INVALID_CREDENTIALS") {
