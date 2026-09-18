@@ -1,6 +1,7 @@
 import { Noto_Sans_KR } from "next/font/google";
 import localFont from "next/font/local";
 
+import { AuthProvider } from "@/lib/auth/AuthProvider";
 import "./globals.css";
 
 const notoSansKr = Noto_Sans_KR({
@@ -32,7 +33,7 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
