@@ -5,7 +5,7 @@ import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 import TradeFilter from "@/components/trade/TradeFilter";
 import TradeSearchBar from "@/components/trade/TradeSearchBar";
 import { useInfiniteFetch } from "@/hooks/useInfiniteFetch";
-import { fetchMockMyCards, getMockCategoryCounts } from "@/lib/api/mockMyCards.js";
+import { fetchMyCardsPage } from "@/lib/gallery/api";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const CATEGORY_OPTIONS = [
@@ -31,12 +31,12 @@ export default function OfferCardPicker({ onSelect }) {
     [debounceKeyword, selectedCategory],
   );
 
-  const categoryCounts = useMemo(() => getMockCategoryCounts(debounceKeyword), [debounceKeyword]);
-
-  const { cards, isLoading, error, hasNextPage, loadNextPage, retry } = useInfiniteFetch(
-    fetchMockMyCards,
+  const { cards, isLoading, error, hasNextPage, loadNextPage, retry, meta } = useInfiniteFetch(
+    fetchMyCardsPage,
     queryParams,
   );
+
+  const categoryCounts = meta.categoryCounts ?? {};
 
   useEffect(() => {
     const root = scrollRef.current;
@@ -91,10 +91,10 @@ export default function OfferCardPicker({ onSelect }) {
         ) : (
           <ul
             ref={scrollRef}
-            className="-mr-2 grid h-full grid-cols-2 gap-1.75 overflow-y-auto pr-1.5 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-400 tablet:gap-4 tablet:[&::-webkit-scrollbar]:w-1.5 pc:gap-5 pc:[&::-webkit-scrollbar]:w-2"
+            className="-mr-2 grid h-full grid-cols-2 content-start items-start gap-1.75 overflow-y-auto pr-1.5 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-400 tablet:gap-4 tablet:[&::-webkit-scrollbar]:w-1.5 pc:gap-5 pc:[&::-webkit-scrollbar]:w-2"
           >
             {cards.map((card) => (
-              <li key={card.id}>
+              <li key={card.id} className="h-auto">
                 <button
                   type="button"
                   onClick={() => onSelect(card)}
