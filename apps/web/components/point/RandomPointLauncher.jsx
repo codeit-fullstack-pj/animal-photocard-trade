@@ -6,9 +6,9 @@ import { useState } from "react";
 import RandomPointModal from "@/components/point/RandomPointModal";
 import RandomPointResultModal from "@/components/point/RandomPointResultModal";
 
-export default function RandomPointLauncher() {
+export default function RandomPointLauncher({ autoOpen = false }) {
   // 랜덤 포인트 뽑기 모달의 열림 상태를 관리
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(autoOpen);
 
   // 실제 추첨으로 획득한 포인트를 관리
   const [earnedPoint, setEarnedPoint] = useState(null);

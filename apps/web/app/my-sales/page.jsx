@@ -6,13 +6,11 @@ import { useEffect, useRef, useState } from "react";
 
 import ScaledPhotoCard from "../../components/card/ScaledPhotoCard";
 import MySalesMobileFilter from "@/components/card/MySalesMobileFilter";
-import RandomPointLauncher from "@/components/point/RandomPointLauncher";
 import AppHeader from "@/components/ui/AppHeader";
 import MobileHeader from "@/components/ui/MobileHeader";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getSales } from "@/lib/sales/api";
-import { fetchMyCards } from "@/lib/gallery/api";
 
 const SORT_OPTIONS = [
   { value: "SCORE_DESC", label: "관상 지수 높은 순" },
@@ -29,6 +27,7 @@ export default function MySalesPage() {
   // ===========================================================================
   // ★★★★★ 상태 관리 ★★★★★
   // ===========================================================================
+
   // 카테고리 드롭다운의 열림/닫힘 상태를 관리
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
@@ -71,11 +70,12 @@ export default function MySalesPage() {
   // 드롭다운 영역 바깥 클릭 여부를 확인하기 위해 DOM 요소를 참조
   const filterAreaRef = useRef(null);
 
-  // 현재 사용자가 보유한 전체 포토카드 개수를 관리
-  const [ownedCardCount, setOwnedCardCount] = useState(0);
+  // 현재 사용자가 거래 중인 전체 포토카드 개수를 관리
+  const [tradingCardCount, setTradingCardCount] = useState(0);
 
   // 모바일 필터 패널의 열림 상태를 관리
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
   // ===========================================================================
   // ★★★★★ 상태 관리 END ★★★★★
   // ===========================================================================
@@ -105,31 +105,31 @@ export default function MySalesPage() {
 
   const router = useRouter();
 
-  // 현재 로그인한 사용자가 보유한 전체 포토카드 개수를 조회
+  // 현재 로그인한 사용자가 거래 중인 전체 포토카드 개수를 조회
   useEffect(() => {
     if (!currentUser?.id) return;
 
     let cancelled = false;
 
-    async function loadOwnedCardCount() {
+    async function loadTradingCardCount() {
       try {
-        const { totalCount } = await fetchMyCards({
+        const { totalCount } = await getSales({
+          sellerId: currentUser.id,
+          offererId: currentUser.id,
+          limit: 1,
           page: 1,
-          pageSize: 1,
-          sort: "created_desc",
-          keyword: "",
-          categories: [],
+          includeSoldOut: false,
         });
 
         if (!cancelled) {
-          setOwnedCardCount(totalCount);
+          setTradingCardCount(totalCount);
         }
       } catch (error) {
-        console.error("보유 포토카드 개수 조회에 실패했습니다.", error);
+        console.error("거래 중인 포토카드 개수 조회에 실패했습니다.", error);
       }
     }
 
-    loadOwnedCardCount();
+    loadTradingCardCount();
 
     return () => {
       cancelled = true;
@@ -256,11 +256,8 @@ export default function MySalesPage() {
         <AppHeader />
       </div>
 
-      {/* 로그인한 사용자에게 랜덤 포인트 진입 선물상자를 표시 */}
-      {currentUser?.id && <RandomPointLauncher />}
-
       <div className="mx-auto w-full max-w-[1240px] px-[20px] pt-[20px] tablet:px-[40px] tablet:pt-[140px] pc:px-0 pc:pt-[168px]">
-        {/* 태블릿 이상에서만 페이지 제목과 보유 카드 정보를 표시 */}
+        {/* 태블릿 이상에서만 페이지 제목과 거래 중인 카드 정보를 표시 */}
         <div className="hidden tablet:block">
           {/* 페이지 제목 */}
           <h1 className="font-primary-bold text-[40px] leading-[52px] tracking-[-0.03em] text-white pc:text-[56px] pc:leading-[67px]">
@@ -270,12 +267,12 @@ export default function MySalesPage() {
           {/* 제목 아래 구분선 */}
           <div className="mt-[20px] h-[2px] w-full bg-gray-100" />
 
-          {/* PC에서만 현재 사용자가 보유한 포토카드 개수를 표시 */}
+          {/* PC에서만 현재 사용자의 거래중인 포토카드 개수를 표시 */}
           <div className="hidden pc:block">
             <p className="font-sans-500 mt-[24px] text-[20px] text-gray-200">
-              {currentUser?.nickname ?? ""}님이 보유한 포토카드
+              {currentUser?.nickname ?? ""}님이 거래중인 포토카드
               <span className="font-sans-400 ml-[8px] text-[16px] text-gray-300">
-                ({ownedCardCount}장)
+                ({tradingCardCount}장)
               </span>
             </p>
 
@@ -333,6 +330,7 @@ export default function MySalesPage() {
                   onApply={handleMobileFilterApply}
                 />
               )}
+
               <div className="relative w-[200px]">
                 <button
                   type="button"
@@ -417,6 +415,7 @@ export default function MySalesPage() {
                   </div>
                 )}
               </div>
+
               {/* 판매 유형 필터 */}
               <div className="relative">
                 <button
@@ -492,11 +491,12 @@ export default function MySalesPage() {
               aria-expanded={isSortOpen}
             >
               {selectedSortLabel}
+
               <Image src={isSortOpen ? "/up.png" : "/down.png"} alt="" width={24} height={24} />
             </button>
 
             {isSortOpen && (
-              <div className="absolute top-[50px] right-0 z-30 w-[200px] mt-[5px] border border-gray-200 rounded-[2px] bg-black">
+              <div className="absolute top-[50px] right-0 z-30 mt-[5px] w-[200px] rounded-[2px] border border-gray-200 bg-black">
                 {SORT_OPTIONS.map((option) => (
                   <button
                     key={option.value}
@@ -515,6 +515,7 @@ export default function MySalesPage() {
             )}
           </div>
         </div>
+
         {/* 판매 목록의 로딩, 오류, 정상, 빈 상태를 구분하여 표시 */}
         {isSalesLoading ? (
           <div className="font-sans-400 mt-[200px] text-center text-[25px] text-gray-300">
@@ -526,7 +527,6 @@ export default function MySalesPage() {
           </div>
         ) : sales.length > 0 ? (
           <section className="mt-[32px] grid w-full grid-cols-2 gap-[12px] tablet:gap-[20px] pc:mt-[40px] pc:grid-cols-3">
-            {" "}
             {sales.map((sale) => (
               <ScaledPhotoCard
                 key={sale.id}
