@@ -36,8 +36,8 @@ export default function GalleryToolbar({
 }) {
   // 모바일: 검색 1줄 / 카테고리·정렬 2줄. tablet+ : 검색·카테고리 왼쪽 묶음, 정렬 우측(ml-auto)
   return (
-    <div className="flex w-full flex-wrap items-center justify-between gap-3 tablet:flex-nowrap tablet:justify-start">
-      <div className="flex h-12.5 w-full shrink-0 items-center gap-2 rounded-xs border border-gray-200 bg-black px-4 tablet:w-50 pc:w-xs">
+    <div className="flex w-full flex-wrap items-center justify-between gap-3 tablet:flex-nowrap tablet:justify-start tablet:gap-0">
+      <div className="flex h-12.5 w-full shrink-0 items-center gap-2 rounded-xs border border-gray-200 bg-black px-4 tablet:w-50 tablet:mr-7.5 pc:w-xs">
         <input
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
@@ -47,21 +47,28 @@ export default function GalleryToolbar({
         <Image src="/search.png" alt="검색" width={20} height={20} className="shrink-0" />
       </div>
 
-      <div className="w-8.75 shrink-0 tablet:w-40 tablet:flex-none">
-        <Dropdown
-          multiple
-          options={CATEGORY_OPTIONS}
-          value={categories}
-          onChange={onCategoriesChange}
-          optionCounts={categoryCounts}
-          placeholder="카테고리"
-          triggerImage="/dropdown.png"
-          placeholderClassName="text-white"
-        />
-      </div>
+      <div className="flex w-full shrink-0 items-center justify-between gap-3 tablet:w-auto tablet:flex-1 tablet:gap-0">
+        <div className="w-8.75 shrink-0 tablet:w-30 tablet:flex-none">
+          <Dropdown
+            multiple
+            options={CATEGORY_OPTIONS}
+            value={categories}
+            onChange={onCategoriesChange}
+            optionCounts={categoryCounts}
+            placeholder="카테고리"
+            triggerImage="/dropdown.png"
+            placeholderClassName="text-white"
+          />
+        </div>
 
-      <div className="w-50 shrink-0 tablet:ml-auto tablet:w-52 tablet:flex-none">
-        <Dropdown options={SORT_OPTIONS} value={sort} onChange={onSortChange} placeholder="정렬" />
+        <div className="w-50 shrink-0 tablet:w-52 tablet:flex-none">
+          <Dropdown
+            options={SORT_OPTIONS}
+            value={sort}
+            onChange={onSortChange}
+            placeholder="정렬"
+          />
+        </div>
       </div>
     </div>
   );
