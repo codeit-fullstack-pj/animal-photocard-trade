@@ -129,7 +129,7 @@ export default function MarketFilters({
             min-w-0
             flex-1
             bg-transparent
-            text-[12px]
+            text-[14px]
             text-white
             outline-none
             placeholder:text-[#888]
