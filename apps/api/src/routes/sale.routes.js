@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import * as saleController from "../controllers/sale.controller.js";
+import { saleUpdateRateLimit } from "../middlewares/rate-limit.js";
 import { requireAuth } from "../middlewares/require-auth.js";
 
 export const saleRouter = Router();
@@ -24,7 +25,7 @@ saleRouter.get("/:saleId/exchanges", requireAuth, saleController.listExchanges);
 saleRouter.get("/:id", saleController.getSaleById);
 
 // 판매글 수정
-saleRouter.patch("/:id", requireAuth, saleController.updateSale);
+saleRouter.patch("/:id", saleUpdateRateLimit, requireAuth, saleController.updateSale);
 
 // 판매글 취소
 saleRouter.patch("/:id/cancel", requireAuth, saleController.cancelSale);
