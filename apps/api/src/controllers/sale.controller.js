@@ -53,6 +53,7 @@ export async function getSales(req, res) {
   const includeSoldOut = req.query.includeSoldOut;
   const status = req.query.status;
   const sellerId = req.query.sellerId;
+  const offererId = req.query.offererId;
   const orderBy = req.query.orderBy;
   const cursor = req.query.cursor;
   const page = req.query.page === undefined ? undefined : Number(req.query.page);
@@ -105,12 +106,18 @@ export async function getSales(req, res) {
     throw new ApiError(400, "VALIDATION_ERROR", "sellerId 값이 올바르지 않습니다");
   }
 
+  // offererId가 전달되면 빈 값은 허용하지 않음
+  if (offererId !== undefined && offererId.trim() === "") {
+    throw new ApiError(400, "VALIDATION_ERROR", "offererId 값이 올바르지 않습니다");
+  }
+
   const { lists, nextCursor, totalCount, totalPages } = await saleService.getSales({
     category,
     keyword,
     includeSoldOut,
     status,
     sellerId,
+    offererId,
     orderBy,
     cursor,
     page,

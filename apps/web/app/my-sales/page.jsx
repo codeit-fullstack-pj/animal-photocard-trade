@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import ScaledPhotoCard from "../../components/card/ScaledPhotoCard";
@@ -102,6 +103,8 @@ export default function MySalesPage() {
   // 현재 로그인한 사용자 정보를 조회
   const { currentUser } = useCurrentUser();
 
+  const router = useRouter();
+
   // 현재 로그인한 사용자가 보유한 전체 포토카드 개수를 조회
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -156,8 +159,12 @@ export default function MySalesPage() {
               : "ON_EXCHANGE"
             : undefined;
 
+        // sellerId(내가 등록한 판매글) 또는 offererId(내가 대기 중으로 교환 제시한 판매글)에
+        // 해당하면 함께 조회한다 — "판매 중"만 골랐을 때 내가 제시한 카드가 빠지는 것까지
+        // status 필터(getSaleStatusWhere)가 판매자/제시자 조건과 함께 AND로 걸러줘서 자동으로 맞다
         const { lists, totalPages } = await getSales({
           sellerId: currentUser.id,
+          offererId: currentUser.id,
           limit: PAGE_SIZE,
           page: currentPage,
           category,
@@ -518,7 +525,7 @@ export default function MySalesPage() {
             {salesError}
           </div>
         ) : sales.length > 0 ? (
-          <section className="mx-auto mt-[32px] grid w-full max-w-[335px] grid-cols-2 gap-[12px] tablet:max-w-[664px] tablet:gap-[20px] pc:mt-[40px] pc:max-w-none pc:grid-cols-3">
+          <section className="mt-[32px] grid w-full grid-cols-2 gap-[12px] tablet:gap-[20px] pc:mt-[40px] pc:grid-cols-3">
             {" "}
             {sales.map((sale) => (
               <ScaledPhotoCard
@@ -533,6 +540,7 @@ export default function MySalesPage() {
                 }
                 point={sale.price}
                 isSoldOut={sale.status === "SOLD_OUT"}
+                onClick={() => router.push(`/market/${sale.id}`)}
                 card={{
                   name: sale.card.name,
                   tag: sale.card.tag,

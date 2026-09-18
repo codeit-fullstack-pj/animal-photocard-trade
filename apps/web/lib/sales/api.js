@@ -8,6 +8,7 @@ export function getSales({
   includeSoldOut,
   status,
   sellerId,
+  offererId,
   orderBy,
   cursor,
   page,
@@ -22,6 +23,7 @@ export function getSales({
   }
   if (status) params.set("status", status);
   if (sellerId) params.set("sellerId", sellerId);
+  if (offererId) params.set("offererId", offererId);
   if (orderBy) params.set("orderBy", orderBy);
   if (cursor) params.set("cursor", cursor);
 

@@ -111,8 +111,8 @@ export default function PhotoCard({ card, status, point, isSoldOut, variant, onC
           })}
         </div>
 
-        {/* 판매카드 포인트 표기 */}
-        {variant === "sale" && (
+        {/* 판매카드 포인트 표기 — 내가 제시한 교환 카드처럼 가격이 없는 항목은 숨긴다 */}
+        {variant === "sale" && point !== undefined && (
           <div className="mt-3 border-t border-[#1D1D1D] pt-2">
             <div className="flex items-center justify-between">
               <AutoFitText className="font-sans-400 text-[12px] text-white">
