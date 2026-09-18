@@ -11,7 +11,7 @@ import BuyerExchangeList from "@/components/trade/BuyerExchangeList";
 import ExchangeListView from "@/components/trade/ExchangeListView";
 import ExchangeProposalModal from "@/components/trade/ExchangeProposalModal";
 import SellerActionButtons from "@/components/trade/SellerActionButtons";
-import SaleFormView from "@/components/trade/SaleFormView";
+import EditSaleModal from "@/components/trade/EditSaleModal";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import Toast from "@/components/ui/Toast";
 import { purchaseCard } from "@/lib/trade/api";
@@ -181,23 +181,13 @@ export default function SaleDetailView({ sale }) {
         </>
       )}
 
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
-          <div className="relative w-full max-w-3xl rounded-2xl bg-[#111114] p-10">
-            <SaleFormView
-              card={cardProps.card}
-              initialData={{
-                id: sale.id,
-                description: sale.description,
-                price: sale.price,
-                canExchange: sale.canExchange,
-              }}
-              onClose={() => setIsEditModalOpen(false)}
-              onBack={() => setIsEditModalOpen(false)}
-            />
-          </div>
-        </div>
-      )}
+      <EditSaleModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        sale={sale}
+        card={cardProps.card}
+        onUpdated={() => router.refresh()}
+      />
     </main>
   );
 }

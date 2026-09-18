@@ -47,3 +47,11 @@ export function createSale({ cardId, description, canExchange, price }) {
 export function getSale(id) {
   return apiFetch(`/sales/${id}`);
 }
+
+// 판매글 수정
+export function updateSale(id, { description, canExchange, price }) {
+  return apiFetch(`/sales/${id}`, {
+    method: "PATCH",
+    body: { description, canExchange, price },
+  });
+}

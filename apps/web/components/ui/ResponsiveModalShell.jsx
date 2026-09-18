@@ -49,6 +49,7 @@ export default function ResponsiveModalShell({
   title,
   children,
   isSubmitting,
+  flushMobileBottom = false,
 }) {
   const breakpoint = useShellBreakpoint();
   const [canDrag, setCanDrag] = useState(true);
@@ -139,10 +140,13 @@ export default function ResponsiveModalShell({
               <Image src="/close.png" alt="" width={24} height={24} />
             </button>
 
-            {/* 내용이 길면 세로로만 스크롤한다 (가로 스크롤은 어느 폭에서도 만들지 않는다) */}
+            {/* 내용이 길면 세로로만 스크롤한다 (가로 스크롤은 어느 폭에서도 만들지 않는다).
+                flushMobileBottom이면 이 모달에 한해 모바일 하단 padding도 tablet처럼 0으로 뺀다 */}
             <div
               onScroll={handleContentScroll}
-              className="min-h-0 flex-1 overflow-x-hidden px-4 py-5 tablet:px-5 tablet:py-6 tablet:pb-0 pc:p-15"
+              className={`min-h-0 flex-1 overflow-x-hidden px-4 pt-5 tablet:px-5 tablet:pt-6 tablet:pb-0 pc:p-15 ${
+                flushMobileBottom ? "pb-0" : "pb-5"
+              }`}
             >
               {children}
             </div>
