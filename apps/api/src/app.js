@@ -29,19 +29,13 @@ app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/api/v1", healthRouter);
-app.use("/api/v1", imageRouter);
-app.use("/api/v1", cardRouter);
-
-// 판매 관련 API 라우터를 등록
+app.use("/api/v1/health", healthRouter);
+app.use("/api/v1/images", imageRouter);
+app.use("/api/v1/cards", cardRouter);
 app.use("/api/v1/sales", saleRouter);
-
 app.use("/api/v1/notification", notificationRouter);
-
-// 교환 제시 취소 등 교환 관련 API 라우터를 등록
 app.use("/api/v1/exchanges", exchangeRouter);
-
-app.use("/api/v1", userRouter);
+app.use("/api/v1/users", userRouter);
 app.use("/api/v1/auth", authRouter);
 
 app.use(notFoundHandler);

@@ -24,7 +24,7 @@ saleRouter.get("/:saleId/exchanges", requireAuth, saleController.listExchanges);
 saleRouter.get("/:id", saleController.getSaleById);
 
 // 판매글 수정
-saleRouter.patch("/:id", saleController.updateSale);
+saleRouter.patch("/:id", requireAuth, saleController.updateSale);
 
 // 판매글 취소
 saleRouter.patch("/:id/cancel", requireAuth, saleController.cancelSale);

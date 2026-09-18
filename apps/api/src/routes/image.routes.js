@@ -33,7 +33,7 @@ export const imageRouter = Router();
 
 // POST /api/v1/images/upload — multipart/form-data { image: File, category: "DOG" | "CAT" }
 imageRouter.post(
-  "/images/upload",
+  "/upload",
   apiRateLimit,
   requireAuth,
   requireCsrfToken,
