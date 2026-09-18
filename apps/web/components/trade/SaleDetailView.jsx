@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,24 +11,36 @@ import BuyerExchangeList from "@/components/trade/BuyerExchangeList";
 import ExchangeListView from "@/components/trade/ExchangeListView";
 import ExchangeProposalModal from "@/components/trade/ExchangeProposalModal";
 import SellerActionButtons from "@/components/trade/SellerActionButtons";
+import SaleFormView from "@/components/trade/SaleFormView";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import Toast from "@/components/ui/Toast";
 import { purchaseCard } from "@/lib/trade/api";
+import { getCurrentUser } from "@/lib/auth/api";
 
-export default function SaleDetailView({ sale, currentUser }) {
+export default function SaleDetailView({ sale }) {
   const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isUserLoading, setIsUserLoading] = useState(true);
   const router = useRouter();
 
-  const isSeller = currentUser.id === sale.seller.id;
+  useEffect(() => {
+    getCurrentUser()
+      .then((data) => setCurrentUser(data.user))
+      .catch(() => setCurrentUser(null))
+      .finally(() => setIsUserLoading(false));
+  }, []);
 
+  const isSeller = currentUser?.id === sale.seller.id;
   const cardName = `${sale.card.tag} ${sale.card.name}`;
 
   const cardProps = {
     variant: "owned",
     card: {
+      id: sale.card.id,
       name: sale.card.name,
       tag: sale.card.tag,
       imageUrl: sale.card.image,
@@ -39,7 +51,7 @@ export default function SaleDetailView({ sale, currentUser }) {
   };
 
   function handlePurchaseClick() {
-    if (currentUser.point < sale.price) {
+    if (currentUser?.point < sale.price) {
       setToastMessage("보유 포인트가 부족합니다");
       return;
     }
@@ -67,7 +79,6 @@ export default function SaleDetailView({ sale, currentUser }) {
     <main className="mx-auto w-full max-w-310 px-4 pt-6 pb-20 tablet:px-5 tablet:pt-8 pc:px-0 pc:pt-15">
       <Toast isOpen={!!toastMessage} message={toastMessage} onClose={() => setToastMessage("")} />
 
-      {/* 모바일은 MobileHeader 가 같은 역할을 해서 숨긴다 */}
       <Link
         href="/market"
         className="font-primary-bold hidden text-xl text-gray-300 tablet:block tablet:text-base pc:text-2xl"
@@ -119,8 +130,10 @@ export default function SaleDetailView({ sale, currentUser }) {
           </div>
 
           <div className="mt-10 pc:mt-auto">
-            {isSeller ? (
-              <SellerActionButtons />
+            {isUserLoading ? (
+              <div className="h-18 w-full rounded-xs bg-gray-700 tablet:h-18.75 pc:h-20" />
+            ) : isSeller ? (
+              <SellerActionButtons onEditClick={() => setIsEditModalOpen(true)} />
             ) : (
               <BuyerActionButtons
                 onPurchaseClick={handlePurchaseClick}
@@ -132,13 +145,12 @@ export default function SaleDetailView({ sale, currentUser }) {
       </div>
 
       <div className="mt-14 pc:mt-16">
-        {isSeller ? (
+        {isUserLoading ? null : isSeller ? (
           <section>
             <h2 className="font-sans-700 text-xl text-white tablet:text-[28px] pc:text-[30px]">
               교환 제시 목록
             </h2>
             <div className="mt-5 border-t border-gray-400 tablet:mt-4 pc:mt-5" />
-            {/* ExchangeListView 위치 */}
             <div className="mt-8 tablet:mt-6 pc:mt-8">
               <ExchangeListView sale={sale} currentUser={currentUser} isSeller={isSeller} />
             </div>
@@ -148,7 +160,7 @@ export default function SaleDetailView({ sale, currentUser }) {
         )}
       </div>
 
-      {!isSeller && (
+      {!isUserLoading && !isSeller && (
         <>
           <ExchangeProposalModal
             saleId={sale.id}
@@ -166,6 +178,24 @@ export default function SaleDetailView({ sale, currentUser }) {
             isSubmitting={isPurchasing}
           />
         </>
+      )}
+
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
+          <div className="relative w-full max-w-3xl rounded-2xl bg-[#111114] p-10">
+            <SaleFormView
+              card={cardProps.card}
+              initialData={{
+                id: sale.id,
+                description: sale.description,
+                price: sale.price,
+                canExchange: sale.canExchange,
+              }}
+              onClose={() => setIsEditModalOpen(false)}
+              onBack={() => setIsEditModalOpen(false)}
+            />
+          </div>
+        </div>
       )}
     </main>
   );
