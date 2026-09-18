@@ -22,6 +22,7 @@
   --color-pink: #ff2a6a;
   --color-main: #efff04;
   --color-purple-button: #a656f5;
+  --color-yellow-button: #ffd633;
   --font-sans: var(--font-noto-sans-kr), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 
   /* 반응형 breakpoint — Figma 프레임: mobile 375 / tablet 744 / pc 1920

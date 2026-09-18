@@ -1,4 +1,4 @@
-import { optional, refine, size, string, type, validate } from "superstruct";
+import { boolean, number, optional, refine, size, string, type, validate } from "superstruct";
 
 import { ApiError } from "../lib/api-error.js";
 import * as saleService from "../services/sale.service.js";
@@ -8,20 +8,63 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 // 같은 uuid 검증 패턴이 params에 여러 번 나와서 상수로 뺌
 const Uuid = refine(string(), "uuid", (value) => UUID_PATTERN.test(value));
 
+// POST /sales 본문 형식
+const SaleCreateBody = type({
+  cardId: Uuid,
+  description: optional(size(string(), 0, 500)),
+  canExchange: optional(boolean()),
+  price: refine(number(), "price", (value) => Number.isInteger(value) && value >= 0),
+});
+
+const SALE_CREATE_VALIDATION_MESSAGES = {
+  cardId: "cardId는 UUID 형식이어야 합니다",
+  description: "description은 500자 이하 문자열이어야 합니다",
+  price: "price는 0 이상의 정수여야 합니다",
+};
+
+// POST /sales — 새 판매글을 등록
+export async function createSale(req, res) {
+  const [error, body] = validate(req.body, SaleCreateBody);
+  if (error) {
+    const field = error.path[0] ?? error.key;
+    throw new ApiError(
+      400,
+      "VALIDATION_ERROR",
+      SALE_CREATE_VALIDATION_MESSAGES[field] ?? "요청 값이 올바르지 않습니다",
+    );
+  }
+
+  const sale = await saleService.createSale({
+    cardId: body.cardId,
+    sellerId: req.user.id,
+    description: body.description,
+    canExchange: body.canExchange ?? false,
+    price: body.price,
+  });
+
+  res.status(201).json({ data: sale });
+}
+
 // GET /sales 쿼리 파라미터를 확인하고 판매 목록을 반환
 export async function getSales(req, res) {
   const limit = req.query.limit === undefined ? 20 : Number(req.query.limit);
   const category = req.query.category;
   const keyword = req.query.keyword?.trim() || undefined;
-  const soldOut = req.query.soldOut;
+  const includeSoldOut = req.query.includeSoldOut;
   const status = req.query.status;
   const sellerId = req.query.sellerId;
   const orderBy = req.query.orderBy;
   const cursor = req.query.cursor;
+  const page = req.query.page === undefined ? undefined : Number(req.query.page);
 
   //POST /sales/:saleId/purchase
   if (!Number.isInteger(limit) || limit < 1) {
     throw new ApiError(400, "VALIDATION_ERROR", "limit은 1 이상의 정수여야 합니다");
+  }
+
+  // page가 전달되면 1 이상의 정수만 허용
+  if (page !== undefined && (!Number.isInteger(page) || page < 1)) {
+    throw new ApiError(400, "VALIDATION_ERROR", "page는 1 이상의 정수여야 합니다");
   }
 
   // 카테고리는 고양이 또는 강아지만 허용
@@ -34,9 +77,9 @@ export async function getSales(req, res) {
     throw new ApiError(400, "VALIDATION_ERROR", "status는 ON_SALE 또는 ON_EXCHANGE여야 합니다");
   }
 
-  // 품절 여부는 true 또는 false만 허용
-  if (soldOut !== undefined && !["true", "false"].includes(soldOut)) {
-    throw new ApiError(400, "VALIDATION_ERROR", "soldOut은 true 또는 false여야 합니다");
+  // 품절 포함 여부는 true 또는 false만 허용
+  if (includeSoldOut !== undefined && !["true", "false"].includes(includeSoldOut)) {
+    throw new ApiError(400, "VALIDATION_ERROR", "includeSoldOut은 true 또는 false여야 합니다");
   }
 
   // 정렬은 관상 지수, 포인트, 등록일 기준의 6가지 값만 허용
@@ -52,19 +95,25 @@ export async function getSales(req, res) {
     throw new ApiError(400, "VALIDATION_ERROR", "cursor 값이 올바르지 않습니다");
   }
 
+  // page와 cursor 페이지네이션 방식은 동시에 사용할 수 없음
+  if (page !== undefined && cursor !== undefined) {
+    throw new ApiError(400, "VALIDATION_ERROR", "page와 cursor는 동시에 사용할 수 없습니다");
+  }
+
   // sellerId가 전달되면 빈 값은 허용하지 않음
   if (sellerId !== undefined && sellerId.trim() === "") {
     throw new ApiError(400, "VALIDATION_ERROR", "sellerId 값이 올바르지 않습니다");
   }
 
-  const { lists, nextCursor } = await saleService.getSales({
+  const { lists, nextCursor, totalCount, totalPages } = await saleService.getSales({
     category,
     keyword,
-    soldOut,
+    includeSoldOut,
     status,
     sellerId,
     orderBy,
     cursor,
+    page,
     limit,
   });
 
@@ -72,6 +121,11 @@ export async function getSales(req, res) {
     data: {
       lists,
       nextCursor,
+      totalCount,
+
+      ...(page !== undefined && {
+        totalPages,
+      }),
     },
   });
 }
@@ -160,5 +214,48 @@ export async function listExchanges(req, res) {
     viewer: req.user,
   });
 
+  res.json({ data: result });
+}
+
+const SaleIdParams = type({
+  id: Uuid,
+});
+
+// GET /sales/:id — URL 파라미터에서 id 꺼내서 조회, 결과 그대로 응답
+export async function getSaleById(req, res) {
+  const [paramsError, params] = validate(req.params, SaleIdParams);
+  if (paramsError) {
+    throw new ApiError(400, "VALIDATION_ERROR", "id는 UUID 형식이어야 합니다");
+  }
+
+  const sale = await saleService.getSaleById(params.id);
+  res.json({ data: sale });
+}
+
+// PATCH /sales/:id — body에서 수정 허용된 필드(description/canExchange/price)만 골라서 전달
+// (cardId, sellerId, status 등은 여기서 안 걸러지므로 절대 반영 안 됨)
+export async function updateSale(req, res) {
+  const [paramsError, params] = validate(req.params, SaleIdParams);
+  if (paramsError) {
+    throw new ApiError(400, "VALIDATION_ERROR", "id는 UUID 형식이어야 합니다");
+  }
+
+  const data = {
+    description: req.body.description,
+    canExchange: req.body.canExchange,
+    price: req.body.price,
+  };
+  const sale = await saleService.updateSale(params.id, data);
+  res.json({ data: sale });
+}
+
+// PATCH /sales/:id/cancel — body 없이 id만으로 캔슬 실행, { data: ... } 형태로 응답
+export async function cancelSale(req, res) {
+  const [paramsError, params] = validate(req.params, SaleIdParams);
+  if (paramsError) {
+    throw new ApiError(400, "VALIDATION_ERROR", "id는 UUID 형식이어야 합니다");
+  }
+
+  const result = await saleService.cancelSale(params.id);
   res.json({ data: result });
 }

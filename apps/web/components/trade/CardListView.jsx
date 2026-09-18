@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { mockCards } from "@/mocks/cards.js";
+import GalleryCardItem from "@/components/gallery/GalleryCardItem";
 
 const CardListView = ({ onSelectCard }) => {
   const [keyword, setKeyword] = useState("");
@@ -19,9 +20,11 @@ const CardListView = ({ onSelectCard }) => {
 
   return (
     <>
-      <p className="text-gray-300 text-2xl mb-11 shrink-0">마이갤러리</p>
-      <h2 className="text-[46px] font-bold text-[#eeeeee] mb-5 shrink-0">나의 포토카드 판매하기</h2>
-      <div className="w-full h-[2px] bg-white mb-5 shrink-0" />
+      <p className="hidden text-gray-300 text-2xl mb-11 shrink-0 tablet:block">마이갤러리</p>
+      <h2 className="hidden text-[46px] font-bold text-gray-100 mb-5 shrink-0 tablet:block">
+        나의 포토카드 판매하기
+      </h2>
+      <div className="hidden w-full h-0.5 bg-white mb-5 shrink-0 tablet:block" />
 
       <div className="flex items-center gap-7 mb-5 shrink-0">
         <div className="w-[320px] h-[50px] bg-black border border-gray-500 focus-within:border-white flex items-center justify-between px-[25px] rounded-md">
@@ -80,39 +83,14 @@ const CardListView = ({ onSelectCard }) => {
         {filteredCards.length === 0 ? (
           <p className="text-gray-400 text-center py-8">보유하신 카드가 없습니다.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid w-full grid-cols-2 justify-items-center gap-3 tablet:gap-5">
             {filteredCards.map((card) => (
               <div
                 key={card.id}
                 onClick={() => onSelectCard(card)}
-                className="bg-[#1a1a1f] rounded-xl overflow-hidden cursor-pointer hover:opacity-80 w-[400px] h-[586.5px]"
+                className="w-full cursor-pointer"
               >
-                <img
-                  src={card.imageUrl}
-                  alt={card.name}
-                  className="w-[352px] h-[232px] object-cover mx-6 mt-8 rounded-lg"
-                />
-
-                <p className="text-sm text-white ml-6 mt-3">
-                  {card.tag} {card.name}
-                </p>
-
-                <div className="px-6 mt-4">
-                  {card.score.axes.map((axis) => (
-                    <div key={axis.field} className="flex items-center gap-2 text-xs mb-2">
-                      <span className="w-20 text-gray-400">{axis.field}</span>
-                      <div className="flex-1 h-1.5 bg-white rounded-full">
-                        <div
-                          className="h-1.5 bg-[#a656f5] rounded-full"
-                          style={{ width: `${axis.value}%` }}
-                        />
-                      </div>
-                      <span className="text-gray-400">{axis.value}%</span>
-                    </div>
-                  ))}
-                </div>
-
-                <p className="text-xs text-gray-400 px-6 mt-3">{card.description}</p>
+                <GalleryCardItem card={card} />
               </div>
             ))}
           </div>

@@ -1,12 +1,10 @@
-import Link from "next/link";
-
-export default function MarketHeader() {
+export default function MarketHeader({ onOpenSaleModal }) {
   return (
     <section className="pt-[16px]">
       <div
         className="
           flex
-          h-[60px]
+          h-[20px]
           items-start
           justify-end
 
@@ -29,15 +27,16 @@ export default function MarketHeader() {
             tablet:leading-none
             tablet:tracking-[-1px]
 
-            pc:text-[48px]
+            pc:text-[62px]
           "
         >
           마켓플레이스
         </h1>
 
         {/* 판매하기 버튼 */}
-        <Link
-          href="/market/sell"
+        <button
+          type="button"
+          onClick={onOpenSaleModal}
           className="
             fixed
             bottom-[40px]
@@ -49,7 +48,7 @@ export default function MarketHeader() {
             items-center
             justify-center
             rounded-[2px]
-            bg-[#9b51e5]
+            bg-[#A656F5]
             text-[18px]
             font-bold
             text-white
@@ -64,7 +63,7 @@ export default function MarketHeader() {
           "
         >
           나의 포토카드 판매하기
-        </Link>
+        </button>
       </div>
     </section>
   );

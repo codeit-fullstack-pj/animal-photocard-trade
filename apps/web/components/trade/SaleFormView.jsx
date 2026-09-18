@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 // 판매글 등록/수정 폼 — initialData가 있으면 "수정 모드", 없으면 "등록 모드"로 동작
@@ -61,11 +62,15 @@ const SaleFormView = ({ card, onClose, onBack, initialData }) => {
       <div className="flex gap-6">
         {/* 왼쪽: 카드 미리보기 (읽기 전용 정보) */}
         <div className="flex-1">
-          <img
-            src={card.image.imageUrl}
-            alt={card.name}
-            className="w-full h-[240px] object-cover rounded-lg mb-2"
-          />
+          <div className="relative w-full h-60 mb-2">
+            <Image
+              src={card.image.imageUrl}
+              alt={card.name}
+              fill
+              sizes="(min-width: 768px) 400px, 100vw"
+              className="object-cover rounded-lg"
+            />
+          </div>
           <h3 className="font-semibold mb-2">
             {card.tag} {card.name}
           </h3>
@@ -74,7 +79,7 @@ const SaleFormView = ({ card, onClose, onBack, initialData }) => {
               <span className="w-20 text-gray-400">{axis.field}</span>
               <div className="flex-1 h-1.5 bg-white rounded-full">
                 <div
-                  className="h-1.5 bg-[#a656f5] rounded-full"
+                  className="h-1.5 bg-purple-button rounded-full"
                   style={{ width: `${axis.value}%` }}
                 />
               </div>

@@ -1,0 +1,8 @@
+/* 스크롤은 그대로 되지만 스크롤바만 안 보이게 (알림 무한 스크롤 목록 전용) */
+.scrollbarHide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbarHide::-webkit-scrollbar {
+  display: none;
+}

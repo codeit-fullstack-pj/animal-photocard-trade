@@ -4,7 +4,7 @@ const REFRESH_TOKEN_COOKIE = "refreshToken";
 
 const GUEST_ONLY_PATHS = ["/login", "/signup"];
 
-export function middleware(request) {
+export function proxy(request) {
   const { pathname } = request.nextUrl;
   const isLoggedIn = request.cookies.has(REFRESH_TOKEN_COOKIE);
 

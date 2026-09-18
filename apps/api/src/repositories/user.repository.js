@@ -42,3 +42,17 @@ export function increasePoint(tx, userId, amount) {
     data: { point: { increment: amount } },
   });
 }
+
+// 당일 추첨 이력이 없을 때만 포인트와 마지막 추첨 시각을 함께 갱신
+export function grantRandomPointIfAvailable(tx, userId, amount, todayStart, drawnAt) {
+  return tx.user.updateMany({
+    where: {
+      id: userId,
+      OR: [{ lastDrawAt: null }, { lastDrawAt: { lt: todayStart } }],
+    },
+    data: {
+      point: { increment: BigInt(amount) },
+      lastDrawAt: drawnAt,
+    },
+  });
+}
