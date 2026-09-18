@@ -43,7 +43,6 @@ export default function SaleDetailView({ sale }) {
       id: sale.card.id,
       name: sale.card.name,
       tag: sale.card.tag,
-      description: sale.card.description,
       imageUrl: sale.card.image,
       category: sale.card.category,
       score: sale.card.score,
