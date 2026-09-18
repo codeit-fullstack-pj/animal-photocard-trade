@@ -87,17 +87,71 @@ export default function MarketPage() {
     CAT: 0,
   });
 
-  // 로그인 모달
+  // ========================================
+  // 모달
+  // ========================================
+
+  // 로그인 필요 모달
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // 판매글 생성 모달
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
 
+  // ========================================
   // IntersectionObserver
+  // ========================================
+
   const observerRef = useRef(null);
 
   // 요청 중복 방지
   const isFetchingRef = useRef(false);
+
+  /**
+   * ========================================
+   * 로그인 확인
+   * ========================================
+   *
+   * 로그인되어 있으면 true
+   *
+   * 로그인되어 있지 않으면
+   * 로그인 모달을 열고 false
+   *
+   * getCurrentUser()가
+   * - 정상 사용자 객체를 반환하는 경우
+   * - null / undefined를 반환하는 경우
+   * - 401 에러를 throw하는 경우
+   * 모두 처리한다.
+   */
+  const checkLogin = useCallback(async () => {
+    try {
+      const user = await getCurrentUser();
+
+      // 로그인하지 않은 경우
+      if (!user) {
+        setIsLoginModalOpen(true);
+        return false;
+      }
+
+      // 로그인 상태
+      return true;
+    } catch (error) {
+      const status = error?.status ?? error?.response?.status;
+
+      // 인증 만료 / 로그인하지 않은 상태
+      if (status === 401 || status === 403) {
+        setIsLoginModalOpen(true);
+        return false;
+      }
+
+      console.error("로그인 상태 확인 실패:", error);
+
+      // 사용자 입장에서는 로그인 확인에 실패했으므로
+      // 안전하게 로그인 모달을 보여준다.
+      setIsLoginModalOpen(true);
+
+      return false;
+    }
+  }, []);
 
   /**
    * 판매 데이터 → MarketCard 형태로 변환
@@ -127,15 +181,20 @@ export default function MarketPage() {
   }, []);
 
   /**
+   * ========================================
+   * 카테고리별 판매 개수 조회
    * GET /sales
+   * ========================================
    */
   const fetchCategoryCounts = useCallback(async () => {
     try {
       const fetchCount = async (category) => {
         const params = new URLSearchParams();
 
-        // 실제 카드 목록이 아니라 개수만 필요하므로 1개만 요청
+        // 개수만 필요하므로 1개만 요청
         params.set("limit", "1");
+
+        // 카테고리
         params.set("category", category);
 
         // 검색어가 있다면 검색 결과 기준으로 카운팅
@@ -147,12 +206,7 @@ export default function MarketPage() {
         params.set("includeSoldOut", String(isSoldOutIncluded));
 
         const result = await apiFetch(`/sales?${params.toString()}`);
-        console.log("================================");
-        console.log("category:", category);
-        console.log("요청 URL:", `/sales?${params.toString()}`);
-        console.log("API 응답:", result);
-        console.log("totalCount:", result?.totalCount);
-        console.log("================================");
+
         return typeof result?.totalCount === "number" ? result.totalCount : 0;
       };
 
@@ -172,6 +226,12 @@ export default function MarketPage() {
     }
   }, [keyword, isSoldOutIncluded]);
 
+  /**
+   * ========================================
+   * 판매 목록 조회
+   * GET /sales
+   * ========================================
+   */
   const fetchSales = useCallback(
     async ({ cursor = null, append = false } = {}) => {
       // 이미 요청 중이면 중복 요청 방지
@@ -198,6 +258,7 @@ export default function MarketPage() {
         // ========================================
         // 검색어
         // ========================================
+
         if (keyword.trim()) {
           params.set("keyword", keyword.trim());
         }
@@ -205,6 +266,7 @@ export default function MarketPage() {
         // ========================================
         // 카테고리
         // ========================================
+
         // API는 category 하나만 받을 수 있음
         if (categories.length === 1) {
           params.set("category", categories[0]);
@@ -213,17 +275,15 @@ export default function MarketPage() {
         // ========================================
         // 품절 포함 여부
         // ========================================
-        // my-sales의 "품절 포함"과 동일한 의미
-        //
+
         // false → 품절 제외
         // true  → 품절 포함
-        //
-        // 백엔드에서는 includeSoldOut을 사용함
         params.set("includeSoldOut", String(isSoldOutIncluded));
 
         // ========================================
         // 정렬
         // ========================================
+
         const orderBy = ORDER_BY_MAP[sort];
 
         if (orderBy) {
@@ -233,6 +293,7 @@ export default function MarketPage() {
         // ========================================
         // cursor
         // ========================================
+
         if (cursor) {
           params.set("cursor", cursor);
         }
@@ -276,8 +337,11 @@ export default function MarketPage() {
   );
 
   /**
-   * 검색 / 실제 필터 / 정렬이 변경되면
-   * 첫 페이지부터 다시 조회
+   * ========================================
+   * 검색 / 실제 필터 / 정렬 변경
+   * ========================================
+   *
+   * 변경되면 첫 페이지부터 다시 조회
    */
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -290,10 +354,9 @@ export default function MarketPage() {
   }, [fetchSales, fetchCategoryCounts]);
 
   /**
+   * ========================================
    * 모바일 필터 열기
-   *
-   * 현재 실제 적용된 필터를
-   * 임시 상태로 복사한다.
+   * ========================================
    */
   const handleOpenMobileFilter = () => {
     setTempCategories([...categories]);
@@ -304,7 +367,9 @@ export default function MarketPage() {
   };
 
   /**
+   * ========================================
    * 모바일 필터 닫기
+   * ========================================
    *
    * 적용하지 않고 닫으면
    * 임시 선택은 버린다.
@@ -318,12 +383,9 @@ export default function MarketPage() {
   };
 
   /**
+   * ========================================
    * 모바일 필터 적용
-   *
-   * 여기에서 실제 필터 상태를 변경한다.
-   *
-   * 실제 상태가 변경되면 fetchSales의
-   * dependency가 변경되고 GET /sales가 실행된다.
+   * ========================================
    */
   const handleApplyMobileFilter = () => {
     setCategories([...tempCategories]);
@@ -334,7 +396,9 @@ export default function MarketPage() {
   };
 
   /**
+   * ========================================
    * 무한 스크롤
+   * ========================================
    */
   useEffect(() => {
     const target = observerRef.current;
@@ -373,23 +437,64 @@ export default function MarketPage() {
   }, [nextCursor, hasMore, isLoading, isLoadingMore, fetchSales]);
 
   /**
+   * ========================================
    * 카드 클릭
+   * ========================================
+   *
+   * 로그인 상태
+   * → 카드 상세 페이지 이동
+   *
+   * 비로그인 상태
+   * → 로그인 필요 모달
    */
   const handleCardClick = async (card) => {
-    try {
-      await getCurrentUser();
+    const isLoggedIn = await checkLogin();
 
-      router.push(`/market/${card.id}`);
-    } catch (error) {
-      if (error?.status === 401) {
-        setIsLoginModalOpen(true);
-        return;
-      }
-
-      console.error("로그인 상태 확인 실패:", error);
-
-      setIsLoginModalOpen(true);
+    if (!isLoggedIn) {
+      return;
     }
+
+    router.push(`/market/${card.id}`);
+  };
+
+  /**
+   * ========================================
+   * 나의 포토카드 판매하기
+   * ========================================
+   *
+   * 로그인 상태
+   * → 판매 모달
+   *
+   * 비로그인 상태
+   * → 로그인 필요 모달
+   */
+  const handleOpenSaleModal = async () => {
+    const isLoggedIn = await checkLogin();
+
+    if (!isLoggedIn) {
+      return;
+    }
+
+    setIsSaleModalOpen(true);
+  };
+
+  /**
+   * ========================================
+   * 로그인 모달에서 로그인 버튼
+   * ========================================
+   */
+  const handleLoginConfirm = () => {
+    setIsLoginModalOpen(false);
+    router.push("/login");
+  };
+
+  /**
+   * ========================================
+   * 로그인 모달에서 취소 버튼
+   * ========================================
+   */
+  const handleLoginCancel = () => {
+    setIsLoginModalOpen(false);
   };
 
   return (
@@ -404,19 +509,19 @@ export default function MarketPage() {
           w-full
           max-w-[1248px]
           px-[16px]
-          pt-[16px]
-          pb-[120px]
+          pt-[20px]
+          pb-[37px]
 
           tablet:px-[20px]
-          tablet:pt-[24px]
-          tablet:pb-[60px]
+          tablet:pt-[110px]
+          tablet:pb-[224px]
 
           pc:px-0
-          pc:pt-[40px]
-          pc:pb-[80px]
+          pc:pt-[168px]
+          pc:pb-[240px]
         "
       >
-        <MarketHeader onOpenSaleModal={() => setIsSaleModalOpen(true)} />
+        <MarketHeader onOpenSaleModal={handleOpenSaleModal} />
 
         {/* ========================================
             검색 / 필터 / 정렬
@@ -482,24 +587,29 @@ export default function MarketPage() {
         isOpen={isSaleModalOpen}
         onClose={() => setIsSaleModalOpen(false)}
         onCreated={() => {
-          fetchSales({ cursor: null, append: false });
+          fetchSales({
+            cursor: null,
+            append: false,
+          });
+
           fetchCategoryCounts();
         }}
       />
 
       {/* ========================================
-          로그인 모달
+          로그인 필요 모달
       ======================================== */}
       <ConfirmModal
         isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        title="로그인이 필요해요"
-        description="포토카드를 확인하려면 로그인해 주세요."
+        title="로그인이 필요합니다"
+        description={"로그인 하시겠습니까?\n다양한 서비스를 편리하게 이용하실 수 있습니다."}
         confirmLabel="로그인"
-        secondaryLabel="취소"
         onConfirm={() => {
           setIsLoginModalOpen(false);
           router.push("/login");
+        }}
+        onClose={() => {
+          setIsLoginModalOpen(false);
         }}
       />
     </RequireAuth>
