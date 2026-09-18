@@ -6,14 +6,12 @@ import { useEffect, useRef, useState } from "react";
 
 import ScaledPhotoCard from "../../components/card/ScaledPhotoCard";
 import MySalesMobileFilter from "@/components/card/MySalesMobileFilter";
-import RandomPointLauncher from "@/components/point/RandomPointLauncher";
 import RequireAuth from "@/components/auth/RequireAuth";
 import AppHeader from "@/components/ui/AppHeader";
 import MobileHeader from "@/components/ui/MobileHeader";
 
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { getSales } from "@/lib/sales/api";
-import { fetchMyCards } from "@/lib/gallery/api";
 
 const SORT_OPTIONS = [
   { value: "SCORE_DESC", label: "관상 지수 높은 순" },
@@ -72,8 +70,8 @@ export default function MySalesPage() {
   // 드롭다운 영역 바깥 클릭 여부를 확인하기 위해 DOM 요소를 참조
   const filterAreaRef = useRef(null);
 
-  // 현재 사용자가 보유한 전체 포토카드 개수를 관리
-  const [ownedCardCount, setOwnedCardCount] = useState(0);
+  // 현재 사용자가 거래 중인 전체 포토카드 개수를 관리
+  const [tradingCardCount, setTradingCardCount] = useState(0);
 
   // 모바일 필터 패널의 열림 상태를 관리
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -106,31 +104,31 @@ export default function MySalesPage() {
 
   const router = useRouter();
 
-  // 현재 로그인한 사용자가 보유한 전체 포토카드 개수를 조회
+  // 현재 로그인한 사용자가 거래 중인 전체 포토카드 개수를 조회
   useEffect(() => {
     if (!currentUser?.id) return;
 
     let cancelled = false;
 
-    async function loadOwnedCardCount() {
+    async function loadTradingCardCount() {
       try {
-        const { totalCount } = await fetchMyCards({
+        const { totalCount } = await getSales({
+          sellerId: currentUser.id,
+          offererId: currentUser.id,
+          limit: 1,
           page: 1,
-          pageSize: 1,
-          sort: "created_desc",
-          keyword: "",
-          categories: [],
+          includeSoldOut: false,
         });
 
         if (!cancelled) {
-          setOwnedCardCount(totalCount);
+          setTradingCardCount(totalCount);
         }
       } catch (error) {
-        console.error("보유 포토카드 개수 조회에 실패했습니다.", error);
+        console.error("거래 중인 포토카드 개수 조회에 실패했습니다.", error);
       }
     }
 
-    loadOwnedCardCount();
+    loadTradingCardCount();
 
     return () => {
       cancelled = true;
@@ -258,9 +256,6 @@ export default function MySalesPage() {
           <AppHeader />
         </div>
 
-        {/* 로그인한 사용자에게 랜덤 포인트 진입 선물상자를 표시 */}
-        {currentUser?.id && <RandomPointLauncher />}
-
         <div className="mx-auto w-full max-w-[1240px] px-[20px] pt-[20px] tablet:px-[40px] tablet:pt-[140px] pc:px-0 pc:pt-[168px]">
           {/* 태블릿 이상에서만 페이지 제목과 보유 카드 정보를 표시 */}
           <div className="hidden tablet:block">
@@ -275,9 +270,9 @@ export default function MySalesPage() {
             {/* PC에서만 현재 사용자가 보유한 포토카드 개수를 표시 */}
             <div className="hidden pc:block">
               <p className="font-sans-500 mt-[24px] text-[20px] text-gray-200">
-                {currentUser?.nickname ?? ""}님이 보유한 포토카드
+                {currentUser?.nickname ?? ""}님이 거래중인 포토카드
                 <span className="font-sans-400 ml-[8px] text-[16px] text-gray-300">
-                  ({ownedCardCount}장)
+                  ({tradingCardCount}장)
                 </span>
               </p>
 

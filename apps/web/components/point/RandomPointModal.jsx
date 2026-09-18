@@ -20,6 +20,7 @@ export default function RandomPointModal({ isOpen, onClose, onDrawSuccess, previ
 
   // 랜덤 포인트 추첨 요청 상태를 관리
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   // 랜덤 포인트 추첨 중 발생한 오류 메시지를 관리
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -61,6 +62,7 @@ export default function RandomPointModal({ isOpen, onClose, onDrawSuccess, previ
 
         try {
           await refreshAccessToken();
+
           const { user } = await getCurrentUser();
 
           if (!cancelled) {
@@ -108,8 +110,11 @@ export default function RandomPointModal({ isOpen, onClose, onDrawSuccess, previ
     onClose();
   }
 
+  // 선택한 선물 상자를 기준으로 랜덤 포인트 추첨 요청
   async function handleDrawRandomPoint() {
-    if (!currentUser || hasDrawnToday || selectedBox === null || isSubmitting) return;
+    if (!currentUser || hasDrawnToday || selectedBox === null || isSubmitting) {
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -126,6 +131,7 @@ export default function RandomPointModal({ isOpen, onClose, onDrawSuccess, previ
           try {
             // 서버에서 이미 추첨했다고 판단하면 최신 사용자 정보를 다시 조회
             const { user } = await getCurrentUser();
+
             setCurrentUser(user);
             setSelectedBox(null);
           } catch {
@@ -155,7 +161,13 @@ export default function RandomPointModal({ isOpen, onClose, onDrawSuccess, previ
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-      <div className="relative h-[466px] w-[343px] bg-gray-500 tablet:h-[538px] tablet:w-[600px] pc:h-[765px] pc:w-[1034px]">
+      <div
+        className={`relative w-[343px] bg-gray-500 tablet:w-[600px] pc:w-[1034px] ${
+          isWaitingView
+            ? "h-[320px] tablet:h-[360px] pc:h-[420px]"
+            : "h-[466px] tablet:h-[538px] pc:h-[765px]"
+        }`}
+      >
         {/* 랜덤 포인트 모달을 닫음 */}
         <button
           type="button"
@@ -167,99 +179,103 @@ export default function RandomPointModal({ isOpen, onClose, onDrawSuccess, previ
         </button>
 
         <div className="flex flex-col items-center pt-[62px] text-center pc:pt-[82px]">
+          {/* 랜덤 포인트 모달 제목 */}
           <h2 className="[font-family:var(--font-baskin-robbins)] text-[30px] leading-[1.3] font-bold tablet:text-[36px] pc:-translate-y-[8px] pc:text-[46px]">
             <span className="text-white">랜덤</span>
             <span className="text-purple-button">포인트</span>
           </h2>
 
-          <div className="font-sans-400 mt-[32px] flex flex-col gap-[4px] text-[16px] text-white pc:-translate-y-[19px] pc:gap-0 pc:mt-[44px] pc:text-[20px]">
-            <p>매일마다 돌아오는 기회!</p>
-            <p>랜덤 상자 뽑기를 통해 포인트를 획득하세요!</p>
-          </div>
+          {/* 현재 사용자 정보를 불러온 뒤 상태에 맞는 화면을 표시 */}
+          {!isUserLoading &&
+            (isWaitingView ? (
+              <>
+                {/* 오늘 이미 포인트를 획득한 경우 다음 기회까지 남은 시간만 표시 */}
+                <div className="mt-[48px] flex flex-col items-center text-white tablet:mt-[52px] pc:mt-[60px]">
+                  <p className="font-sans-400 text-[16px] pc:text-[20px]">
+                    다음 기회까지 남은 시간
+                  </p>
 
-          {/* 오늘 이미 포인트를 획득했다면 설명과 선물상자 사이에 남은 시간을 표시 */}
-          {isWaitingView && (
-            <div className="mt-6 flex flex-col items-center text-white tablet:mt-8 pc:mt-[50px]">
-              <p className="font-sans-400 text-[16px] pc:text-[20px]">다음 기회까지 남은 시간</p>
+                  <p className="font-sans-600 mt-[8px] text-[28px] pc:mt-[12px] pc:text-[40px]">
+                    {remainingTime.hours}시간 {remainingTime.minutes}분
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* 랜덤 포인트 최초 추첨 안내 문구 */}
+                <div className="font-sans-400 mt-[32px] flex flex-col text-[16px] text-white pc:-translate-y-[19px] pc:mt-[44px] pc:gap-0 pc:text-[20px]">
+                  <p>매일마다 돌아오는 기회!</p>
+                  <p>랜덤 상자 뽑기를 통해 포인트를 획득하세요!</p>
+                </div>
 
-              <p className="font-sans-600 mt-[8px] text-[28px] pc:mt-[12px] pc:text-[40px]">
-                {remainingTime.hours}시간 {remainingTime.minutes}분
-              </p>
-            </div>
-          )}
+                {/* 랜덤 포인트를 선택할 선물 상자 3개를 표시 */}
+                <div className="mt-8 flex w-[315px] items-end justify-center gap-[8px] tablet:mt-10 tablet:w-[530px] tablet:gap-[17px] pc:mt-[120px] pc:w-[837px] pc:gap-[46px]">
+                  {/* 첫 번째 선물 상자 */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBox(1)}
+                    aria-pressed={selectedBox === 1}
+                    className={`flex-1 transition-opacity ${
+                      selectedBox !== null && selectedBox !== 1 ? "opacity-30" : "opacity-100"
+                    }`}
+                  >
+                    <Image
+                      src="/landing/box-1.png"
+                      alt="첫 번째 선물 상자"
+                      width={492}
+                      height={382}
+                      className="h-auto w-full"
+                    />
+                  </button>
 
-          {/* 랜덤 포인트를 선택할 선물 상자 3개를 표시 */}
-          <div
-            className={`flex w-[315px] items-end justify-center gap-[8px] tablet:w-[530px] tablet:gap-[17px] pc:w-[837px] pc:gap-[46px] ${
-              isWaitingView ? "mt-5 tablet:mt-7 pc:mt-[45px]" : "mt-8 tablet:mt-10 pc:mt-[120px]"
-            }`}
-          >
-            <button
-              type="button"
-              onClick={() => setSelectedBox(1)}
-              disabled={isWaitingView}
-              aria-pressed={selectedBox === 1}
-              className={`flex-1 transition-opacity disabled:cursor-not-allowed ${
-                selectedBox !== null && selectedBox !== 1 ? "opacity-30" : "opacity-100"
-              }`}
-            >
-              <Image
-                src="/landing/box-1.png"
-                alt="첫 번째 선물 상자"
-                width={492}
-                height={382}
-                className="h-auto w-full"
-              />
-            </button>
+                  {/* 두 번째 선물 상자 */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBox(2)}
+                    aria-pressed={selectedBox === 2}
+                    className={`flex-1 transition-opacity ${
+                      selectedBox !== null && selectedBox !== 2 ? "opacity-30" : "opacity-100"
+                    }`}
+                  >
+                    <Image
+                      src="/landing/box-2.png"
+                      alt="두 번째 선물 상자"
+                      width={492}
+                      height={382}
+                      className="mx-auto h-auto w-[90%]"
+                    />
+                  </button>
 
-            <button
-              type="button"
-              onClick={() => setSelectedBox(2)}
-              disabled={isWaitingView}
-              aria-pressed={selectedBox === 2}
-              className={`flex-1 transition-opacity disabled:cursor-not-allowed ${
-                selectedBox !== null && selectedBox !== 2 ? "opacity-30" : "opacity-100"
-              }`}
-            >
-              <Image
-                src="/landing/box-2.png"
-                alt="두 번째 선물 상자"
-                width={492}
-                height={382}
-                className="mx-auto h-auto w-[90%]"
-              />
-            </button>
+                  {/* 세 번째 선물 상자 */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBox(3)}
+                    aria-pressed={selectedBox === 3}
+                    className={`flex-1 transition-opacity ${
+                      selectedBox !== null && selectedBox !== 3 ? "opacity-30" : "opacity-100"
+                    }`}
+                  >
+                    <Image
+                      src="/landing/box-3.png"
+                      alt="세 번째 선물 상자"
+                      width={492}
+                      height={382}
+                      className="h-auto w-full"
+                    />
+                  </button>
+                </div>
 
-            <button
-              type="button"
-              onClick={() => setSelectedBox(3)}
-              disabled={isWaitingView}
-              aria-pressed={selectedBox === 3}
-              className={`flex-1 transition-opacity disabled:cursor-not-allowed ${
-                selectedBox !== null && selectedBox !== 3 ? "opacity-30" : "opacity-100"
-              }`}
-            >
-              <Image
-                src="/landing/box-3.png"
-                alt="세 번째 선물 상자"
-                width={492}
-                height={382}
-                className="h-auto w-full"
-              />
-            </button>
-          </div>
-
-          {/* 선물 상자를 선택한 뒤 랜덤 포인트 추첨을 진행 */}
-          <button
-            type="button"
-            onClick={handleDrawRandomPoint}
-            disabled={isWaitingView || selectedBox === null || isSubmitting}
-            className={`font-sans-600 h-[60px] w-[55%] rounded-xs bg-purple-button text-sm text-white disabled:cursor-not-allowed disabled:bg-gray-300 disabled:opacity-100 pc:w-[520px] ${
-              isWaitingView ? "mt-5 tablet:mt-7 pc:mt-[45px]" : "mt-8 tablet:mt-10 pc:mt-[78px]"
-            }`}
-          >
-            {isSubmitting ? "추첨 중..." : "선택완료"}
-          </button>
+                {/* 선물 상자를 선택한 뒤 랜덤 포인트 추첨을 진행 */}
+                <button
+                  type="button"
+                  onClick={handleDrawRandomPoint}
+                  disabled={selectedBox === null || isSubmitting}
+                  className="font-sans-600 mt-[60px] h-[60px] w-[55%] rounded-xs bg-purple-button text-sm text-white disabled:cursor-not-allowed disabled:bg-gray-300 disabled:opacity-100 tablet:mt-[59px] pc:mt-[75px] pc:w-[520px]"
+                >
+                  {isSubmitting ? "추첨 중..." : "선택완료"}
+                </button>
+              </>
+            ))}
 
           {/* 랜덤 포인트 추첨 요청에 실패한 경우 오류 메시지를 표시 */}
           {errorMessage && <p className="font-sans-400 mt-3 text-sm text-red">{errorMessage}</p>}
