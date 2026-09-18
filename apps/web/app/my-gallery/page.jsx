@@ -8,6 +8,7 @@ import { getRemainingCount } from "@/lib/card/api";
 import MyGalleryCards from "@/components/gallery/MyGalleryCards";
 import MobileHeader from "@/components/ui/MobileHeader";
 import AppHeader from "@/components/ui/AppHeader";
+import RequireAuth from "@/components/auth/RequireAuth";
 
 const CREATE_BUTTON_CLASSNAME =
   "hidden h-15.25 items-center justify-center rounded-xs font-sans-400 text-base text-white tablet:flex tablet:w-85.5 pc:w-110";
@@ -64,7 +65,7 @@ export default function MyGalleryPage() {
   }, []);
 
   return (
-    <>
+    <RequireAuth>
       <div className="tablet:hidden">
         <MobileHeader title="마이갤러리" />
       </div>
@@ -96,6 +97,6 @@ export default function MyGalleryPage() {
           </div>
         </div>
       </main>
-    </>
+    </RequireAuth>
   );
 }

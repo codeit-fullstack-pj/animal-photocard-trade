@@ -3,7 +3,7 @@ import rateLimit from "express-rate-limit";
 // 15분당 IP 하나가 보낼 수 있는 요청 수. 카드/이미지 업로드 라우트처럼 인증이 걸린
 // 라우트를 반복 요청으로 남용하지 못하게 막는 목적이라, 정상 사용 범위보단 넉넉하게 잡는다
 const WINDOW_MS = 15 * 60 * 1000;
-const MAX_REQUESTS = 100;
+const MAX_REQUESTS = 1000;
 
 export const apiRateLimit = rateLimit({
   windowMs: WINDOW_MS,

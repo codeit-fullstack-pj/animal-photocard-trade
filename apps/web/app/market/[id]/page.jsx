@@ -1,4 +1,5 @@
 import SaleDetailView from "@/components/trade/SaleDetailView";
+import RequireAuth from "@/components/auth/RequireAuth";
 import AppHeader from "@/components/ui/AppHeader";
 import MobileHeader from "@/components/ui/MobileHeader";
 import { getSale } from "@/lib/sales/api";
@@ -21,7 +22,7 @@ export default async function SaleDetailPage({ params, searchParams }) {
   const currentUser = as === "seller" ? mockUsers[0] : mockUsers[1];
 
   return (
-    <>
+    <RequireAuth>
       {/* 모바일은 목록으로 돌아가는 뒤로가기 헤더, 태블릿부터는 전역 헤더 */}
       <div className="tablet:hidden">
         <MobileHeader title="마켓플레이스" backHref="/market" />
@@ -30,6 +31,6 @@ export default async function SaleDetailPage({ params, searchParams }) {
         <AppHeader />
       </div>
       <SaleDetailView sale={sale} currentUser={currentUser} />
-    </>
+    </RequireAuth>
   );
 }
