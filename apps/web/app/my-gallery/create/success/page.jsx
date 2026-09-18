@@ -4,13 +4,12 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import PhotoCard from "@/components/gallery/PhotoCard";
-import RequireAuth from "@/components/auth/RequireAuth";
 import MobileHeader from "@/components/ui/MobileHeader";
 import AppHeader from "@/components/ui/AppHeader";
 
 export default function CreateSuccessPage() {
   return (
-    <RequireAuth>
+    <>
       <div className="tablet:hidden">
         <MobileHeader title="포토카드 생성" backHref="/my-gallery" />
       </div>
@@ -20,7 +19,7 @@ export default function CreateSuccessPage() {
       <Suspense fallback={<Loading />}>
         <SuccessContent />
       </Suspense>
-    </RequireAuth>
+    </>
   );
 }
 

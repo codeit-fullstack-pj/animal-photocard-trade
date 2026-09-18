@@ -3,7 +3,7 @@ import Image from "next/image";
 import AutoFitText from "@/components/gallery/AutoFitText";
 import DotHalftoneImage from "@/components/gallery/DotHalftoneImage";
 
-import { SCORE_CONFIG, getPrimaryAxisColor } from "./scoreConfig";
+import { SCORE_CONFIG } from "./scoreConfig";
 
 // filterType(1~4, useImageVariants.js VARIANTS 순서와 동일: 원본·세피아·모노·도트) 별 렌더링 방식.
 // 세피아·모노는 CSS filter로 충분하지만, 도트는 픽셀 밝기에 따라 점 크기가 달라지는 진짜
@@ -30,7 +30,6 @@ const IMAGE_BOX_HEIGHT = 232;
 export default function PhotoCard({ card, status, point, isSoldOut, variant, onClick }) {
   const isDot = card.filterType === DOT_FILTER_TYPE;
   const cssFilter = CSS_FILTERS[card.filterType];
-  const tagColor = getPrimaryAxisColor(card.category, card.score?.axes);
 
   return (
     <article
@@ -95,10 +94,13 @@ export default function PhotoCard({ card, status, point, isSoldOut, variant, onC
           )}
         </div>
 
-        {/* 이름 — 태그(1등축 색)와 이름이 한눈에 구분되도록 태그만 색을 입힌다 */}
-        <h2 className="font-sans-700 mt-2.5 w-4/5 text-[22px] leading-6.5 text-white">
-          <span className={tagColor}>{card.tag}</span> {card.name}
-        </h2>
+        {/* 이름 */}
+        <AutoFitText
+          as="h2"
+          className="font-sans-700 mt-2.5 w-4/5 text-[22px] leading-6.5 text-white"
+        >
+          {card.tag} {card.name}
+        </AutoFitText>
 
         {/* 관상 지수 */}
         <div className="mt-3 space-y-1.5">

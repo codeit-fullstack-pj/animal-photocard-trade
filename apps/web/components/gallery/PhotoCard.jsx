@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { SCORE_CONFIG, getPrimaryAxisColor } from "@/components/card/scoreConfig";
+import { SCORE_CONFIG } from "@/components/card/scoreConfig";
 
 import AutoFitText from "./AutoFitText";
 import DotHalftoneImage from "./DotHalftoneImage";
@@ -28,7 +28,6 @@ const IMAGE_BOX_HEIGHT = 232; // h-58
 export default function PhotoCard({ card }) {
   const isDot = card.filterType === DOT_FILTER_TYPE;
   const cssFilter = CSS_FILTERS[card.filterType];
-  const tagColor = getPrimaryAxisColor(card.category, card.score?.axes);
   // score.axes 의 field는 ENERGIZER/UDADA 같은 백엔드 키라서, 카드에 보일 땐 한글 라벨로 바꾼다
   const scoreLabels = Object.fromEntries(
     (SCORE_CONFIG[card.category] ?? []).map(({ key, label }) => [key, label]),
@@ -69,7 +68,7 @@ export default function PhotoCard({ card }) {
 
         <div className="flex w-full flex-col gap-3">
           <AutoFitText as="h3" className="w-full text-lg font-bold text-white">
-            <span className={tagColor}>{card.tag}</span> {card.name}
+            {card.tag} {card.name}
           </AutoFitText>
 
           {card.score?.axes?.length > 0 && (
