@@ -6,11 +6,10 @@ import { useEffect, useRef, useState } from "react";
 
 import ScaledPhotoCard from "../../components/card/ScaledPhotoCard";
 import MySalesMobileFilter from "@/components/card/MySalesMobileFilter";
-import RequireAuth from "@/components/auth/RequireAuth";
 import AppHeader from "@/components/ui/AppHeader";
 import MobileHeader from "@/components/ui/MobileHeader";
 
-import { useAuth } from "@/lib/auth/AuthProvider";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getSales } from "@/lib/sales/api";
 
 const SORT_OPTIONS = [
@@ -28,6 +27,7 @@ export default function MySalesPage() {
   // ===========================================================================
   // ★★★★★ 상태 관리 ★★★★★
   // ===========================================================================
+
   // 카테고리 드롭다운의 열림/닫힘 상태를 관리
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
@@ -75,6 +75,7 @@ export default function MySalesPage() {
 
   // 모바일 필터 패널의 열림 상태를 관리
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
   // ===========================================================================
   // ★★★★★ 상태 관리 END ★★★★★
   // ===========================================================================
@@ -100,7 +101,7 @@ export default function MySalesPage() {
     SORT_OPTIONS.find((option) => option.value === selectedSort)?.label ?? "최근 등록 순";
 
   // 현재 로그인한 사용자 정보를 조회
-  const { currentUser } = useAuth();
+  const { currentUser } = useCurrentUser();
 
   const router = useRouter();
 
@@ -244,371 +245,367 @@ export default function MySalesPage() {
   };
 
   return (
-    <RequireAuth>
-      <main className="min-h-screen bg-black">
-        {/* 모바일에서는 뒤로가기와 페이지 제목이 있는 전용 헤더를 표시 */}
-        <div className="tablet:hidden">
-          <MobileHeader title="나의 거래 포토카드" />
-        </div>
+    <main className="min-h-screen bg-black">
+      {/* 모바일에서는 뒤로가기와 페이지 제목이 있는 전용 헤더를 표시 */}
+      <div className="tablet:hidden">
+        <MobileHeader title="나의 거래 포토카드" />
+      </div>
 
-        {/* 태블릿 이상에서는 기존 공용 헤더를 표시 */}
+      {/* 태블릿 이상에서는 기존 공용 헤더를 표시 */}
+      <div className="hidden tablet:block">
+        <AppHeader />
+      </div>
+
+      <div className="mx-auto w-full max-w-[1240px] px-[20px] pt-[20px] tablet:px-[40px] tablet:pt-[140px] pc:px-0 pc:pt-[168px]">
+        {/* 태블릿 이상에서만 페이지 제목과 거래 중인 카드 정보를 표시 */}
         <div className="hidden tablet:block">
-          <AppHeader />
+          {/* 페이지 제목 */}
+          <h1 className="font-primary-bold text-[40px] leading-[52px] tracking-[-0.03em] text-white pc:text-[56px] pc:leading-[67px]">
+            나의 거래 포토카드
+          </h1>
+
+          {/* 제목 아래 구분선 */}
+          <div className="mt-[20px] h-[2px] w-full bg-gray-100" />
+
+          {/* PC에서만 현재 사용자의 거래중인 포토카드 개수를 표시 */}
+          <div className="hidden pc:block">
+            <p className="font-sans-500 mt-[24px] text-[20px] text-gray-200">
+              {currentUser?.nickname ?? ""}님이 거래중인 포토카드
+              <span className="font-sans-400 ml-[8px] text-[16px] text-gray-300">
+                ({tradingCardCount}장)
+              </span>
+            </p>
+
+            {/* 포토카드 정보 아래 구분선 */}
+            <div className="mt-[20px] h-px w-full bg-gray-400" />
+          </div>
         </div>
 
-        <div className="mx-auto w-full max-w-[1240px] px-[20px] pt-[20px] tablet:px-[40px] tablet:pt-[140px] pc:px-0 pc:pt-[168px]">
-          {/* 태블릿 이상에서만 페이지 제목과 보유 카드 정보를 표시 */}
-          <div className="hidden tablet:block">
-            {/* 페이지 제목 */}
-            <h1 className="font-primary-bold text-[40px] leading-[52px] tracking-[-0.03em] text-white pc:text-[56px] pc:leading-[67px]">
-              나의 거래 포토카드
-            </h1>
+        {/* 검색 및 필터 영역 */}
+        <div
+          ref={filterAreaRef}
+          className="mt-[20px] tablet:grid tablet:grid-cols-[320px_1fr_200px] tablet:items-center tablet:gap-x-[24px] tablet:gap-y-[12px] pc:flex pc:gap-[24px]"
+        >
+          <div className="flex w-full flex-col gap-[12px] tablet:contents pc:flex pc:flex-1 pc:flex-row pc:items-center pc:gap-[24px]">
+            {/* 포토카드 검색 */}
+            <div className="flex h-[50px] w-full items-center border border-gray-300 px-[16px] tablet:col-start-1 tablet:row-start-1 tablet:w-[320px] pc:px-[20px]">
+              <input
+                type="text"
+                value={searchKeyword}
+                onChange={(event) => {
+                  setSearchKeyword(event.target.value);
+                  setCurrentPage(1);
+                }}
+                placeholder="검색"
+                className="font-sans-200 w-full bg-transparent text-[16px] text-gray-200 outline-none placeholder:text-gray-200"
+              />
 
-            {/* 제목 아래 구분선 */}
-            <div className="mt-[20px] h-[2px] w-full bg-gray-100" />
-
-            {/* PC에서만 현재 사용자가 보유한 포토카드 개수를 표시 */}
-            <div className="hidden pc:block">
-              <p className="font-sans-500 mt-[24px] text-[20px] text-gray-200">
-                {currentUser?.nickname ?? ""}님이 거래중인 포토카드
-                <span className="font-sans-400 ml-[8px] text-[16px] text-gray-300">
-                  ({tradingCardCount}장)
-                </span>
-              </p>
-
-              {/* 포토카드 정보 아래 구분선 */}
-              <div className="mt-[20px] h-px w-full bg-gray-400" />
+              <Image src="/search.png" alt="검색" width={24} height={24} />
             </div>
-          </div>
 
-          {/* 검색 및 필터 영역 */}
-          <div
-            ref={filterAreaRef}
-            className="mt-[20px] tablet:grid tablet:grid-cols-[320px_1fr_200px] tablet:items-center tablet:gap-x-[24px] tablet:gap-y-[12px] pc:flex pc:gap-[24px]"
-          >
-            <div className="flex w-full flex-col gap-[12px] tablet:contents pc:flex pc:flex-1 pc:flex-row pc:items-center pc:gap-[24px]">
-              {/* 포토카드 검색 */}
-              <div className="flex h-[50px] w-full items-center border border-gray-300 px-[16px] tablet:col-start-1 tablet:row-start-1 tablet:w-[320px] pc:px-[20px]">
+            {/* 모바일에서는 필터 버튼과 정렬을 한 줄에 표시 */}
+            <div className="flex w-full items-center justify-between tablet:hidden">
+              {/* 모바일 필터 버튼과 목록의 위치 기준을 함께 관리 */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsMobileFilterOpen((prev) => !prev)}
+                  className="flex h-[40px] w-[40px] items-center justify-center border border-gray-200"
+                  aria-label="필터"
+                  aria-expanded={isMobileFilterOpen}
+                >
+                  <Image src="/filter.png" alt="" width={24} height={24} />
+                </button>
+              </div>
+
+              {isMobileFilterOpen && (
+                <MySalesMobileFilter
+                  isOpen={isMobileFilterOpen}
+                  onClose={() => setIsMobileFilterOpen(false)}
+                  categories={selectedCategories}
+                  saleTypes={selectedSaleTypes}
+                  includeSoldOut={isSoldOutIncluded}
+                  sellerId={currentUser?.id}
+                  keyword={searchKeyword}
+                  onApply={handleMobileFilterApply}
+                />
+              )}
+
+              <div className="relative w-[200px]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSortOpen((prev) => !prev);
+                    setIsCategoryOpen(false);
+                    setIsSaleTypeOpen(false);
+                  }}
+                  className="font-sans-500 flex h-[40px] w-full items-center justify-between rounded-[2px] border border-gray-200 px-[16px] text-[14px] text-white"
+                  aria-expanded={isSortOpen}
+                >
+                  {selectedSortLabel}
+                  <Image src={isSortOpen ? "/up.png" : "/down.png"} alt="" width={20} height={20} />
+                </button>
+
+                {isSortOpen && (
+                  <div className="absolute top-[44px] right-0 z-30 w-full rounded-[2px] border border-gray-200 bg-black">
+                    {SORT_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          setSelectedSort(option.value);
+                          setCurrentPage(1);
+                          setIsSortOpen(false);
+                        }}
+                        className="font-sans-400 flex h-[40px] w-full items-center px-[16px] text-left text-[14px] text-white hover:bg-[#2a2a2a]"
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 태블릿 이상에서만 상세 필터를 표시 */}
+            <div className="hidden items-center gap-[24px] tablet:col-span-2 tablet:col-start-1 tablet:row-start-2 tablet:flex">
+              {/* 카테고리 필터 */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCategoryOpen((prev) => !prev);
+                    setIsSaleTypeOpen(false);
+                    setIsSortOpen(false);
+                  }}
+                  className="font-sans-700 flex h-[50px] items-center gap-[8px] text-[16px] text-white"
+                  aria-expanded={isCategoryOpen}
+                >
+                  카테고리
+                  <Image
+                    src={isCategoryOpen ? "/up.png" : "/down.png"}
+                    alt=""
+                    width={24}
+                    height={24}
+                  />
+                </button>
+
+                {/* 카테고리 드롭다운 */}
+                {isCategoryOpen && (
+                  <div className="absolute top-[50px] left-0 z-30 w-[136px] rounded-[2px] border border-gray-200 bg-black py-[6px]">
+                    <label className="font-sans-400 flex h-[40px] cursor-pointer items-center justify-between px-[16px] text-[16px] text-white">
+                      강아지
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes("DOG")}
+                        onChange={() => handleCategoryChange("DOG")}
+                        className="h-[16px] w-[16px] accent-white"
+                      />
+                    </label>
+
+                    <label className="font-sans-400 flex h-[40px] cursor-pointer items-center justify-between px-[16px] text-[16px] text-white">
+                      고양이
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes("CAT")}
+                        onChange={() => handleCategoryChange("CAT")}
+                        className="h-[16px] w-[16px] accent-white"
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              {/* 판매 유형 필터 */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSaleTypeOpen((prev) => !prev);
+                    setIsCategoryOpen(false);
+                    setIsSortOpen(false);
+                  }}
+                  className="font-sans-700 flex h-[50px] items-center gap-[8px] text-[16px] text-white"
+                  aria-expanded={isSaleTypeOpen}
+                >
+                  판매유형
+                  <Image
+                    src={isSaleTypeOpen ? "/up.png" : "/down.png"}
+                    alt=""
+                    width={24}
+                    height={24}
+                  />
+                </button>
+
+                {isSaleTypeOpen && (
+                  <div className="absolute top-[50px] left-0 z-30 w-[136px] rounded-[2px] border border-gray-200 bg-black py-[6px]">
+                    <label className="font-sans-400 flex h-[40px] cursor-pointer items-center justify-between px-[16px] text-[16px] text-white">
+                      판매 중
+                      <input
+                        type="checkbox"
+                        checked={selectedSaleTypes.includes("SALE")}
+                        onChange={() => handleSaleTypeChange("SALE")}
+                        className="h-[16px] w-[16px] accent-white"
+                      />
+                    </label>
+
+                    <label className="font-sans-400 flex h-[40px] cursor-pointer items-center justify-between px-[16px] text-[16px] text-white">
+                      교환 제시 중
+                      <input
+                        type="checkbox"
+                        checked={selectedSaleTypes.includes("EXCHANGE")}
+                        onChange={() => handleSaleTypeChange("EXCHANGE")}
+                        className="h-[16px] w-[16px] accent-white"
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              {/* 품절된 포토카드 표시 여부 */}
+              <label className="font-sans-700 flex h-[50px] items-center gap-[8px] text-[16px] text-white">
+                품절 포함
                 <input
-                  type="text"
-                  value={searchKeyword}
+                  type="checkbox"
+                  checked={isSoldOutIncluded}
                   onChange={(event) => {
-                    setSearchKeyword(event.target.value);
+                    setIsSoldOutIncluded(event.target.checked);
                     setCurrentPage(1);
                   }}
-                  placeholder="검색"
-                  className="font-sans-200 w-full bg-transparent text-[16px] text-gray-200 outline-none placeholder:text-gray-200"
+                  className="h-[16px] w-[16px] accent-white"
                 />
-
-                <Image src="/search.png" alt="검색" width={24} height={24} />
-              </div>
-
-              {/* 모바일에서는 필터 버튼과 정렬을 한 줄에 표시 */}
-              <div className="flex w-full items-center justify-between tablet:hidden">
-                {/* 모바일 필터 버튼과 목록의 위치 기준을 함께 관리 */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setIsMobileFilterOpen((prev) => !prev)}
-                    className="flex h-[40px] w-[40px] items-center justify-center border border-gray-200"
-                    aria-label="필터"
-                    aria-expanded={isMobileFilterOpen}
-                  >
-                    <Image src="/filter.png" alt="" width={24} height={24} />
-                  </button>
-                </div>
-
-                {isMobileFilterOpen && (
-                  <MySalesMobileFilter
-                    isOpen={isMobileFilterOpen}
-                    onClose={() => setIsMobileFilterOpen(false)}
-                    categories={selectedCategories}
-                    saleTypes={selectedSaleTypes}
-                    includeSoldOut={isSoldOutIncluded}
-                    sellerId={currentUser?.id}
-                    keyword={searchKeyword}
-                    onApply={handleMobileFilterApply}
-                  />
-                )}
-                <div className="relative w-[200px]">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSortOpen((prev) => !prev);
-                      setIsCategoryOpen(false);
-                      setIsSaleTypeOpen(false);
-                    }}
-                    className="font-sans-500 flex h-[40px] w-full items-center justify-between rounded-[2px] border border-gray-200 px-[16px] text-[14px] text-white"
-                    aria-expanded={isSortOpen}
-                  >
-                    {selectedSortLabel}
-                    <Image
-                      src={isSortOpen ? "/up.png" : "/down.png"}
-                      alt=""
-                      width={20}
-                      height={20}
-                    />
-                  </button>
-
-                  {isSortOpen && (
-                    <div className="absolute top-[44px] right-0 z-30 w-full rounded-[2px] border border-gray-200 bg-black">
-                      {SORT_OPTIONS.map((option) => (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => {
-                            setSelectedSort(option.value);
-                            setCurrentPage(1);
-                            setIsSortOpen(false);
-                          }}
-                          className="font-sans-400 flex h-[40px] w-full items-center px-[16px] text-left text-[14px] text-white hover:bg-[#2a2a2a]"
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 태블릿 이상에서만 상세 필터를 표시 */}
-              <div className="hidden items-center gap-[24px] tablet:col-span-2 tablet:col-start-1 tablet:row-start-2 tablet:flex">
-                {/* 카테고리 필터 */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsCategoryOpen((prev) => !prev);
-                      setIsSaleTypeOpen(false);
-                      setIsSortOpen(false);
-                    }}
-                    className="font-sans-700 flex h-[50px] items-center gap-[8px] text-[16px] text-white"
-                    aria-expanded={isCategoryOpen}
-                  >
-                    카테고리
-                    <Image
-                      src={isCategoryOpen ? "/up.png" : "/down.png"}
-                      alt=""
-                      width={24}
-                      height={24}
-                    />
-                  </button>
-
-                  {/* 카테고리 드롭다운 */}
-                  {isCategoryOpen && (
-                    <div className="absolute top-[50px] left-0 z-30 w-[136px] rounded-[2px] border border-gray-200 bg-black py-[6px]">
-                      <label className="font-sans-400 flex h-[40px] cursor-pointer items-center justify-between px-[16px] text-[16px] text-white">
-                        강아지
-                        <input
-                          type="checkbox"
-                          checked={selectedCategories.includes("DOG")}
-                          onChange={() => handleCategoryChange("DOG")}
-                          className="h-[16px] w-[16px] accent-white"
-                        />
-                      </label>
-
-                      <label className="font-sans-400 flex h-[40px] cursor-pointer items-center justify-between px-[16px] text-[16px] text-white">
-                        고양이
-                        <input
-                          type="checkbox"
-                          checked={selectedCategories.includes("CAT")}
-                          onChange={() => handleCategoryChange("CAT")}
-                          className="h-[16px] w-[16px] accent-white"
-                        />
-                      </label>
-                    </div>
-                  )}
-                </div>
-                {/* 판매 유형 필터 */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSaleTypeOpen((prev) => !prev);
-                      setIsCategoryOpen(false);
-                      setIsSortOpen(false);
-                    }}
-                    className="font-sans-700 flex h-[50px] items-center gap-[8px] text-[16px] text-white"
-                    aria-expanded={isSaleTypeOpen}
-                  >
-                    판매유형
-                    <Image
-                      src={isSaleTypeOpen ? "/up.png" : "/down.png"}
-                      alt=""
-                      width={24}
-                      height={24}
-                    />
-                  </button>
-
-                  {isSaleTypeOpen && (
-                    <div className="absolute top-[50px] left-0 z-30 w-[136px] rounded-[2px] border border-gray-200 bg-black py-[6px]">
-                      <label className="font-sans-400 flex h-[40px] cursor-pointer items-center justify-between px-[16px] text-[16px] text-white">
-                        판매 중
-                        <input
-                          type="checkbox"
-                          checked={selectedSaleTypes.includes("SALE")}
-                          onChange={() => handleSaleTypeChange("SALE")}
-                          className="h-[16px] w-[16px] accent-white"
-                        />
-                      </label>
-
-                      <label className="font-sans-400 flex h-[40px] cursor-pointer items-center justify-between px-[16px] text-[16px] text-white">
-                        교환 제시 중
-                        <input
-                          type="checkbox"
-                          checked={selectedSaleTypes.includes("EXCHANGE")}
-                          onChange={() => handleSaleTypeChange("EXCHANGE")}
-                          className="h-[16px] w-[16px] accent-white"
-                        />
-                      </label>
-                    </div>
-                  )}
-                </div>
-
-                {/* 품절된 포토카드 표시 여부 */}
-                <label className="font-sans-700 flex h-[50px] items-center gap-[8px] text-[16px] text-white">
-                  품절 포함
-                  <input
-                    type="checkbox"
-                    checked={isSoldOutIncluded}
-                    onChange={(event) => {
-                      setIsSoldOutIncluded(event.target.checked);
-                      setCurrentPage(1);
-                    }}
-                    className="h-[16px] w-[16px] accent-white"
-                  />
-                </label>
-              </div>
-            </div>
-
-            {/* 태블릿 이상에서 포토카드 정렬을 오른쪽에 표시 */}
-            <div className="relative hidden tablet:col-start-3 tablet:row-start-1 tablet:flex tablet:justify-end pc:ml-auto">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSortOpen((prev) => !prev);
-                  setIsCategoryOpen(false);
-                  setIsSaleTypeOpen(false);
-                }}
-                className="font-sans-500 flex h-[50px] w-full items-center justify-between rounded-[2px] border border-gray-200 px-[16px] text-[14px] text-white tablet:w-[200px] tablet:text-[16px]"
-                aria-expanded={isSortOpen}
-              >
-                {selectedSortLabel}
-                <Image src={isSortOpen ? "/up.png" : "/down.png"} alt="" width={24} height={24} />
-              </button>
-
-              {isSortOpen && (
-                <div className="absolute top-[50px] right-0 z-30 w-[200px] mt-[5px] border border-gray-200 rounded-[2px] bg-black">
-                  {SORT_OPTIONS.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => {
-                        setSelectedSort(option.value);
-                        setCurrentPage(1);
-                        setIsSortOpen(false);
-                      }}
-                      className="font-sans-400 flex h-[40px] w-full items-center px-[16px] text-left text-[16px] text-white hover:bg-[#2a2a2a]"
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+              </label>
             </div>
           </div>
-          {/* 판매 목록의 로딩, 오류, 정상, 빈 상태를 구분하여 표시 */}
-          {isSalesLoading ? (
-            <div className="font-sans-400 mt-[200px] text-center text-[25px] text-gray-300">
-              포토카드를 불러오는 중입니다.
-            </div>
-          ) : salesError ? (
-            <div className="font-sans-400 mt-[200px] text-center text-[25px] text-gray-300">
-              {salesError}
-            </div>
-          ) : sales.length > 0 ? (
-            <section className="mt-[32px] grid w-full grid-cols-2 gap-[12px] tablet:gap-[20px] pc:mt-[40px] pc:grid-cols-3">
-              {" "}
-              {sales.map((sale) => (
-                <ScaledPhotoCard
-                  key={sale.id}
-                  variant="sale"
-                  status={
-                    sale.status === "ON_EXCHANGE"
-                      ? "교환 제시 중"
-                      : sale.status === "ON_SALE"
-                        ? "판매 중"
-                        : undefined
-                  }
-                  point={sale.price}
-                  isSoldOut={sale.status === "SOLD_OUT"}
-                  onClick={() => router.push(`/market/${sale.id}`)}
-                  card={{
-                    name: sale.card.name,
-                    tag: sale.card.tag,
-                    imageUrl: sale.card.image,
-                    filterType: sale.card.filterType,
-                    category: sale.card.category,
-                    score: sale.card.score,
-                  }}
-                />
-              ))}
-            </section>
-          ) : (
-            <div className="font-sans-400 mt-[200px] text-center text-[25px] text-gray-300">
-              해당하는 포토카드가 없습니다.
-            </div>
-          )}
 
-          {/* 포토카드 목록 페이지네이션 */}
-          {!isSalesLoading && !salesError && totalPages > 0 && (
-            <nav
-              className="mt-[56px] flex items-center justify-center gap-[24px]"
-              aria-label="포토카드 페이지 이동"
+          {/* 태블릿 이상에서 포토카드 정렬을 오른쪽에 표시 */}
+          <div className="relative hidden tablet:col-start-3 tablet:row-start-1 tablet:flex tablet:justify-end pc:ml-auto">
+            <button
+              type="button"
+              onClick={() => {
+                setIsSortOpen((prev) => !prev);
+                setIsCategoryOpen(false);
+                setIsSaleTypeOpen(false);
+              }}
+              className="font-sans-500 flex h-[50px] w-full items-center justify-between rounded-[2px] border border-gray-200 px-[16px] text-[14px] text-white tablet:w-[200px] tablet:text-[16px]"
+              aria-expanded={isSortOpen}
             >
-              {/* 이전 페이지로 이동 */}
-              <button
-                type="button"
-                onClick={() => setCurrentPage((prevPage) => prevPage - 1)}
-                disabled={currentPage === 1}
-                className="flex h-[32px] w-[32px] items-center justify-center disabled:opacity-30"
-                aria-label="이전 페이지"
-              >
-                <Image src="/left.png" alt="" width={16} height={16} />
-              </button>
+              {selectedSortLabel}
 
-              {/* 전체 페이지 수만큼 페이지 번호 버튼을 생성 */}
-              {Array.from({ length: totalPages }, (_, index) => {
-                const pageNumber = index + 1;
+              <Image src={isSortOpen ? "/up.png" : "/down.png"} alt="" width={24} height={24} />
+            </button>
 
-                return (
+            {isSortOpen && (
+              <div className="absolute top-[50px] right-0 z-30 mt-[5px] w-[200px] rounded-[2px] border border-gray-200 bg-black">
+                {SORT_OPTIONS.map((option) => (
                   <button
-                    key={pageNumber}
+                    key={option.value}
                     type="button"
-                    onClick={() => setCurrentPage(pageNumber)}
-                    className={`font-sans-500 flex h-[32px] w-[32px] items-center justify-center text-[14px] text-white ${
-                      currentPage === pageNumber ? "border border-white" : ""
-                    }`}
+                    onClick={() => {
+                      setSelectedSort(option.value);
+                      setCurrentPage(1);
+                      setIsSortOpen(false);
+                    }}
+                    className="font-sans-400 flex h-[40px] w-full items-center px-[16px] text-left text-[16px] text-white hover:bg-[#2a2a2a]"
                   >
-                    {pageNumber}
+                    {option.label}
                   </button>
-                );
-              })}
-
-              {/* 다음 페이지로 이동 */}
-              <button
-                type="button"
-                onClick={() => setCurrentPage((prevPage) => prevPage + 1)}
-                disabled={currentPage === totalPages}
-                className="flex h-[32px] w-[32px] items-center justify-center disabled:opacity-30"
-                aria-label="다음 페이지"
-              >
-                <Image src="/right.png" alt="" width={16} height={16} />
-              </button>
-            </nav>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </main>
-    </RequireAuth>
+
+        {/* 판매 목록의 로딩, 오류, 정상, 빈 상태를 구분하여 표시 */}
+        {isSalesLoading ? (
+          <div className="font-sans-400 mt-[200px] text-center text-[25px] text-gray-300">
+            포토카드를 불러오는 중입니다.
+          </div>
+        ) : salesError ? (
+          <div className="font-sans-400 mt-[200px] text-center text-[25px] text-gray-300">
+            {salesError}
+          </div>
+        ) : sales.length > 0 ? (
+          <section className="mt-[32px] grid w-full grid-cols-2 gap-[12px] tablet:gap-[20px] pc:mt-[40px] pc:grid-cols-3">
+            {sales.map((sale) => (
+              <ScaledPhotoCard
+                key={sale.id}
+                variant="sale"
+                status={
+                  sale.status === "ON_EXCHANGE"
+                    ? "교환 제시 중"
+                    : sale.status === "ON_SALE"
+                      ? "판매 중"
+                      : undefined
+                }
+                point={sale.price}
+                isSoldOut={sale.status === "SOLD_OUT"}
+                onClick={() => router.push(`/market/${sale.id}`)}
+                card={{
+                  name: sale.card.name,
+                  tag: sale.card.tag,
+                  imageUrl: sale.card.image,
+                  filterType: sale.card.filterType,
+                  category: sale.card.category,
+                  score: sale.card.score,
+                }}
+              />
+            ))}
+          </section>
+        ) : (
+          <div className="font-sans-400 mt-[200px] text-center text-[25px] text-gray-300">
+            해당하는 포토카드가 없습니다.
+          </div>
+        )}
+
+        {/* 포토카드 목록 페이지네이션 */}
+        {!isSalesLoading && !salesError && totalPages > 0 && (
+          <nav
+            className="mt-[56px] flex items-center justify-center gap-[24px]"
+            aria-label="포토카드 페이지 이동"
+          >
+            {/* 이전 페이지로 이동 */}
+            <button
+              type="button"
+              onClick={() => setCurrentPage((prevPage) => prevPage - 1)}
+              disabled={currentPage === 1}
+              className="flex h-[32px] w-[32px] items-center justify-center disabled:opacity-30"
+              aria-label="이전 페이지"
+            >
+              <Image src="/left.png" alt="" width={16} height={16} />
+            </button>
+
+            {/* 전체 페이지 수만큼 페이지 번호 버튼을 생성 */}
+            {Array.from({ length: totalPages }, (_, index) => {
+              const pageNumber = index + 1;
+
+              return (
+                <button
+                  key={pageNumber}
+                  type="button"
+                  onClick={() => setCurrentPage(pageNumber)}
+                  className={`font-sans-500 flex h-[32px] w-[32px] items-center justify-center text-[14px] text-white ${
+                    currentPage === pageNumber ? "border border-white" : ""
+                  }`}
+                >
+                  {pageNumber}
+                </button>
+              );
+            })}
+
+            {/* 다음 페이지로 이동 */}
+            <button
+              type="button"
+              onClick={() => setCurrentPage((prevPage) => prevPage + 1)}
+              disabled={currentPage === totalPages}
+              className="flex h-[32px] w-[32px] items-center justify-center disabled:opacity-30"
+              aria-label="다음 페이지"
+            >
+              <Image src="/right.png" alt="" width={16} height={16} />
+            </button>
+          </nav>
+        )}
+      </div>
+    </main>
   );
 }

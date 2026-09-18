@@ -124,7 +124,7 @@ export async function socialFinish(req, res) {
     const { session } = await authService.finishSocialLogin({ code: req.query.code, codeVerifier });
     setAuthCookies(res, session);
     setCsrfCookie(res);
-    res.redirect(`${WEB_URL}/market`);
+    res.redirect(`${WEB_URL}/`);
   } catch (error) {
     const code = error instanceof ApiError ? error.code : "INTERNAL_ERROR";
     res.redirect(`${WEB_URL}/login?error=${code}`);

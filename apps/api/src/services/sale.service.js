@@ -378,7 +378,6 @@ export async function getSaleById(id) {
       id: sale.card.id,
       name: sale.card.name,
       tag: sale.card.tag,
-      description: sale.card.description,
       score: sale.card.image.score,
       image: sale.card.image.imageUrl,
       filterType: sale.card.filterType,

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 import RandomPointLauncher from "@/components/point/RandomPointLauncher";
-import { useAuth } from "@/lib/auth/AuthProvider";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getKstDateKey, isDrawnTodayInKst } from "@/lib/point/random-point-time";
 
 // 랜덤 포인트 선물상자를 표시하지 않을 페이지
@@ -31,15 +31,12 @@ function RandomPointAutoOpenLayer({ storageKey }) {
   return <RandomPointLauncher autoOpen={shouldAutoOpen} />;
 }
 
-export default function RandomPointGlobalLayer() {
-  const pathname = usePathname();
-  const { currentUser, isLoading } = useAuth();
+// 로그인 서비스 페이지에 진입했을 때만 현재 사용자 정보를 조회
+function RandomPointAuthenticatedLayer() {
+  const { currentUser, isLoading } = useCurrentUser();
 
-  // 랜딩, 로그인, 회원가입 페이지인지 확인
-  const isExcludedPath = EXCLUDED_PATHS.includes(pathname);
-
-  // 인증 확인 중 / 비로그인 / 제외 페이지에서는 선물상자를 표시하지 않음
-  if (isLoading || !currentUser?.id || isExcludedPath) {
+  // 인증 확인 중이거나 비로그인 상태라면 선물상자를 표시하지 않음
+  if (isLoading || !currentUser?.id) {
     return null;
   }
 
@@ -61,4 +58,17 @@ export default function RandomPointGlobalLayer() {
   const storageKey = `randomPointAutoOpened_${currentUser.id}_${today}`;
 
   return <RandomPointAutoOpenLayer key={storageKey} storageKey={storageKey} />;
+}
+
+export default function RandomPointGlobalLayer() {
+  const pathname = usePathname();
+
+  // 랜딩, 로그인, 회원가입 페이지에서는
+  // 사용자 조회와 랜덤 포인트 UI 자체를 실행하지 않음
+  if (EXCLUDED_PATHS.includes(pathname)) {
+    return null;
+  }
+
+  // 로그인 서비스 페이지에 진입한 뒤 현재 사용자 정보를 새로 조회
+  return <RandomPointAuthenticatedLayer />;
 }
