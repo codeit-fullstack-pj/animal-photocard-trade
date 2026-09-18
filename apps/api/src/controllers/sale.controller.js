@@ -263,6 +263,6 @@ export async function cancelSale(req, res) {
     throw new ApiError(400, "VALIDATION_ERROR", "id는 UUID 형식이어야 합니다");
   }
 
-  const result = await saleService.cancelSale(params.id);
+  const result = await saleService.cancelSale(params.id, req.user);
   res.json({ data: result });
 }

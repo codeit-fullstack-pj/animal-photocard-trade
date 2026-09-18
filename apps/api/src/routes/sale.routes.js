@@ -27,4 +27,4 @@ saleRouter.get("/:id", saleController.getSaleById);
 saleRouter.patch("/:id", saleController.updateSale);
 
 // 판매글 취소
-saleRouter.patch("/:id/cancel", saleController.cancelSale);
+saleRouter.patch("/:id/cancel", requireAuth, saleController.cancelSale);

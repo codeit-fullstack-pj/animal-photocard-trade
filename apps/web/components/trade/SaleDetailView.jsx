@@ -11,16 +11,21 @@ import BuyerExchangeList from "@/components/trade/BuyerExchangeList";
 import ExchangeListView from "@/components/trade/ExchangeListView";
 import ExchangeProposalModal from "@/components/trade/ExchangeProposalModal";
 import SellerActionButtons from "@/components/trade/SellerActionButtons";
-import SaleFormView from "@/components/trade/SaleFormView";
+import EditSaleModal from "@/components/trade/EditSaleModal";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import Toast from "@/components/ui/Toast";
 import { purchaseCard } from "@/lib/trade/api";
+import { cancelSale } from "@/lib/sales/api";
 import { getCurrentUser } from "@/lib/auth/api";
 
 export default function SaleDetailView({ sale }) {
   const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
+  // null | "success" | "error" — 판매 내리기 결과 안내 모달
+  const [cancelOutcome, setCancelOutcome] = useState(null);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
@@ -73,6 +78,29 @@ export default function SaleDetailView({ sale }) {
     } finally {
       setIsPurchasing(false);
       setIsPurchaseModalOpen(false);
+    }
+  }
+
+  async function handleCancelConfirm() {
+    setIsCanceling(true);
+    try {
+      await cancelSale(sale.id);
+      setIsCancelModalOpen(false);
+      setCancelOutcome("success");
+    } catch {
+      setIsCancelModalOpen(false);
+      setCancelOutcome("error");
+    } finally {
+      setIsCanceling(false);
+    }
+  }
+
+  function handleCancelOutcomeConfirm() {
+    setCancelOutcome(null);
+    if (cancelOutcome === "success") {
+      router.push("/market");
+    } else {
+      router.refresh();
     }
   }
 
@@ -134,7 +162,10 @@ export default function SaleDetailView({ sale }) {
             {isUserLoading ? (
               <div className="h-18 w-full rounded-xs bg-gray-700 tablet:h-18.75 pc:h-20" />
             ) : isSeller ? (
-              <SellerActionButtons onEditClick={() => setIsEditModalOpen(true)} />
+              <SellerActionButtons
+                onEditClick={() => setIsEditModalOpen(true)}
+                onCancelClick={() => setIsCancelModalOpen(true)}
+              />
             ) : (
               <BuyerActionButtons
                 onPurchaseClick={handlePurchaseClick}
@@ -181,23 +212,42 @@ export default function SaleDetailView({ sale }) {
         </>
       )}
 
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
-          <div className="relative w-full max-w-3xl rounded-2xl bg-[#111114] p-10">
-            <SaleFormView
-              card={cardProps.card}
-              initialData={{
-                id: sale.id,
-                description: sale.description,
-                price: sale.price,
-                canExchange: sale.canExchange,
-              }}
-              onClose={() => setIsEditModalOpen(false)}
-              onBack={() => setIsEditModalOpen(false)}
-            />
-          </div>
-        </div>
-      )}
+      <EditSaleModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        sale={sale}
+        card={cardProps.card}
+        onUpdated={() => router.refresh()}
+      />
+
+      <ConfirmModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        title="포토카드 판매 내리기"
+        description="정말로 판매를 중단하시겠습니까?"
+        confirmLabel="판매 내리기"
+        secondaryLabel="취소하기"
+        onConfirm={handleCancelConfirm}
+        isSubmitting={isCanceling}
+      />
+
+      <ConfirmModal
+        isOpen={cancelOutcome === "error"}
+        onClose={handleCancelOutcomeConfirm}
+        title="Error"
+        description="판매 게시글을 내리지 못했습니다."
+        confirmLabel="확인"
+        onConfirm={handleCancelOutcomeConfirm}
+      />
+
+      <ConfirmModal
+        isOpen={cancelOutcome === "success"}
+        onClose={handleCancelOutcomeConfirm}
+        title="알림"
+        description="게시글이 성공적으로 삭제되었습니다."
+        confirmLabel="확인"
+        onConfirm={handleCancelOutcomeConfirm}
+      />
     </main>
   );
 }
