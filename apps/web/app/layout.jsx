@@ -1,6 +1,7 @@
 import { Noto_Sans_KR } from "next/font/google";
 import localFont from "next/font/local";
 
+import RandomPointGlobalLayer from "@/components/point/RandomPointGlobalLayer";
 import "./globals.css";
 
 const notoSansKr = Noto_Sans_KR({
@@ -33,6 +34,7 @@ export default function RootLayout({ children }) {
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {children}
+        <RandomPointGlobalLayer />
       </body>
     </html>
   );

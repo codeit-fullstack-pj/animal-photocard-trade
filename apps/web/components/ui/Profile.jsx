@@ -49,9 +49,8 @@ export default function Profile({ currentUser }) {
           <div className="flex flex-col gap-4.25">
             <div className="flex flex-col gap-4.25">
               <div className="flex flex-col">
-                <span className="font-sans-700 text-lg text-white">안녕하세요,</span>
-                <span className="font-sans-700 min-w-0 truncate text-lg text-white">
-                  {currentUser?.nickname ?? "err"}님
+                <span className="font-sans-700 text-lg text-white">
+                  안녕하세요, {currentUser?.nickname ?? "err"}님!
                 </span>
               </div>
               <div className="flex items-center justify-between">
