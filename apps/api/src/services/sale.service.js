@@ -405,20 +405,30 @@ export async function updateSale(id, data) {
   return saleRepository.updateSaleById(id, data);
 }
 
-// 판매글 취소: 존재 확인 후, 트랜잭션(판매글 취소 + 교환신청 일괄 취소) 실행
-// 트랜잭션 결과(배열)에서 각각 판매글 결과, 교환신청 취소 개수를 꺼내 응답 형태로 가공
-export async function cancelSale(id) {
+// 판매글 취소: 존재·소유자 확인 후, 트랜잭션(판매 중인 경우에만 취소 + 교환신청 일괄 취소) 실행
+// 트랜잭션 결과(배열)에서 각각 판매글 취소 결과, 교환신청 취소 개수를 꺼내 응답 형태로 가공
+export async function cancelSale(id, seller) {
   const sale = await saleRepository.findSaleWithExchangesById(id);
   if (!sale) {
     throw new ApiError(404, "SALE_NOT_FOUND", "판매글을 찾을 수 없습니다.");
   }
 
-  const [canceledSale, exchangeResult] = await saleRepository.cancelSaleTransaction(id);
+  if (sale.sellerId !== seller.id) {
+    throw new ApiError(403, "NOT_SALE_OWNER", "본인의 판매글만 내릴 수 있습니다.");
+  }
+
+  const closedAt = new Date();
+  const [canceled, exchangeResult] = await saleRepository.cancelSaleTransaction(id, closedAt);
+
+  // 이미 품절되었거나 취소된 판매글은 다시 취소할 수 없다 (ON_SALE 상태에서만 취소 가능)
+  if (canceled.count === 0) {
+    throw new ApiError(409, "SALE_NOT_ON_SALE", "판매 중인 판매글만 내릴 수 있습니다.");
+  }
 
   return {
-    id: canceledSale.id,
-    status: canceledSale.status,
-    closedAt: canceledSale.closedAt,
+    id,
+    status: "CANCELED",
+    closedAt,
     canceledExchangeCount: exchangeResult.count,
   };
 }

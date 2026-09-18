@@ -12,7 +12,7 @@ export default function SellerActionButtons({ onEditClick, onCancelClick }) {
       <button
         type="button"
         onClick={onCancelClick}
-        className="font-sans-700 h-18 w-full rounded-xs bg-gray-700 text-lg text-white tablet:h-18.75 pc:h-20"
+        className="font-sans-700 h-18 w-full rounded-xs border border-[#fff] bg-gray-700 text-lg text-white tablet:h-18.75 pc:h-20"
       >
         판매 내리기
       </button>

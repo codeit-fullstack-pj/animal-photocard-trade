@@ -55,3 +55,10 @@ export function updateSale(id, { description, canExchange, price }) {
     body: { description, canExchange, price },
   });
 }
+
+// 판매글 내리기(취소)
+export function cancelSale(id) {
+  return apiFetch(`/sales/${id}/cancel`, {
+    method: "PATCH",
+  });
+}
