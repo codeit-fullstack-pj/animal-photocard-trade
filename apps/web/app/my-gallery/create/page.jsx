@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { VARIANTS, useImageVariants } from "./useImageVariants";
 import styles from "./create.module.css";
+import RequireAuth from "@/components/auth/RequireAuth";
 import MobileHeader from "@/components/ui/MobileHeader";
 import AppHeader from "@/components/ui/AppHeader";
 import Toast from "@/components/ui/Toast";
@@ -190,7 +191,7 @@ export default function CreatePage() {
   }
 
   return (
-    <>
+    <RequireAuth>
       <div className="tablet:hidden">
         <MobileHeader title="포토카드 생성" backHref="/my-gallery" />
       </div>
@@ -389,6 +390,6 @@ export default function CreatePage() {
           onClose={() => setShowLimitToast(false)}
         />
       </main>
-    </>
+    </RequireAuth>
   );
 }

@@ -11,6 +11,7 @@ import MobileFilter from "@/components/card/MobileFilter";
 import CreateSaleModal from "@/components/trade/CreateSaleModal";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import AppHeader from "@/components/ui/AppHeader";
+import RequireAuth from "@/components/auth/RequireAuth";
 
 import { apiFetch } from "@/lib/api-client";
 import { getCurrentUser } from "@/lib/auth/api";
@@ -392,7 +393,7 @@ export default function MarketPage() {
   };
 
   return (
-    <>
+    <RequireAuth>
       <AppHeader />
 
       <main
@@ -489,21 +490,18 @@ export default function MarketPage() {
       {/* ========================================
           로그인 모달
       ======================================== */}
-      {isLoginModalOpen && (
-        <ConfirmModal
-          title="로그인이 필요해요"
-          description="포토카드를 확인하려면 로그인해 주세요."
-          confirmText="로그인"
-          cancelText="취소"
-          onConfirm={() => {
-            setIsLoginModalOpen(false);
-            router.push("/login");
-          }}
-          onCancel={() => {
-            setIsLoginModalOpen(false);
-          }}
-        />
-      )}
-    </>
+      <ConfirmModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        title="로그인이 필요해요"
+        description="포토카드를 확인하려면 로그인해 주세요."
+        confirmLabel="로그인"
+        secondaryLabel="취소"
+        onConfirm={() => {
+          setIsLoginModalOpen(false);
+          router.push("/login");
+        }}
+      />
+    </RequireAuth>
   );
 }
