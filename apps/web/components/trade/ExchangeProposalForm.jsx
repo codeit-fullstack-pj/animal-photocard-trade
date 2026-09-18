@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import PhotoCard from "@/components/card/PhotoCard";
+import ScaledPhotoCard from "@/components/card/ScaledPhotoCard";
 import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 
 export default function ExchangeProposalForm({ selectedCard, onBack, onSubmit, isSubmitting }) {
@@ -16,7 +16,7 @@ export default function ExchangeProposalForm({ selectedCard, onBack, onSubmit, i
 
       <div className="flex flex-1 flex-col pc:flex-row pc:gap-10">
         <div className="flex w-full max-w-42 flex-1 shrink-0 items-center justify-center self-center tablet:max-w-86 pc:my-0 pc:w-100 pc:max-w-100 pc:self-auto">
-          <PhotoCard {...cardToPhotoCardProps(selectedCard)} />
+          <ScaledPhotoCard {...cardToPhotoCardProps(selectedCard)} />
         </div>
 
         <div className="flex flex-none flex-col pc:flex-1">

@@ -1,6 +1,6 @@
 "use client";
 
-import PhotoCard from "@/components/card/PhotoCard";
+import ScaledPhotoCard from "@/components/card/ScaledPhotoCard";
 import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { cancelExchangeProposal, getSaleExchanges } from "@/lib/trade/api";
@@ -78,11 +78,10 @@ export default function BuyerExchangeList({ saleId }) {
               <p className="font-sans-400 order-2 flex-1 rounded-[20px] rounded-tl-none bg-[#B8B8B8] px-4 py-3 text-sm text-black tablet:order-0 tablet:w-full tablet:flex-none tablet:rounded-tl-[20px] tablet:rounded-bl-none tablet:px-10 tablet:text-base">
                 {exchange.message || "교환을 신청합니다."}
               </p>
-
               <div className="order-1 w-full max-w-42 shrink-0 tablet:order-0 tablet:mt-2 tablet:max-w-none">
                 {/* 버튼 상자가 카드 밑으로 파고들어야 해서 카드를 위에 올린다 */}
                 <div className="relative z-10">
-                  <PhotoCard {...cardToPhotoCardProps(exchange.offerCard)} />
+                  <ScaledPhotoCard {...cardToPhotoCardProps(exchange.offerCard)} />
                 </div>
 
                 {/* 카드 밑으로 밀어 넣은 만큼 위 여백을 키워, 실제로 보이는 간격은 모바일 7 / 태블릿 16이 된다 */}

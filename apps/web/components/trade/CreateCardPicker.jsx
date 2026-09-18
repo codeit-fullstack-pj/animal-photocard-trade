@@ -5,7 +5,7 @@ import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 import TradeFilter from "@/components/trade/TradeFilter";
 import TradeSearchBar from "@/components/trade/TradeSearchBar";
 import { useInfiniteFetch } from "@/hooks/useInfiniteFetch";
-import { fetchMockMyCards, getMockCategoryCounts } from "@/lib/api/mockMyCards.js";
+import { fetchMyCardsPage } from "@/lib/gallery/api";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const CATEGORY_OPTIONS = [
@@ -13,7 +13,7 @@ const CATEGORY_OPTIONS = [
   { value: "CAT", label: "고양이" },
 ];
 
-export default function OfferCardPicker({ onSelect }) {
+export default function CreateCardPicker({ onSelect }) {
   const [keyword, setKeyword] = useState("");
   const [debounceKeyword, setDebouncedKeyword] = useState("");
   const [selectedCategory, setSelectedCategory] = useState([]);
@@ -31,12 +31,12 @@ export default function OfferCardPicker({ onSelect }) {
     [debounceKeyword, selectedCategory],
   );
 
-  const categoryCounts = useMemo(() => getMockCategoryCounts(debounceKeyword), [debounceKeyword]);
-
-  const { cards, isLoading, error, hasNextPage, loadNextPage, retry } = useInfiniteFetch(
-    fetchMockMyCards,
+  const { cards, isLoading, error, hasNextPage, loadNextPage, retry, meta } = useInfiniteFetch(
+    fetchMyCardsPage,
     queryParams,
   );
+
+  const categoryCounts = meta.categoryCounts ?? {};
 
   useEffect(() => {
     const root = scrollRef.current;
@@ -62,7 +62,7 @@ export default function OfferCardPicker({ onSelect }) {
         마이갤러리
       </h2>
       <h3 className="hidden font-primary-bold mt-10 tablet:text-[40px] pc:text-[46px] leading-none text-white tablet:block">
-        교환할 포토카드 선택하기
+        나의 포토카드 판매하기
       </h3>
       <div className="hidden mt-5 border-t-2 border-gray-100 tablet:block" />
       <div className="mb-5 flex items-center justify-start gap-2 tablet:mt-5 tablet:mb-0 tablet:gap-7">

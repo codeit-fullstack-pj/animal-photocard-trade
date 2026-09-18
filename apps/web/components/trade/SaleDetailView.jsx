@@ -5,8 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import PhotoCard from "@/components/card/PhotoCard";
-import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
+import ScaledPhotoCard from "@/components/card/ScaledPhotoCard";
 import BuyerActionButtons from "@/components/trade/BuyerActionButtons";
 import BuyerExchangeList from "@/components/trade/BuyerExchangeList";
 import ExchangeListView from "@/components/trade/ExchangeListView";
@@ -27,7 +26,17 @@ export default function SaleDetailView({ sale, currentUser }) {
 
   const cardName = `${sale.card.tag} ${sale.card.name}`;
 
-  const cardProps = { ...cardToPhotoCardProps(sale.card), imageUrl: sale.card.image };
+  const cardProps = {
+    variant: "owned",
+    card: {
+      name: sale.card.name,
+      tag: sale.card.tag,
+      imageUrl: sale.card.image,
+      category: sale.card.category,
+      score: sale.card.score,
+      filterType: sale.card.filterType,
+    },
+  };
 
   function handlePurchaseClick() {
     if (currentUser.point < sale.price) {
@@ -78,7 +87,7 @@ export default function SaleDetailView({ sale, currentUser }) {
       <div className="mt-6 grid gap-6 tablet:mt-10 pc:grid-cols-[minmax(0,1fr)_400px] pc:gap-8.5">
         <div className="flex items-center justify-center rounded-2xl bg-[linear-gradient(70deg,#616161_0%,#878787_100%)] p-6 tablet:rounded-3xl tablet:p-10 pc:aspect-square">
           <div className="w-full max-w-42 tablet:max-w-90">
-            <PhotoCard {...cardProps} />
+            <ScaledPhotoCard {...cardProps} />
           </div>
         </div>
 

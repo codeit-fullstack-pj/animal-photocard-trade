@@ -1,18 +1,22 @@
 import SaleDetailView from "@/components/trade/SaleDetailView";
 import AppHeader from "@/components/ui/AppHeader";
 import MobileHeader from "@/components/ui/MobileHeader";
-import { mockSales } from "@/mocks/sales.js";
+import { getSale } from "@/lib/sales/api";
 import { mockUsers } from "@/mocks/users.js";
 import { notFound } from "next/navigation";
 
-// TODO: GET /sales/:saleId 가 생기면 mock 대신 실제 판매글을 불러온다.
-// 현재 사용자도 그때 useCurrentUser 로 바꾼다. ?as=seller 는 그때까지 쓰는 임시 전환이다.
+// TODO: 로그인이 붙으면 currentUser를 실제 로그인 사용자로 바꾼다. ?as=seller는 그때까지 쓰는 임시 전환이다.
 export default async function SaleDetailPage({ params, searchParams }) {
   const { id } = await params;
   const { as } = await searchParams;
 
-  const sale = mockSales.find((item) => item.id === id);
-  if (!sale) notFound();
+  let sale;
+  try {
+    sale = await getSale(id);
+  } catch (error) {
+    if (error?.status === 404) notFound();
+    throw error;
+  }
 
   const currentUser = as === "seller" ? mockUsers[0] : mockUsers[1];
 

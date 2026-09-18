@@ -9,6 +9,7 @@ export function notFoundHandler(req, res) {
 // eslint-disable-next-line no-unused-vars
 export function errorHandler(error, req, res, next) {
   if (error instanceof ApiError) {
+    console.error(error);
     res.status(error.status).json({ code: error.code, message: error.message });
     return;
   }

@@ -33,3 +33,23 @@ export function fetchMyCards({ page, pageSize, sort, keyword, categories }) {
 
   return apiFetch(`/cards?${params.toString()}`);
 }
+
+const PICKER_PAGE_SIZE = 12;
+
+// useInfiniteFetch가 기대하는 { cards, hasNextPage, meta } 형태로 GET /cards 결과를 변환.
+// 판매글/교환 제시 등록 시 "내 카드 고르기" 목록에서 쓴다
+export async function fetchMyCardsPage({ page, keyword = "", categories = [] }) {
+  const result = await fetchMyCards({
+    page,
+    pageSize: PICKER_PAGE_SIZE,
+    sort: "created_desc",
+    keyword,
+    categories,
+  });
+
+  return {
+    cards: result.items,
+    hasNextPage: page < result.totalPages,
+    meta: { categoryCounts: result.categoryCounts },
+  };
+}

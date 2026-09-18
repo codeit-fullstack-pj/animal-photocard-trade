@@ -1,40 +1,64 @@
-// CreateSaleModal.jsx
 "use client";
-import { useState } from "react";
-import CardListView from "./CardListView";
-import SaleFormView from "./SaleFormView";
 
-const CreateSaleModal = ({ onClose }) => {
+import { useState } from "react";
+import CreateCardPicker from "./CreateCardPicker";
+import CreateSaleForm from "@/components/trade/CreateSaleForm";
+import ResponsiveModalShell from "@/components/ui/ResponsiveModalShell";
+import { createSale } from "@/lib/sales/api";
+
+export default function CreateSaleModal({ isOpen, onClose, onCreated }) {
   const [selectedCard, setSelectedCard] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  // 모달이 다시 열릴 때 이전에 고르던 카드/에러를 초기화 (렌더 중 조정 — React 권장 패턴)
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setSelectedCard(null);
+      setError("");
+    }
+  }
+
+  async function handleSubmit({ description, canExchange, price }) {
+    setIsSubmitting(true);
+    setError("");
+    try {
+      await createSale({
+        cardId: selectedCard.id,
+        description,
+        canExchange,
+        price,
+      });
+      onClose();
+      onCreated?.();
+    } catch (err) {
+      setError(err?.message ?? "판매글 등록에 실패했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center overflow-y-auto p-6"
-      onClick={onClose}
+    <ResponsiveModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      onBack={selectedCard ? () => setSelectedCard(null) : undefined}
+      title="나의 포토카드 판매하기"
+      isSubmitting={isSubmitting}
     >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="bg-[#161616] w-[940px] h-[772px] p-[60px] flex flex-col rounded-3xl relative"
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-12 right-12 text-white text-2xl leading-none hover:text-gray-400"
-        >
-          ✕
-        </button>
-
-        {selectedCard === null ? (
-          <CardListView onSelectCard={(card) => setSelectedCard(card)} />
-        ) : (
-          <SaleFormView
-            card={selectedCard}
-            onClose={onClose}
-            onBack={() => setSelectedCard(null)}
-          />
-        )}
-      </div>
-    </div>
+      {selectedCard ? (
+        <CreateSaleForm
+          selectedCard={selectedCard}
+          onBack={() => setSelectedCard(null)}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          error={error}
+        />
+      ) : (
+        <CreateCardPicker onSelect={setSelectedCard} />
+      )}
+    </ResponsiveModalShell>
   );
-};
-
-export default CreateSaleModal;
+}

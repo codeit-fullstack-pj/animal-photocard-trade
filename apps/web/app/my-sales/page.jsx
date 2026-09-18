@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-import PhotoCard from "../../components/card/PhotoCard";
+import ScaledPhotoCard from "../../components/card/ScaledPhotoCard";
 import MySalesMobileFilter from "@/components/card/MySalesMobileFilter";
 import RandomPointLauncher from "@/components/point/RandomPointLauncher";
 import AppHeader from "@/components/ui/AppHeader";
@@ -521,7 +521,7 @@ export default function MySalesPage() {
           <section className="mx-auto mt-[32px] grid w-full max-w-[335px] grid-cols-2 gap-[12px] tablet:max-w-[664px] tablet:gap-[20px] pc:mt-[40px] pc:max-w-none pc:grid-cols-3">
             {" "}
             {sales.map((sale) => (
-              <PhotoCard
+              <ScaledPhotoCard
                 key={sale.id}
                 variant="sale"
                 status={
@@ -531,14 +531,16 @@ export default function MySalesPage() {
                       ? "판매 중"
                       : undefined
                 }
-                title={sale.card.name}
-                tag={sale.card.tag}
-                imageUrl={sale.card.image}
-                filterType={sale.card.filterType}
                 point={sale.price}
                 isSoldOut={sale.status === "SOLD_OUT"}
-                category={sale.card.category}
-                score={sale.card.score}
+                card={{
+                  name: sale.card.name,
+                  tag: sale.card.tag,
+                  imageUrl: sale.card.image,
+                  filterType: sale.card.filterType,
+                  category: sale.card.category,
+                  score: sale.card.score,
+                }}
               />
             ))}
           </section>

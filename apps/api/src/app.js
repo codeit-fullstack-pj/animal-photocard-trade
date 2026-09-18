@@ -1,7 +1,6 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
-
 import { errorHandler, notFoundHandler } from "./middlewares/error-handler.js";
 import { authRouter } from "./routes/auth.routes.js";
 import { cardRouter } from "./routes/card.routes.js";
@@ -11,6 +10,9 @@ import { imageRouter } from "./routes/image.routes.js";
 import { notificationRouter } from "./routes/notification.routes.js";
 import { saleRouter } from "./routes/sale.routes.js";
 import { userRouter } from "./routes/user.routes.js";
+BigInt.prototype.toJSON = function () {
+  return Number(this);
+};
 
 export const app = express();
 

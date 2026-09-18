@@ -8,6 +8,7 @@ import MarketFilters from "@/components/market/MarketFilters";
 import MarketCardList from "@/components/market/MarketCardList";
 import MarketEmpty from "@/components/market/MarketEmpty";
 import MobileFilter from "@/components/card/MobileFilter";
+import CreateSaleModal from "@/components/trade/CreateSaleModal";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import AppHeader from "@/components/ui/AppHeader";
 
@@ -87,6 +88,9 @@ export default function MarketPage() {
 
   // 로그인 모달
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // 판매글 생성 모달
+  const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
 
   // IntersectionObserver
   const observerRef = useRef(null);
@@ -372,12 +376,8 @@ export default function MarketPage() {
    */
   const handleCardClick = async (card) => {
     try {
-      const currentUser = await getCurrentUser();
+      await getCurrentUser();
 
-      // 여기서 판매 정보와 로그인한 사용자 정보를 기준으로
-      // 어떤 모달을 보여줄지 결정
-      console.log("선택한 판매글:", card);
-      console.log("현재 사용자:", currentUser);
       router.push(`/market/${card.id}`);
     } catch (error) {
       if (error?.status === 401) {
@@ -397,6 +397,7 @@ export default function MarketPage() {
 
       <main
         className="
+          isolate
           mx-auto
           min-h-screen
           w-full
@@ -414,7 +415,7 @@ export default function MarketPage() {
           pc:pb-[80px]
         "
       >
-        <MarketHeader />
+        <MarketHeader onOpenSaleModal={() => setIsSaleModalOpen(true)} />
 
         {/* ========================================
             검색 / 필터 / 정렬
@@ -471,6 +472,18 @@ export default function MarketPage() {
         totalCount={totalCount}
         onApply={handleApplyMobileFilter}
         categoryCounts={categoryCounts}
+      />
+
+      {/* ========================================
+          판매글 생성 모달
+      ======================================== */}
+      <CreateSaleModal
+        isOpen={isSaleModalOpen}
+        onClose={() => setIsSaleModalOpen(false)}
+        onCreated={() => {
+          fetchSales({ cursor: null, append: false });
+          fetchCategoryCounts();
+        }}
       />
 
       {/* ========================================
