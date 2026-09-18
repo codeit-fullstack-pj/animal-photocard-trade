@@ -15,6 +15,7 @@ export async function getSales({
   includeSoldOut,
   status,
   sellerId,
+  offererId,
   orderBy,
   cursor,
   page,
@@ -27,6 +28,7 @@ export async function getSales({
       includeSoldOut,
       status,
       sellerId,
+      offererId,
       orderBy,
       cursor,
       page,
@@ -39,6 +41,7 @@ export async function getSales({
       includeSoldOut,
       status,
       sellerId,
+      offererId,
     }),
   ]);
 
@@ -54,18 +57,37 @@ export async function getSales({
   const lists = pageSales.map((sale) => {
     const hasPendingExchange = sale.exchanges.length > 0;
 
+    // offererId로 조회했고 내가 이 판매글의 판매자는 아닌 경우 — 상대방 카드 대신
+    // 내가 제시한 카드(offerCard)를 찾는다. 자기 판매글엔 제시할 수 없어 판매자·제시자는 겹치지 않는다
+    const myOffer =
+      offererId && sale.sellerId !== sellerId
+        ? sale.exchanges.find((exchange) => exchange.offerCard.ownerId === offererId)
+        : undefined;
+
+    const card = myOffer
+      ? {
+          id: myOffer.offerCard.id,
+          name: myOffer.offerCard.name,
+          tag: myOffer.offerCard.tag,
+          score: myOffer.offerCard.image.score,
+          image: myOffer.offerCard.image.imageUrl,
+          filterType: myOffer.offerCard.filterType,
+          category: myOffer.offerCard.image.category,
+        }
+      : {
+          id: sale.card.id,
+          name: sale.card.name,
+          tag: sale.card.tag,
+          score: sale.card.image.score,
+          image: sale.card.image.imageUrl,
+          filterType: sale.card.filterType,
+          category: sale.card.image.category,
+        };
+
     return {
       id: sale.id,
 
-      card: {
-        id: sale.card.id,
-        name: sale.card.name,
-        tag: sale.card.tag,
-        score: sale.card.image.score,
-        image: sale.card.image.imageUrl,
-        filterType: sale.card.filterType,
-        category: sale.card.image.category,
-      },
+      card,
 
       seller: {
         id: sale.seller.id,
@@ -75,8 +97,9 @@ export async function getSales({
       description: sale.description,
       canExchange: sale.canExchange,
 
+      // 내가 제시한 카드에는 가격이 없다 (내 소유 카드일 뿐 판매 대상이 아님).
       // Prisma의 BigInt는 JSON으로 바로 반환할 수 없어 숫자로 변환
-      price: Number(sale.price),
+      price: myOffer ? undefined : Number(sale.price),
 
       // 판매 중이면서 대기 중인 교환 신청이 있으면 응답에서 ON_EXCHANGE로 표시
       status: sale.status === "ON_SALE" && hasPendingExchange ? "ON_EXCHANGE" : sale.status,
