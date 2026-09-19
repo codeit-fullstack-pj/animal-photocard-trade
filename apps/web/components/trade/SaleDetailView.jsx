@@ -152,8 +152,6 @@ export default function SaleDetailView({ sale }) {
 
           <div className="mt-10 pc:mt-auto">
             {isSeller ? (
-              <div className="h-18 w-full rounded-xs bg-gray-700 tablet:h-18.75 pc:h-20" />
-            ) : isSeller ? (
               <SellerActionButtons
                 onEditClick={() => setIsEditModalOpen(true)}
                 onCancelClick={() => setIsCancelModalOpen(true)}
