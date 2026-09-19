@@ -55,7 +55,7 @@ export default function MyGalleryPage() {
       <div className="hidden tablet:block">
         <AppHeader />
       </div>
-      <main className="isolate mx-auto mt-10 flex min-h-screen w-full max-w-[1248px] justify-center px-4 font-sans-400 tablet:px-6 pc:mt-20 pc:px-0">
+      <main className="isolate mx-auto flex min-h-screen w-full max-w-[1248px] justify-center px-4 pt-[20px] font-sans-400 tablet:px-6 tablet:pt-[110px] pc:px-0 pc:pt-[168px]">
         <div className="mb-10 flex h-full w-full flex-col items-center gap-8 pc:mb-15 pc:gap-20">
           <div className="flex w-full flex-col gap-3 pc:gap-5">
             {/* 모바일에선 MobileHeader가 이미 타이틀을 보여주고, 생성하기 버튼도 하단에 따로 있어서 이 줄 전체를 숨긴다 */}
