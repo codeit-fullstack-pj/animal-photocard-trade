@@ -9,7 +9,6 @@ import {
   getNotifications,
   markAllNotificationsRead,
   markNotificationRead,
-  markNotificationUnread,
 } from "@/lib/notification/api";
 import styles from "./Notification.module.css";
 
@@ -123,20 +122,16 @@ function NotificationDataLoader({ onUnreadCountChange, children }) {
       .catch(() => setError("삭제에 실패했어요"));
   }
 
-  // 항목 클릭 시 현재 읽음 상태에 따라 반대로 토글 — 읽음이면 /notread, 안읽음이면 /read 호출
+  // 항목 클릭 시 읽음 처리 — 이미 읽은 알림은 되돌릴 수 없으므로 안읽음 상태일 때만 요청한다
   function handleToggleRead(notification) {
-    const request = notification.isRead
-      ? markNotificationUnread(notification.id)
-      : markNotificationRead(notification.id);
+    if (notification.isRead) return;
 
-    request
+    markNotificationRead(notification.id)
       .then(() => {
         setNotifications((prev) =>
-          prev.map((n) => (n.id === notification.id ? { ...n, isRead: !n.isRead } : n)),
+          prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n)),
         );
-        onUnreadCountChange((prev) =>
-          notification.isRead ? (prev ?? 0) + 1 : Math.max(0, (prev ?? 0) - 1),
-        );
+        onUnreadCountChange((prev) => Math.max(0, (prev ?? 0) - 1));
       })
       .catch(() => setError("읽음 상태 변경에 실패했어요"));
   }

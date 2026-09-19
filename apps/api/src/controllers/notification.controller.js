@@ -63,14 +63,7 @@ function getValidNotiId(req) {
 // PATCH /notification/:notiId/read 알림 하나를 읽음 처리
 export async function markNotificationRead(req, res) {
   const notiId = getValidNotiId(req);
-  const result = await notificationService.setNotificationRead(req.user.id, notiId, true);
-  res.status(200).json({ data: result });
-}
-
-// PATCH /notification/:notiId/notread 알림 하나를 안읽음 처리
-export async function markNotificationUnread(req, res) {
-  const notiId = getValidNotiId(req);
-  const result = await notificationService.setNotificationRead(req.user.id, notiId, false);
+  const result = await notificationService.setNotificationRead(req.user.id, notiId);
   res.status(200).json({ data: result });
 }
 
