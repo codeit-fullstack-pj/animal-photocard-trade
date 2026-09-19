@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 import RandomPointLauncher from "@/components/point/RandomPointLauncher";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { getKstDateKey, isDrawnTodayInKst } from "@/lib/point/random-point-time";
 
 // 랜덤 포인트 선물상자를 표시하지 않을 페이지
@@ -33,7 +33,7 @@ function RandomPointAutoOpenLayer({ storageKey }) {
 
 // 로그인 서비스 페이지에 진입했을 때만 현재 사용자 정보를 조회
 function RandomPointAuthenticatedLayer() {
-  const { currentUser, isLoading } = useCurrentUser();
+  const { currentUser, isLoading } = useAuth();
 
   // 인증 확인 중이거나 비로그인 상태라면 선물상자를 표시하지 않음
   if (isLoading || !currentUser?.id) {
