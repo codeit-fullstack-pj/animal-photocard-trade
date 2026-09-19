@@ -111,8 +111,12 @@ export default function RandomPointModal({ isOpen, onClose, onDrawSuccess, previ
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
+      onClick={handleClose}
+    >
       <div
+        onClick={(event) => event.stopPropagation()}
         className={`relative w-[343px] bg-gray-500 tablet:w-[600px] pc:w-[1034px] ${
           isWaitingView
             ? "h-[320px] tablet:h-[360px] pc:h-[420px]"
