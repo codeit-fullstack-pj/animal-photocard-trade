@@ -13,8 +13,8 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 import AppHeader from "@/components/ui/AppHeader";
 
 import { apiFetch } from "@/lib/api-client";
-import { getCurrentUser } from "@/lib/auth/api";
 import { saleToPhotoCardProps } from "@/components/card/toPhotoCardProps";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 const PAGE_SIZE = 20;
 
@@ -29,7 +29,8 @@ const ORDER_BY_MAP = {
 
 export default function MarketPage() {
   const router = useRouter();
-
+  //판매 목록 로딩과 중복되지 않게 AuthLoading으로 받는다
+  const { currentUser, isLoading: isAuthLoading } = useAuth();
   // ========================================
   // 실제 적용된 필터
   // ========================================
@@ -100,53 +101,6 @@ export default function MarketPage() {
 
   // 요청 중복 방지
   const isFetchingRef = useRef(false);
-
-  /**
-   * ========================================
-   * 로그인 확인
-   * ========================================
-   *
-   * 로그인되어 있으면 true
-   *
-   * 로그인되어 있지 않으면
-   * 로그인 모달을 열고 false
-   *
-   * getCurrentUser()가
-   * - 정상 사용자 객체를 반환하는 경우
-   * - null / undefined를 반환하는 경우
-   * - 401 에러를 throw하는 경우
-   * 모두 처리한다.
-   */
-  const checkLogin = useCallback(async () => {
-    try {
-      const user = await getCurrentUser();
-
-      // 로그인하지 않은 경우
-      if (!user) {
-        setIsLoginModalOpen(true);
-        return false;
-      }
-
-      // 로그인 상태
-      return true;
-    } catch (error) {
-      const status = error?.status ?? error?.response?.status;
-
-      // 인증 만료 / 로그인하지 않은 상태
-      if (status === 401 || status === 403) {
-        setIsLoginModalOpen(true);
-        return false;
-      }
-
-      console.error("로그인 상태 확인 실패:", error);
-
-      // 사용자 입장에서는 로그인 확인에 실패했으므로
-      // 안전하게 로그인 모달을 보여준다.
-      setIsLoginModalOpen(true);
-
-      return false;
-    }
-  }, []);
 
   /**
    * 판매 데이터 → MarketCard 형태로 변환
@@ -476,9 +430,12 @@ export default function MarketPage() {
    * → 로그인 필요 모달
    */
   const handleCardClick = async (card) => {
-    const isLoggedIn = await checkLogin();
+    if (isAuthLoading) {
+      return;
+    }
 
-    if (!isLoggedIn) {
+    if (!currentUser) {
+      setIsLoginModalOpen(true);
       return;
     }
 
@@ -497,9 +454,12 @@ export default function MarketPage() {
    * → 로그인 필요 모달
    */
   const handleOpenSaleModal = async () => {
-    const isLoggedIn = await checkLogin();
+    if (isAuthLoading) {
+      return;
+    }
 
-    if (!isLoggedIn) {
+    if (!currentUser) {
+      setIsLoginModalOpen(true);
       return;
     }
 

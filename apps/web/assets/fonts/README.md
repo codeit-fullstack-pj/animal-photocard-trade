@@ -10,6 +10,7 @@
 | 제목(heading, "BR B") | `BaskinRobbins-Bold.woff2`    | 700    | `--font-baskin-robbins` |
 
 - `apps/web/app/layout.jsx`에서 `next/font/local`로 등록, `--font-baskin-robbins` 변수에 매핑
+- 폰트 파일은 라우트가 아닌 전역 정적 자원이므로 `apps/web/assets/fonts`에서 관리
 - 컴포넌트에서는 `globals.css`의 유틸리티 `font-primary`(400) / `font-primary-bold`(700)로 참조
 - 본문 서체(Noto Sans KR)는 `font-sans-400 ~ font-sans-700`
 

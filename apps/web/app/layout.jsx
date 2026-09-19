@@ -1,6 +1,7 @@
 import { Noto_Sans_KR } from "next/font/google";
 import localFont from "next/font/local";
 
+import { AuthProvider } from "@/lib/auth/AuthProvider";
 import RandomPointGlobalLayer from "@/components/point/RandomPointGlobalLayer";
 import "./globals.css";
 
@@ -13,8 +14,8 @@ const notoSansKr = Noto_Sans_KR({
 
 const baskinRobbins = localFont({
   src: [
-    { path: "./fonts/BaskinRobbins-Regular.woff2", weight: "400", style: "normal" },
-    { path: "./fonts/BaskinRobbins-Bold.woff2", weight: "700", style: "normal" },
+    { path: "../assets/fonts/BaskinRobbins-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../assets/fonts/BaskinRobbins-Bold.woff2", weight: "700", style: "normal" },
   ],
   variable: "--font-baskin-robbins",
   display: "swap",
@@ -33,8 +34,10 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        {children}
-        <RandomPointGlobalLayer />
+        <AuthProvider>
+          {children}
+          <RandomPointGlobalLayer />
+        </AuthProvider>
       </body>
     </html>
   );

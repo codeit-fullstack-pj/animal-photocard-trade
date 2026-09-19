@@ -5,9 +5,8 @@ import rateLimit from "express-rate-limit";
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_REQUESTS = 100;
 
-export const apiRateLimit = rateLimit({
+const COMMON_OPTIONS = {
   windowMs: WINDOW_MS,
-  max: MAX_REQUESTS,
   standardHeaders: true, // RateLimit-* 응답 헤더로 남은 요청 수 알려줌
   legacyHeaders: false,
   // error-handler.js의 ApiError 응답 형식({ code, message })과 맞춘다
@@ -17,4 +16,24 @@ export const apiRateLimit = rateLimit({
       message: "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요",
     });
   },
+};
+
+export const apiRateLimit = rateLimit({
+  ...COMMON_OPTIONS,
+  max: MAX_REQUESTS,
+});
+
+export const currentUserRateLimit = rateLimit({
+  ...COMMON_OPTIONS,
+  max: 300,
+});
+
+export const randomPointRateLimit = rateLimit({
+  ...COMMON_OPTIONS,
+  max: 30,
+});
+
+export const saleUpdateRateLimit = rateLimit({
+  ...COMMON_OPTIONS,
+  max: 60,
 });

@@ -252,7 +252,7 @@ export async function updateSale(req, res) {
     canExchange: req.body.canExchange,
     price: req.body.price,
   };
-  const sale = await saleService.updateSale(params.id, data);
+  const sale = await saleService.updateSale(params.id, data, req.user);
   res.json({ data: sale });
 }
 

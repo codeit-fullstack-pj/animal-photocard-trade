@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-import { getCurrentUser } from "@/lib/auth/api";
 import { getRemainingCount } from "@/lib/card/api";
 import MyGalleryCards from "@/components/gallery/MyGalleryCards";
 import MobileHeader from "@/components/ui/MobileHeader";
 import AppHeader from "@/components/ui/AppHeader";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 const CREATE_BUTTON_CLASSNAME =
   "hidden h-15.25 items-center justify-center rounded-xs font-sans-400 text-base text-white tablet:flex tablet:w-85.5 pc:w-110";
@@ -25,27 +25,11 @@ function CreateCardButton({ remainingCount, limit, className }) {
 }
 
 export default function MyGalleryPage() {
-  // 조회 전(또는 실패)에는 빈 값으로 둔다 — MyGalleryCards가 "{userName}님이 보유한..."을 그대로 찍어서 어색해 보일 수 있음
-  const [userName, setUserName] = useState("");
+  const { currentUser } = useAuth();
 
   // 조회 전(또는 실패)에는 0으로 둬서 생성 버튼을 막아둔다 — 확인 안 된 상태에서 눌리게 하는 것보단 안전한 쪽
   const [remainingCount, setRemainingCount] = useState(0);
   const [limit, setLimit] = useState(5);
-
-  useEffect(() => {
-    let ignore = false;
-
-    getCurrentUser()
-      .then((result) => {
-        if (ignore) return;
-        setUserName(result.user.nickname);
-      })
-      .catch(() => {});
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
 
   useEffect(() => {
     let ignore = false;
@@ -86,7 +70,7 @@ export default function MyGalleryPage() {
               />
             </div>
             <div className="hidden h-0.5 w-full bg-gray-100 tablet:block" />
-            <MyGalleryCards userName={userName} />
+            <MyGalleryCards userName={currentUser.nickname} />
             {/* 모바일에선 위쪽 생성하기 버튼이 안 보이니, 페이지네이션 아래 하단에 footer처럼 하나 더 둔다 */}
             <CreateCardButton
               remainingCount={remainingCount}

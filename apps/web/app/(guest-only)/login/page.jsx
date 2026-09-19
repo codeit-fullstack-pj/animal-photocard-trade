@@ -8,7 +8,10 @@ export const metadata = {
   title: "로그인 | 최애멍냥",
 };
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }) {
+  const { next } = await searchParams;
+  const nextPath = typeof next === "string" ? next : null;
+
   return (
     <main className="flex flex-1 flex-col items-center px-4 py-16 sm:py-24">
       <Link href="/" aria-label="최애멍냥 홈">
@@ -16,7 +19,7 @@ export default function LoginPage() {
       </Link>
 
       <div className="mt-10 w-full max-w-[32.5rem] sm:mt-14">
-        <LoginForm />
+        <LoginForm nextPath={nextPath} />
         <SocialLoginButtons className="mt-3" />
 
         <p className="mt-10 text-center font-sans-400 text-sm text-gray-100">

@@ -1,35 +1,31 @@
 import { NextResponse } from "next/server";
 
-const REFRESH_TOKEN_COOKIE = "refreshToken";
-
-const GUEST_ONLY_PATHS = ["/login", "/signup"];
+const VISITED_COOKIE = "visited";
 
 export function proxy(request) {
   const { pathname } = request.nextUrl;
-  const isLoggedIn = request.cookies.has(REFRESH_TOKEN_COOKIE);
+  const hasVisited = request.cookies.has(VISITED_COOKIE);
 
-  if (isLoggedIn && GUEST_ONLY_PATHS.includes(pathname)) {
-    return NextResponse.redirect(resolveBackUrl(request));
+  //재방문 사용자 - 마켓플레이스
+  if (hasVisited && pathname === "/") return NextResponse.redirect(new URL("/market", request.url));
+
+  //위의 케이스가 아닌 경우 응답 만들기
+  const response = NextResponse.next();
+
+  //방문기록 여부 쿠키 저장
+  if (!hasVisited) {
+    response.cookies.set(VISITED_COOKIE, "true", {
+      path: "/",
+      httpOnly: false,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 365,
+    });
   }
-
-  return NextResponse.next();
-}
-
-// 같은 사이트에서 온 요청이면 그 이전 페이지로, 아니면(북마크·직접 입력 등) 홈으로
-function resolveBackUrl(request) {
-  const referer = request.headers.get("referer");
-  try {
-    const refererUrl = new URL(referer);
-    const isSameSite = refererUrl.origin === request.nextUrl.origin;
-    if (isSameSite && !GUEST_ONLY_PATHS.includes(refererUrl.pathname)) {
-      return refererUrl;
-    }
-  } catch {
-    // referer 없음/잘못된 형식 — 아래 기본값으로
-  }
-  return new URL("/", request.url);
+  //리다이렉트 대상이 아니라면 원래 요청 진행
+  return response;
 }
 
 export const config = {
-  matcher: ["/login", "/signup"],
+  matcher: ["/"],
 };

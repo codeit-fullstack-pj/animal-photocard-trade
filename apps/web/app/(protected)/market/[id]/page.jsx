@@ -2,13 +2,10 @@ import SaleDetailView from "@/components/trade/SaleDetailView";
 import AppHeader from "@/components/ui/AppHeader";
 import MobileHeader from "@/components/ui/MobileHeader";
 import { getSale } from "@/lib/sales/api";
-import { mockUsers } from "@/mocks/users.js";
 import { notFound } from "next/navigation";
 
-// TODO: 로그인이 붙으면 currentUser를 실제 로그인 사용자로 바꾼다. ?as=seller는 그때까지 쓰는 임시 전환이다.
-export default async function SaleDetailPage({ params, searchParams }) {
+export default async function SaleDetailPage({ params }) {
   const { id } = await params;
-  const { as } = await searchParams;
 
   let sale;
   try {
@@ -17,8 +14,6 @@ export default async function SaleDetailPage({ params, searchParams }) {
     if (error?.status === 404) notFound();
     throw error;
   }
-
-  const currentUser = as === "seller" ? mockUsers[0] : mockUsers[1];
 
   return (
     <>
@@ -29,7 +24,7 @@ export default async function SaleDetailPage({ params, searchParams }) {
       <div className="hidden tablet:block">
         <AppHeader />
       </div>
-      <SaleDetailView sale={sale} currentUser={currentUser} />
+      <SaleDetailView sale={sale} />
     </>
   );
 }
