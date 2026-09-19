@@ -42,8 +42,8 @@ export async function markAllNotificationsRead(userId) {
 }
 
 // 알림 하나를 읽음/안읽음 처리 — 본인 소유가 아니거나 없으면 404
-export async function setNotificationRead(userId, notificationId, isRead) {
-  const { count } = await notificationRepository.setRead(userId, notificationId, isRead);
+export async function setNotificationRead(userId, notificationId) {
+  const { count } = await notificationRepository.setRead(userId, notificationId);
   if (count === 0) {
     throw new ApiError(404, "NOTIFICATION_NOT_FOUND", "알림을 찾을 수 없습니다");
   }
