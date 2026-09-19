@@ -50,7 +50,7 @@ export default function MyGalleryPage() {
   return (
     <>
       <div className="tablet:hidden">
-        <MobileHeader title="마이갤러리" />
+        <MobileHeader title="마이갤러리" backHref="/market" />
       </div>
       <div className="hidden tablet:block">
         <AppHeader />
