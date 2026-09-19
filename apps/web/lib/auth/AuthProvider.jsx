@@ -2,12 +2,21 @@
 
 import { ApiError } from "@/lib/api-client";
 import { getCurrentUser, refreshAccessToken, signout } from "@/lib/auth/api";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(undefined);
+  const initialAuthPromiseRef = useRef(null);
 
   //유저정보 조회 함수 (useCallback : 렌더링마다 새 함수생성되지 않도록 함)
   //-> 사용자 조회 결과만 반환하고 여기서는 React 상태를 직접 변경하지 않는다.
@@ -34,15 +43,17 @@ export function AuthProvider({ children }) {
 
   //첫 렌더링 (resolveCurrentUser 변경될 때만 effect재실행)
   useEffect(() => {
+    //오래된 유저응답을 덮어쓰지 않기 위함
     let ignore = false;
 
-    async function initializeAuth() {
-      const user = await resolveCurrentUser();
-      if (!ignore) {
-        setCurrentUser(user);
-      }
+    if (!initialAuthPromiseRef.current) {
+      initialAuthPromiseRef.current = resolveCurrentUser();
     }
-    void initializeAuth();
+
+    initialAuthPromiseRef.current.then((user) => {
+      if (!ignore) setCurrentUser(user);
+    });
+
     return () => {
       ignore = true;
     };
