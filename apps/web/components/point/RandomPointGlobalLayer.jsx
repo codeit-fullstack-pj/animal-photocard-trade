@@ -11,11 +11,15 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 // 랜덤 포인트 선물상자를 표시하지 않을 페이지
 const EXCLUDED_PATHS = ["/", "/login", "/signup"];
 
-// 당일 최초 자동 오픈 여부를 localStorage 기준으로 결정
-function RandomPointAutoOpenLayer({ storageKey }) {
-  // 오늘 이미 자동 모달을 보여줬는지 최초 마운트 시 한 번만 확인
+// 당일 최초 자동 오픈 여부를 localStorage 기준으로 결정.
+// hasDrawnToday를 이 컴포넌트 안에서 반영해야 한다 — 뽑기 성공으로 전역 currentUser가
+// 갱신돼 hasDrawnToday가 바뀌어도 이 위치의 컴포넌트 타입 자체는 항상 그대로 유지되게 해서,
+// React가 기존 RandomPointLauncher 인스턴스(열려 있던 모달·방금 뽑은 결과)를 리마운트로
+// 날려버리지 않게 한다 (예전엔 hasDrawnToday로 아예 다른 컴포넌트를 렌더링해서 이 문제가 있었음)
+function RandomPointAutoOpenLayer({ storageKey, hasDrawnToday }) {
+  // 오늘 이미 자동 모달을 보여줬는지, 혹은 이미 뽑았는지 최초 마운트 시 한 번만 확인
   const [shouldAutoOpen] = useState(() => {
-    if (typeof window === "undefined") {
+    if (hasDrawnToday || typeof window === "undefined") {
       return false;
     }
 
@@ -41,24 +45,17 @@ function RandomPointAuthenticatedLayer() {
     return null;
   }
 
-  // 오늘 이미 랜덤 포인트를 뽑았다면 자동 모달은 띄우지 않고
-  // 선물상자만 표시해서 재진입 시 대기 모달을 확인할 수 있게 함
-  if (isDrawnTodayInKst(currentUser.lastDrawAt)) {
-    return <RandomPointLauncher />;
-  }
-
-  // 현재 한국 날짜를 사용자별 자동 모달 노출 기록에 사용
+  // 현재 한국 날짜를 사용자별 자동 모달 노출 기록에 사용 (날짜 계산 실패 시 폴백 키 사용)
   const today = getKstDateKey(new Date());
+  const storageKey = `randomPointAutoOpened_${currentUser.id}_${today ?? "unknown"}`;
 
-  // 날짜 계산에 실패해도 선물상자 자체는 정상적으로 표시
-  if (!today) {
-    return <RandomPointLauncher />;
-  }
-
-  // 사용자별 + KST 날짜별로 자동 모달 노출 여부를 구분
-  const storageKey = `randomPointAutoOpened_${currentUser.id}_${today}`;
-
-  return <RandomPointAutoOpenLayer key={storageKey} storageKey={storageKey} />;
+  return (
+    <RandomPointAutoOpenLayer
+      key={storageKey}
+      storageKey={storageKey}
+      hasDrawnToday={isDrawnTodayInKst(currentUser.lastDrawAt)}
+    />
+  );
 }
 
 export default function RandomPointGlobalLayer() {
