@@ -1,0 +1,50 @@
+/*
+  랜딩 페이지(/) 전용 스타일
+*/
+
+/*
+  랜딩 본문 안에서만 Tailwind 간격·글자 크기를 화면 폭에 비례해 조정한다.
+  공통 헤더는 본문 밖에 있으므로 다른 페이지와 동일한 크기를 유지한다.
+  기준 폭(모바일 375 / 태블릿 820 / 데스크톱 1920 = Figma 프레임 폭)에서 --landing-rem = 16px이고, 상한·하한 없이 비율대로 따라간다.
+  즉 1920px 창에서는 Figma 수치가 그대로 px로 나온다(콘텐츠 열 1080px, 섹션 높이 900px 등).
+  직접 지정한 크기는 var(--landing-rem)을 기준으로 쓸 것.
+
+  round(..., 0.125px): 창을 드래그할 때 글자 크기가 0.125px 단위로만 바뀌게 해서
+  매 프레임마다 글꼴을 다시 계산하지 않도록 한다(창 크기 조절이 버벅이는 것 방지).
+  round()를 모르는 옛 브라우저는 바로 위의 calc() 줄을 쓴다.
+*/
+[data-page="landing"] main {
+  --landing-rem: calc(100vw / 375 * 16);
+  --landing-rem: round(calc(100vw / 375 * 16), 0.125px);
+  --spacing: calc(var(--landing-rem) / 4);
+  --text-xs: calc(var(--landing-rem) * 0.75);
+  --text-sm: calc(var(--landing-rem) * 0.875);
+  --text-base: var(--landing-rem);
+  --text-lg: calc(var(--landing-rem) * 1.125);
+  --text-xl: calc(var(--landing-rem) * 1.25);
+  --text-5xl: calc(var(--landing-rem) * 3);
+  --radius-xs: calc(var(--landing-rem) * 0.125);
+}
+@media (min-width: 640px) {
+  [data-page="landing"] main {
+    --landing-rem: calc(100vw / 820 * 16);
+    --landing-rem: round(calc(100vw / 820 * 16), 0.125px);
+  }
+}
+@media (min-width: 1024px) {
+  [data-page="landing"] main {
+    --landing-rem: calc(100vw / 1920 * 16);
+    --landing-rem: round(calc(100vw / 1920 * 16), 0.125px);
+  }
+}
+
+/* 이모지 전용 서체. 이모지를 본문 서체에 섞어 두면 크기가 바뀔 때마다 시스템 폰트를 다시 찾느라 느려진다 */
+.font-emoji {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+
+/* 화면 밖에 있는 섹션은 레이아웃·그리기를 건너뛴다 (창 크기 조절·스크롤 성능). 첫 화면(헤더, 히어로)에는 쓰지 말 것 */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto calc(var(--landing-rem) * 50);
+}

@@ -1,0 +1,52 @@
+"use client";
+
+import CreateCardButton from "@/components/gallery/CreateCardButton";
+import MyGalleryCards from "@/components/gallery/MyGalleryCards";
+import MobileHeader from "@/components/ui/MobileHeader";
+import AppHeader from "@/components/ui/AppHeader";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { useRemainingCardCount } from "@/hooks/useRemainingCardCount";
+
+const CREATE_BUTTON_CLASSNAME =
+  "hidden h-15.25 items-center justify-center rounded-xs font-sans-400 text-base text-white tablet:flex tablet:w-85.5 pc:w-110";
+
+export default function MyGalleryPage() {
+  const { currentUser } = useAuth();
+  const { remainingCount, limit } = useRemainingCardCount();
+
+  return (
+    <>
+      <div className="tablet:hidden">
+        <MobileHeader title="마이갤러리" backHref="/market" />
+      </div>
+      <div className="hidden tablet:block">
+        <AppHeader />
+      </div>
+      <main className="isolate mx-auto mt-5 flex min-h-screen w-full max-w-[1248px] justify-center px-4 font-sans-400 tablet:mt-20 tablet:px-6 pc:px-0">
+        <div className="mb-10 flex h-full w-full flex-col items-center gap-8 tablet:max-w-170 pc:mb-15 pc:max-w-none pc:w-310 pc:gap-20">
+          <div className="flex w-full flex-col gap-3 pc:gap-5">
+            {/* 모바일에선 MobileHeader가 이미 타이틀을 보여주고, 생성하기 버튼도 하단에 따로 있어서 이 줄 전체를 숨긴다 */}
+            <div className="hidden items-center justify-between tablet:flex">
+              <h2 className="text-left text-3xl font-primary tablet:text-4xl pc:text-[62px]">
+                마이갤러리
+              </h2>
+              <CreateCardButton
+                remainingCount={remainingCount}
+                limit={limit}
+                className={CREATE_BUTTON_CLASSNAME}
+              />
+            </div>
+            <div className="hidden h-0.5 w-full bg-gray-100 tablet:block" />
+            <MyGalleryCards userName={currentUser.nickname} />
+            {/* 모바일에선 위쪽 생성하기 버튼이 안 보이니, 페이지네이션 아래 하단에 footer처럼 하나 더 둔다 */}
+            <CreateCardButton
+              remainingCount={remainingCount}
+              limit={limit}
+              className="flex h-15.25 w-full items-center justify-center rounded-xs font-sans-400 text-base text-white tablet:hidden"
+            />
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}
