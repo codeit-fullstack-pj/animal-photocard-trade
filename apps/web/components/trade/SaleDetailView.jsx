@@ -34,8 +34,12 @@ export default function SaleDetailView({ sale }) {
   const isSeller = currentUser?.id === sale.seller.id;
   const cardName = `${sale.card.tag} ${sale.card.name}`;
 
+  const isSoldOut = sale.status === "SOLD_OUT";
+  const isCanceled = sale.status === "CANCELED";
+
   const cardProps = {
     variant: "owned",
+    isSoldOut,
     card: {
       id: sale.card.id,
       name: sale.card.name,
@@ -87,6 +91,10 @@ export default function SaleDetailView({ sale }) {
     } finally {
       setIsCanceling(false);
     }
+  }
+
+  function handleCanceledSaleConfirm() {
+    router.push("/market");
   }
 
   function handleCancelOutcomeConfirm() {
@@ -153,7 +161,11 @@ export default function SaleDetailView({ sale }) {
           </div>
 
           <div className="mt-10 pc:mt-auto">
-            {isSeller ? (
+            {isSoldOut ? (
+              <div className="font-sans-700 flex h-18 w-full items-center justify-center rounded-xs bg-gray-700 text-lg text-gray-200 tablet:h-18.75 pc:h-20">
+                판매 완료됨
+              </div>
+            ) : isSeller ? (
               <SellerActionButtons
                 onEditClick={() => setIsEditModalOpen(true)}
                 onCancelClick={() => setIsCancelModalOpen(true)}
@@ -184,7 +196,7 @@ export default function SaleDetailView({ sale }) {
         )}
       </div>
 
-      {!isSeller && (
+      {!isSeller && !isSoldOut && (
         <>
           <ExchangeProposalModal
             saleId={sale.id}
@@ -239,6 +251,15 @@ export default function SaleDetailView({ sale }) {
         description="게시글이 성공적으로 삭제되었습니다."
         confirmLabel="확인"
         onConfirm={handleCancelOutcomeConfirm}
+      />
+
+      <ConfirmModal
+        isOpen={isCanceled}
+        onClose={handleCanceledSaleConfirm}
+        title="알림"
+        description="해당 카드는 판매가 취소되었습니다."
+        confirmLabel="확인"
+        onConfirm={handleCanceledSaleConfirm}
       />
     </main>
   );
