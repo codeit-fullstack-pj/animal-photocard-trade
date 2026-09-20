@@ -28,11 +28,6 @@ export function markNotificationRead(notiId) {
   return apiFetch(`/notification/${notiId}/read`, { method: "PATCH" });
 }
 
-// PATCH /notification/:notiId/notread — 알림 하나를 안읽음 처리. 성공하면 { updatedCount }
-export function markNotificationUnread(notiId) {
-  return apiFetch(`/notification/${notiId}/notread`, { method: "PATCH" });
-}
-
 // PATCH /notification/:notiId/delete — 알림 하나를 삭제. 성공하면 { deletedCount }
 export function deleteNotification(notiId) {
   return apiFetch(`/notification/${notiId}/delete`, { method: "PATCH" });
