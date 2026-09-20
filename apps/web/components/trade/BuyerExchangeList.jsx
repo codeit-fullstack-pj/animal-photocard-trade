@@ -49,8 +49,6 @@ export default function BuyerExchangeList({ saleId }) {
     }
   }
 
-  if (!isLoading && !error && exchanges.length === 0) return null;
-
   return (
     <section className="flex w-full flex-col">
       <h2 className="font-sans-700 text-xl text-white tablet:text-[28px] pc:text-[30px]">
@@ -70,6 +68,11 @@ export default function BuyerExchangeList({ saleId }) {
         >
           {error}
         </p>
+      ) : exchanges.length === 0 ? (
+        <div className="font-sans-400 flex min-h-40 flex-col items-center justify-center text-base leading-relaxed text-gray-200 tablet:text-lg">
+          <p>아직 제시한 교환이 없습니다.</p>
+          <p>내 카드를 제시해보세요!</p>
+        </div>
       ) : (
         <ul className="grid grid-cols-1 gap-6 tablet:grid-cols-2 pc:grid-cols-3">
           {exchanges.map((exchange) => (
