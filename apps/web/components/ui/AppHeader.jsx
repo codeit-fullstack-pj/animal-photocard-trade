@@ -7,7 +7,6 @@ import Link from "next/link";
 import Profile from "@/components/ui/Profile";
 import Notification, { NotificationDataProvider } from "@/components/ui/Notification";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { useRouter } from "next/navigation";
 
 const MENU_LINKS = [
   { href: "/market", label: "마켓플레이스" },
@@ -16,7 +15,6 @@ const MENU_LINKS = [
 ];
 
 export default function AppHeader() {
-  const router = useRouter();
   const { currentUser, isLoading, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // 모바일/태블릿·PC 두 군데에 따로 렌더링되는 Notification 인스턴스가 같은 열림 상태를 쓰도록 여기서 관리
@@ -41,8 +39,6 @@ export default function AppHeader() {
       await logout();
     } catch (error) {
       console.error("로그아웃 실패", error);
-    } finally {
-      router.replace("/market");
     }
   }
 
