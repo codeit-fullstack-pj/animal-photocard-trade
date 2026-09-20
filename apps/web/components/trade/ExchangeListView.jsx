@@ -1,7 +1,14 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+
+import ScaledPhotoCard from "@/components/card/ScaledPhotoCard";
+import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 // 판매글에 걸린 교환 신청 목록을 보여주는 컴포넌트
 const ExchangeListView = ({ sale, currentUser, isSeller }) => {
+  const [selectedExchange, setSelectedExchange] = useState(null);
   // sale.exchanges: 이미 "이 판매글에 딸린 것만" 백엔드에서 걸러서 옴
   // 판매자면 전부 다 보여주고, 구매자(신청자)면 자기가 신청한 것만 보이게 필터링
   const saleExchanges = sale.exchanges.filter((exchange) => {
@@ -9,61 +16,58 @@ const ExchangeListView = ({ sale, currentUser, isSeller }) => {
     return exchange.offerCard.owner.id === currentUser.id;
   });
 
+  if (saleExchanges.length === 0) {
+    return (
+      <div className="font-sans-400 flex min-h-40 flex-col items-center justify-center text-base leading-relaxed text-gray-200 tablet:text-lg">
+        <p>아직 받은 교환 제시가 없습니다.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
-      <div className="grid grid-cols-2 gap-6">
+      <ul className="grid grid-cols-1 gap-6 tablet:grid-cols-2 pc:grid-cols-3">
         {saleExchanges.map((exchange) => {
-          // 신청자가 제시한 카드, 그 카드 주인(=신청자) — 이미 데이터 안에 다 포함되어 있음
           const offerCard = exchange.offerCard;
-          const offerer = offerCard.owner;
+          const cardProps = cardToPhotoCardProps({
+            ...offerCard,
+            imageUrl: offerCard.image.imageUrl,
+            category: offerCard.image.category,
+            score: offerCard.image.score,
+          });
 
           return (
-            <div key={exchange.id} className="flex flex-col gap-2">
-              {/* 신청 메시지 */}
-              <div className="bg-gray-300 text-black text-sm text-center rounded-lg px-4 py-3">
-                {exchange.message}
+            <li key={exchange.id} className="flex items-start gap-2 tablet:flex-col tablet:gap-0">
+              <p className="font-sans-400 order-2 flex-1 rounded-[20px] rounded-tl-none bg-[#B8B8B8] px-4 py-3 text-sm text-black tablet:order-0 tablet:w-full tablet:flex-none tablet:rounded-tl-[20px] tablet:rounded-bl-none tablet:px-10 tablet:text-base">
+                {exchange.message || "교환을 신청합니다."}
+              </p>
+              <div className="order-1 w-full max-w-42 shrink-0 tablet:order-0 tablet:mt-2 tablet:max-w-none">
+                <button
+                  type="button"
+                  onClick={() => setSelectedExchange(exchange)}
+                  aria-haspopup="dialog"
+                  aria-label={`${offerCard.tag} ${offerCard.name} 교환 제시 확인`}
+                  className="relative z-10 block w-full text-left focus-visible:outline-2 focus-visible:outline-purple-button"
+                >
+                  <ScaledPhotoCard {...cardProps} />
+                </button>
               </div>
-
-              {/* 제시 카드 정보 */}
-              <div className="bg-[#1a1a1f] rounded-xl overflow-hidden">
-                <div className="relative w-full h-45">
-                  <Image
-                    src={offerCard.image.imageUrl}
-                    alt={offerCard.name}
-                    fill
-                    sizes="(min-width: 768px) 400px, 100vw"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="p-4">
-                  <p className="text-sm font-semibold text-white mb-2">
-                    {offerCard.tag} {offerCard.name}
-                  </p>
-
-                  {/* 카드 능력치 그래프 */}
-                  {offerCard.image.score.axes.map((axis) => (
-                    <div key={axis.field} className="flex items-center gap-2 text-xs mb-1">
-                      <span className="w-16 text-gray-400">{axis.field}</span>
-                      <div className="flex-1 h-1.5 bg-white rounded-full">
-                        <div
-                          className="h-1.5 bg-purple-button rounded-full"
-                          style={{ width: `${axis.value}%` }}
-                        />
-                      </div>
-                      <span className="text-gray-400">{axis.value}%</span>
-                    </div>
-                  ))}
-
-                  <p className="text-xs text-gray-400 mt-2">{offerCard.description}</p>
-                </div>
-              </div>
-
-              {/* 신청자 닉네임 */}
-              <p className="text-xs text-gray-400 text-right">from. {offerer.nickname}</p>
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ul>
+      <ConfirmModal
+        isOpen={!!selectedExchange}
+        onClose={() => setSelectedExchange(null)}
+        title="교환 하시겠습니까?"
+        description={
+          selectedExchange &&
+          `${selectedExchange.offerCard.tag}\n${selectedExchange.offerCard.name}`
+        }
+        confirmLabel="교환하기"
+        secondaryLabel="거절하기"
+        actionsDisabled
+      />
     </div>
   );
 };

@@ -162,7 +162,7 @@ export async function purchaseCard({ saleId, buyer }) {
 
     // 사용자 ID 순서로 처리하여 포인트 정산 과정의 데드락을 방지
     const tasks = [{ userId: buyerId, isBuyer: true }, { userId: sale.sellerId }].sort((a, b) =>
-      a.userId < b.userId ? -1 : 1,
+      a.userId.localeCompare(b.userId),
     );
 
     let buyerUpdateResult;

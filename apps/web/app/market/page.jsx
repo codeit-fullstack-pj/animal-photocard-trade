@@ -511,11 +511,10 @@ export default function MarketPage() {
           pb-[37px]
 
           tablet:px-[20px]
-          tablet:pt-[110px]
+          tablet:pt-[64px]
           tablet:pb-[224px]
 
           pc:px-0
-          pc:pt-[168px]
           pc:pb-[240px]
         "
       >
@@ -524,7 +523,7 @@ export default function MarketPage() {
         {/* ========================================
             검색 / 필터 / 정렬
         ======================================== */}
-        <section className="mt-3 tablet:mt-4 pc:mt-6">
+        <section className="tablet:mt-4 pc:mt-6">
           <MarketFilters
             keyword={keyword}
             setKeyword={setKeyword}

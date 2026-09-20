@@ -26,7 +26,7 @@ const CARD_TAGS = {
     "MY_WAY>ENERGIZER": "[패시브: 길바닥 고정] 눕방계의 전설",
     "MY_WAY>CAPITALIST": "[조건부 버프: 간식 등장] 간식 앞 친화력 만렙",
     "MY_WAY>GRUMPY": "[스킬: 솜방망이 알림] 툭툭 자기주장왕",
-    "CAPITALIST>MY_WAY": "[미션 완료] 웃고 떠나는 미소천사",
+    "CAPITALIST>MY_WAY": "[매혹 스킬: 천상의 미소] 웃고 떠나는 미소천사",
     "CAPITALIST>ENERGIZER": "[상태 이상: 애교 과다] 갑자기 친한 척 장인",
     "CAPITALIST>GRUMPY": "[관찰 모드: 해제 불가] 허공과 대화하는 자",
     "GRUMPY>MY_WAY": "[방어 스킬: 쓰다듬기 회피] 손길을 피하는 도사",

@@ -265,7 +265,7 @@ export default function MySalesPage() {
         <AppHeader />
       </div>
 
-      <div className="mx-auto w-full max-w-[1240px] px-[20px] pt-[20px] tablet:px-[40px] tablet:pt-[140px] pc:px-0 pc:pt-[168px]">
+      <div className="mx-auto w-full max-w-[1240px] px-[20px] pt-[20px] tablet:px-[40px] tablet:pt-[80px] pc:px-0">
         {/* 태블릿 이상에서만 페이지 제목과 거래 중인 카드 정보를 표시 */}
         <div className="hidden tablet:block">
           {/* 페이지 제목 */}

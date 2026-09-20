@@ -11,17 +11,17 @@ export default function CtaSection() {
         alt="cta card"
         width={836}
         height={862}
-        className="mx-auto block h-auto w-42 rotate-24 drop-shadow-[0_0.625rem_1.875rem_rgba(0,0,0,0.5)] sm:w-44 md:w-56 lg:w-64"
+        className="mx-auto block h-auto w-42 rotate-24 drop-shadow-[0_calc(var(--landing-rem)*0.625)_calc(var(--landing-rem)*1.875)_rgba(0,0,0,0.5)] sm:w-44 md:w-56 lg:w-64"
       />
 
       {/* PNG 아래쪽 투명 여백만큼 제목 간격을 줄인다 */}
-      <h2 className="mt-2 font-sans-600 text-xl sm:text-[1.625rem]">
+      <h2 className="mt-2 font-sans-600 text-xl sm:text-[calc(var(--landing-rem)*1.625)]">
         나의 최애를 지금 찾아보세요!
       </h2>
 
       <Link
         href="/market"
-        className="inline-flex h-8 sm:h-11 md:h-8 lg:h-11 mt-6 items-center justify-center bg-purple-button px-6 sm:px-12 md:px-6 lg:px-12 py-1 sm:py-6 md:py-5 lg:py-6 font-sans-500 text-[0.8125rem] text-white hover:bg-[#9548e6] text-[12px] sm:text-sm md:text-xs lg:text-sm"
+        className="inline-flex h-8 sm:h-11 md:h-8 lg:h-11 mt-6 items-center justify-center bg-purple-button px-6 sm:px-12 md:px-6 lg:px-12 py-1 sm:py-6 md:py-5 lg:py-6 font-sans-500 text-[calc(var(--landing-rem)*0.8125)] text-white hover:bg-[#9548e6] text-[12px] sm:text-sm md:text-xs lg:text-sm"
       >
         최애 찾으러 가기
       </Link>

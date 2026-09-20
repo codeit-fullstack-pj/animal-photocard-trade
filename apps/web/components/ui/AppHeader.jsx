@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import Profile from "@/components/ui/Profile";
 import Notification, { NotificationDataProvider } from "@/components/ui/Notification";
@@ -13,8 +14,10 @@ const MENU_LINKS = [
   { href: "/my-gallery", label: "마이갤러리" },
   { href: "/my-sales", label: "나의 판매 포토관리" },
 ];
+const HEADER_LOGO_CLASSNAME = "h-6 w-24 object-contain tablet:h-8 tablet:w-32 pc:h-10 pc:w-40";
 
 export default function AppHeader() {
+  const pathname = usePathname();
   const { currentUser, isLoading, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // 모바일/태블릿·PC 두 군데에 따로 렌더링되는 Notification 인스턴스가 같은 열림 상태를 쓰도록 여기서 관리
@@ -64,7 +67,14 @@ export default function AppHeader() {
                 </button>
 
                 <Link href="/" aria-label="최애 멍냥 홈" className="justify-self-center">
-                  <Image src="/logo.png" alt="최애 멍냥" width={182} height={61} priority />
+                  <Image
+                    src="/logo.png"
+                    alt="최애 멍냥"
+                    width={160}
+                    height={40}
+                    className={HEADER_LOGO_CLASSNAME}
+                    priority
+                  />
                 </Link>
 
                 {!isLoading &&
@@ -110,7 +120,14 @@ export default function AppHeader() {
             {/* 태블릿 이상: 로고(좌) - 사용자 정보/로그인(우) */}
             <div className="hidden h-full items-center justify-between tablet:flex">
               <Link href="/" aria-label="최애 멍냥 홈">
-                <Image src="/logo.png" alt="최애 멍냥" width={182} height={61} priority />
+                <Image
+                  src="/logo.png"
+                  alt="최애 멍냥"
+                  width={160}
+                  height={40}
+                  className={HEADER_LOGO_CLASSNAME}
+                  priority
+                />
               </Link>
 
               {!isLoading &&
@@ -179,16 +196,20 @@ export default function AppHeader() {
 
             {currentUser && (
               <nav className="mt-[16px] flex flex-col gap-[16px]">
-                {MENU_LINKS.map(({ href, label }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={closeMenu}
-                    className="font-sans-500 text-[14px] text-white"
-                  >
-                    {label}
-                  </Link>
-                ))}
+                {MENU_LINKS.map(({ href, label }) => {
+                  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={closeMenu}
+                      aria-current={isActive ? "page" : undefined}
+                      className={`font-sans-500 text-[14px] ${isActive ? "text-purple-button" : "text-white"}`}
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
               </nav>
             )}
 

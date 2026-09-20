@@ -5,4 +5,8 @@ import { requireAuth } from "../middlewares/require-auth.js";
 
 export const exchangeRouter = Router();
 
-exchangeRouter.post("/:exchangeId/cancel", requireAuth, exchangeController.cancelExchange);
+exchangeRouter.post("/:exchangeId/cancel", requireAuth, exchangeController.cancelMyExchange);
+
+exchangeRouter.post("/:exchangeId/accept", requireAuth, exchangeController.acceptExchange);
+
+// exchangeRouter.post("/:exchangeId/reject", requireAuth, exchangeController.rejectExchange);
