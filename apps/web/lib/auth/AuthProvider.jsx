@@ -2,6 +2,7 @@
 
 import { ApiError } from "@/lib/api-client";
 import { getCurrentUser, refreshAccessToken, signout } from "@/lib/auth/api";
+import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -15,8 +16,15 @@ import {
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [currentUser, setCurrentUser] = useState(undefined);
   const initialAuthPromiseRef = useRef(null);
+  const isLoggingOutRef = useRef(false);
+
+  useEffect(() => {
+    if (pathname === "/market") isLoggingOutRef.current = false;
+  }, [pathname]);
 
   //유저정보 조회 함수 (useCallback : 렌더링마다 새 함수생성되지 않도록 함)
   //-> 사용자 조회 결과만 반환하고 여기서는 React 상태를 직접 변경하지 않는다.
@@ -73,18 +81,22 @@ export function AuthProvider({ children }) {
 
   //앱전체 로그아웃 함수
   const logout = useCallback(async () => {
+    // 보호 페이지의 비로그인 게이트가 로그아웃 이동을 /login으로 바꾸지 않도록 한다.
+    isLoggingOutRef.current = pathname !== "/market";
     try {
       await signout();
     } finally {
       setCurrentUser(null);
+      router.replace("/market");
     }
-  }, []);
+  }, [pathname, router]);
 
   //context생성
   const value = useMemo(
     () => ({
       currentUser,
       isLoading: currentUser === undefined,
+      isLoggingOutRef,
       login,
       logout,
       reloadCurrentUser,

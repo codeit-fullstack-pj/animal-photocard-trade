@@ -37,6 +37,9 @@ export default function MySalesPage() {
   // 검색창에 입력한 검색어를 관리
   const [searchKeyword, setSearchKeyword] = useState("");
 
+  // 입력이 멈춘 뒤 300ms 후에만 실제 요청에 반영되는 검색어 (마켓플레이스와 동일한 디바운스 방식)
+  const [debouncedSearchKeyword, setDebouncedSearchKeyword] = useState("");
+
   // 판매유형 드롭다운의 열림/닫힘 상태를 관리
   const [isSaleTypeOpen, setIsSaleTypeOpen] = useState(false);
 
@@ -105,6 +108,12 @@ export default function MySalesPage() {
 
   const router = useRouter();
 
+  // 검색어는 입력이 멈춘 뒤 300ms 후에만 요청에 반영
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchKeyword(searchKeyword), 300);
+    return () => clearTimeout(timer);
+  }, [searchKeyword]);
+
   // 현재 로그인한 사용자가 거래 중인 전체 포토카드 개수를 조회
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -168,7 +177,7 @@ export default function MySalesPage() {
           limit: PAGE_SIZE,
           page: currentPage,
           category,
-          keyword: searchKeyword.trim() || undefined,
+          keyword: debouncedSearchKeyword.trim() || undefined,
           status,
           includeSoldOut: isSoldOutIncluded,
           orderBy: selectedSort,
@@ -201,7 +210,7 @@ export default function MySalesPage() {
   }, [
     currentUser?.id,
     currentPage,
-    searchKeyword,
+    debouncedSearchKeyword,
     selectedCategories,
     selectedSaleTypes,
     isSoldOutIncluded,
@@ -326,7 +335,7 @@ export default function MySalesPage() {
                   saleTypes={selectedSaleTypes}
                   includeSoldOut={isSoldOutIncluded}
                   sellerId={currentUser?.id}
-                  keyword={searchKeyword}
+                  keyword={debouncedSearchKeyword}
                   onApply={handleMobileFilterApply}
                 />
               )}
@@ -339,15 +348,24 @@ export default function MySalesPage() {
                     setIsCategoryOpen(false);
                     setIsSaleTypeOpen(false);
                   }}
-                  className="font-sans-500 flex h-[40px] w-full items-center justify-between rounded-[2px] border border-gray-200 px-[16px] text-[14px] text-white"
+                  className="flex h-12 w-full items-center justify-between rounded-xs border border-gray-200 bg-black px-4 text-left font-sans-400 text-white"
                   aria-expanded={isSortOpen}
                 >
-                  {selectedSortLabel}
-                  <Image src={isSortOpen ? "/up.png" : "/down.png"} alt="" width={20} height={20} />
+                  <span className="min-w-0 truncate">{selectedSortLabel}</span>
+
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 28 28"
+                    fill="none"
+                    className={`shrink-0 transition-transform ${isSortOpen ? "rotate-180" : ""}`}
+                  >
+                    <path d="M14.2 16.2L10 12H18.4L14.2 16.2Z" fill="white" />
+                  </svg>
                 </button>
 
                 {isSortOpen && (
-                  <div className="absolute top-[44px] right-0 z-30 w-full rounded-[2px] border border-gray-200 bg-black">
+                  <div className="absolute top-full right-0 z-30 mt-1 w-full overflow-hidden rounded-xs border border-gray-200 bg-black">
                     {SORT_OPTIONS.map((option) => (
                       <button
                         key={option.value}
@@ -357,7 +375,11 @@ export default function MySalesPage() {
                           setCurrentPage(1);
                           setIsSortOpen(false);
                         }}
-                        className="font-sans-400 flex h-[40px] w-full items-center px-[16px] text-left text-[14px] text-white hover:bg-[#2a2a2a]"
+                        className={`flex h-12 w-full items-center px-4 text-left font-sans-400 hover:bg-white/10 ${
+                          option.value === selectedSort
+                            ? "bg-purple-button text-white"
+                            : "text-white"
+                        }`}
                       >
                         {option.label}
                       </button>
@@ -399,7 +421,7 @@ export default function MySalesPage() {
                         type="checkbox"
                         checked={selectedCategories.includes("DOG")}
                         onChange={() => handleCategoryChange("DOG")}
-                        className="h-[16px] w-[16px] accent-white"
+                        className="size-4 shrink-0 accent-purple-button"
                       />
                     </label>
 
@@ -409,7 +431,7 @@ export default function MySalesPage() {
                         type="checkbox"
                         checked={selectedCategories.includes("CAT")}
                         onChange={() => handleCategoryChange("CAT")}
-                        className="h-[16px] w-[16px] accent-white"
+                        className="size-4 shrink-0 accent-purple-button"
                       />
                     </label>
                   </div>
@@ -445,7 +467,7 @@ export default function MySalesPage() {
                         type="checkbox"
                         checked={selectedSaleTypes.includes("SALE")}
                         onChange={() => handleSaleTypeChange("SALE")}
-                        className="h-[16px] w-[16px] accent-white"
+                        className="size-4 shrink-0 accent-purple-button"
                       />
                     </label>
 
@@ -455,7 +477,7 @@ export default function MySalesPage() {
                         type="checkbox"
                         checked={selectedSaleTypes.includes("EXCHANGE")}
                         onChange={() => handleSaleTypeChange("EXCHANGE")}
-                        className="h-[16px] w-[16px] accent-white"
+                        className="size-4 shrink-0 accent-purple-button"
                       />
                     </label>
                   </div>
@@ -472,7 +494,7 @@ export default function MySalesPage() {
                     setIsSoldOutIncluded(event.target.checked);
                     setCurrentPage(1);
                   }}
-                  className="h-[16px] w-[16px] accent-white"
+                  className="size-4 shrink-0 accent-purple-button"
                 />
               </label>
             </div>
@@ -487,16 +509,24 @@ export default function MySalesPage() {
                 setIsCategoryOpen(false);
                 setIsSaleTypeOpen(false);
               }}
-              className="font-sans-500 flex h-[50px] w-full items-center justify-between rounded-[2px] border border-gray-200 px-[16px] text-[14px] text-white tablet:w-[200px] tablet:text-[16px]"
+              className="flex h-12 w-full items-center justify-between rounded-xs border border-gray-200 bg-black px-4 text-left font-sans-400 text-white tablet:w-[200px]"
               aria-expanded={isSortOpen}
             >
-              {selectedSortLabel}
+              <span className="min-w-0 truncate">{selectedSortLabel}</span>
 
-              <Image src={isSortOpen ? "/up.png" : "/down.png"} alt="" width={24} height={24} />
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 28 28"
+                fill="none"
+                className={`shrink-0 transition-transform ${isSortOpen ? "rotate-180" : ""}`}
+              >
+                <path d="M14.2 16.2L10 12H18.4L14.2 16.2Z" fill="white" />
+              </svg>
             </button>
 
             {isSortOpen && (
-              <div className="absolute top-[50px] right-0 z-30 mt-[5px] w-[200px] rounded-[2px] border border-gray-200 bg-black">
+              <div className="absolute top-full right-0 z-30 mt-1 w-full overflow-hidden rounded-xs border border-gray-200 bg-black tablet:w-[200px]">
                 {SORT_OPTIONS.map((option) => (
                   <button
                     key={option.value}
@@ -506,7 +536,9 @@ export default function MySalesPage() {
                       setCurrentPage(1);
                       setIsSortOpen(false);
                     }}
-                    className="font-sans-400 flex h-[40px] w-full items-center px-[16px] text-left text-[16px] text-white hover:bg-[#2a2a2a]"
+                    className={`flex h-12 w-full items-center px-4 text-left font-sans-400 hover:bg-white/10 ${
+                      option.value === selectedSort ? "bg-purple-button text-white" : "text-white"
+                    }`}
                   >
                     {option.label}
                   </button>
