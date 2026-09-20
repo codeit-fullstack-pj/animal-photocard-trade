@@ -292,30 +292,12 @@ export function updateSaleById(id, data) {
 // 판매글 하나를 CANCELED 상태로 바꾸고 closedAt을 갱신 (판매글 자체 취소).
 // 판매 중(ON_SALE)인 판매글만 취소 가능 — 이미 품절되었거나 취소된 판매글은 그대로 둔다
 // (closeSaleIfOnSale과 동일한 이유로 update가 아닌 updateMany + count로 매칭 여부를 확인한다)
-function cancelSaleById(id, closedAt) {
-  return prisma.sale.updateMany({
+export function cancelSaleById(tx, id, closedAt) {
+  return tx.sale.updateMany({
     where: { id, status: "ON_SALE" },
     data: {
       status: "CANCELED",
       closedAt,
     },
   });
-}
-
-// 이 판매글에 걸린 PENDING 상태 교환신청들을 전부 찾아서 CANCELED로 일괄 변경
-function cancelExchangesBySaleId(saleId) {
-  return prisma.exchange.updateMany({
-    where: {
-      saleId: saleId,
-      status: "PENDING",
-    },
-    data: {
-      status: "CANCELED",
-    },
-  });
-}
-
-// 위 두 작업(판매글 취소 + 교환신청 취소)을 하나의 트랜잭션으로 묶어서 실행 (둘 다 성공 or 둘 다 실패)
-export function cancelSaleTransaction(id, closedAt) {
-  return prisma.$transaction([cancelSaleById(id, closedAt), cancelExchangesBySaleId(id)]);
 }

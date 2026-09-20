@@ -410,8 +410,11 @@ export async function updateSale(id, data, seller) {
   return saleRepository.updateSaleById(id, data);
 }
 
-// 판매글 취소: 존재·소유자 확인 후, 트랜잭션(판매 중인 경우에만 취소 + 교환신청 일괄 취소) 실행
-// 트랜잭션 결과(배열)에서 각각 판매글 취소 결과, 교환신청 취소 개수를 꺼내 응답 형태로 가공
+/**
+ * 판매글 취소 트랜잭션 처리 순서
+ * 존재·소유자 확인 → SALE → EXCHANGE → NOTIFICATION
+ * 판매글 취소 → 대기 중 교환 제시 일괄 취소 → 교환 취소 알림 생성
+ */
 export async function cancelSale(id, seller) {
   const sale = await saleRepository.findSaleWithExchangesById(id);
   if (!sale) {
@@ -423,17 +426,35 @@ export async function cancelSale(id, seller) {
   }
 
   const closedAt = new Date();
-  const [canceled, exchangeResult] = await saleRepository.cancelSaleTransaction(id, closedAt);
 
-  // 이미 품절되었거나 취소된 판매글은 다시 취소할 수 없다 (ON_SALE 상태에서만 취소 가능)
-  if (canceled.count === 0) {
-    throw new ApiError(409, "SALE_NOT_ON_SALE", "판매 중인 판매글만 내릴 수 있습니다.");
-  }
+  return prisma.$transaction(async (tx) => {
+    // 알림을 보낼 대상(교환 제시자)은 취소로 상태가 바뀌기 전에 미리 조회해둔다
+    const pendingExchanges = await exchangeRepository.findPendingExchangesWithOfferer(tx, id);
 
-  return {
-    id,
-    status: "CANCELED",
-    closedAt,
-    canceledExchangeCount: exchangeResult.count,
-  };
+    const canceled = await saleRepository.cancelSaleById(tx, id, closedAt);
+    // 이미 품절되었거나 취소된 판매글은 다시 취소할 수 없다 (ON_SALE 상태에서만 취소 가능)
+    if (canceled.count === 0) {
+      throw new ApiError(409, "SALE_NOT_ON_SALE", "판매 중인 판매글만 내릴 수 있습니다.");
+    }
+
+    const exchangeResult = await exchangeRepository.cancelPendingExchanges(tx, id);
+
+    // 교환 제시했던 사람들에게 판매글이 내려가 교환이 취소되었음을 알림
+    await notificationRepository.createManyNotifications(
+      tx,
+      pendingExchanges.map((exchange) => ({
+        userId: exchange.offerCard.ownerId,
+        type: "SALE_CANCELED_EXCHANGE",
+        content: `'${sale.card.tag} ${sale.card.name}'에 제안한 교환이 취소되었습니다`,
+        targetId: id,
+      })),
+    );
+
+    return {
+      id,
+      status: "CANCELED",
+      closedAt,
+      canceledExchangeCount: exchangeResult.count,
+    };
+  });
 }
