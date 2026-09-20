@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import ScaledPhotoCard from "@/components/card/ScaledPhotoCard";
@@ -100,12 +99,9 @@ export default function SaleDetailView({ sale }) {
     <main className="mx-auto w-full max-w-310 px-4 pt-6 pb-20 tablet:px-5 tablet:pt-8 pc:px-0 pc:pt-15">
       <Toast isOpen={!!toastMessage} message={toastMessage} onClose={() => setToastMessage("")} />
 
-      <Link
-        href="/market"
-        className="font-primary-bold hidden text-xl text-gray-300 tablet:block tablet:text-base pc:text-2xl"
-      >
+      <p className="font-primary-bold hidden text-xl text-gray-300 tablet:block tablet:text-base pc:text-2xl">
         마켓플레이스
-      </Link>
+      </p>
 
       <div className="flex flex-col gap-2 tablet:mt-10 tablet:flex-row tablet:items-end tablet:justify-between tablet:gap-8 pc:mt-15">
         <h1 className="font-sans-700 min-w-0 text-2xl leading-snug text-white tablet:flex-1 tablet:text-[38px] pc:text-[40px] pc:leading-13.5">
