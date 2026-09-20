@@ -7,7 +7,7 @@ import { SCORE_CONFIG, getPrimaryAxisColor } from "./scoreConfig";
 
 // filterType(1~4, useImageVariants.js VARIANTS 순서와 동일: 원본·세피아·모노·도트) 별 렌더링 방식.
 // 세피아·모노는 CSS filter로 충분하지만, 도트는 픽셀 밝기에 따라 점 크기가 달라지는 진짜
-// 망점(halftone)이라 CSS만으로는 불가능 — canvas로 그리는 DotHalftoneImage를 쓴다 (gallery/PhotoCard.jsx와 동일)
+// 망점(halftone)이라 CSS만으로는 불가능 — canvas로 그리는 DotHalftoneImage를 쓴다
 const CSS_FILTERS = { 2: "sepia(0.7)", 3: "grayscale(1)" };
 const DOT_FILTER_TYPE = 4;
 const IMAGE_BOX_WIDTH = 400;
@@ -15,7 +15,7 @@ const IMAGE_BOX_HEIGHT = 232;
 
 // 이 컴포넌트는 항상 400px 고정 폭(w-100)으로 그려진다. 화면 크기별 대응은 여기서 브레이크포인트로
 // 하지 않고, 부모(ScaledPhotoCard)가 실제 컨테이너 폭을 재서 transform: scale()로 전체를 통째로
-// 축소/확대한다 — gallery/PhotoCard.jsx + GalleryCardItem.jsx와 같은 방식.
+// 축소/확대한다.
 /**
  * @param {{ card: {
  *   name: string,

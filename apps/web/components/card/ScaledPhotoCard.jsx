@@ -9,7 +9,7 @@ const CARD_WIDTH = 400; // PhotoCard 원본 폭(w-100). aspect-*/* 클래스와 
 /**
  * PhotoCard(400px 고정 폭)를 그리드 한 칸의 실제 폭에 맞춰 유동적으로 축소/확대한다.
  * 바깥 div가 그리드가 정해주는 폭을 그대로 받고(aspect-ratio로 높이를 맞춤),
- * ResizeObserver로 그 실제 폭을 측정해 배율을 계산한다 (GalleryCardItem.jsx와 동일한 방식).
+ * ResizeObserver로 그 실제 폭을 측정해 배율을 계산한다.
  * @param {object} props PhotoCard에 그대로 전달되는 props
  */
 export default function ScaledPhotoCard(props) {

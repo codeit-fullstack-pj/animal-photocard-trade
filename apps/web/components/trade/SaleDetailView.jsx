@@ -175,32 +175,35 @@ export default function SaleDetailView({ sale }) {
               <BuyerActionButtons
                 onPurchaseClick={handlePurchaseClick}
                 onExchangeClick={() => setIsExchangeModalOpen(true)}
+                canExchange={sale.canExchange}
               />
             )}
           </div>
         </div>
       </div>
 
-      <div className="mt-14 pc:mt-16">
-        {isSeller ? (
-          <section>
-            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-              <h2 className="font-sans-700 text-xl text-white tablet:text-[28px] pc:text-[30px]">
-                교환 제시 목록
-              </h2>
-              <p className="font-sans-400 text-sm text-gray-300 tablet:text-base">
-                교환하실 카드를 눌러 교환할 수 있습니다
-              </p>
-            </div>
-            <div className="mt-5 border-t border-gray-400 tablet:mt-4 pc:mt-5" />
-            <div className="mt-8 tablet:mt-6 pc:mt-8">
-              <ExchangeListView sale={sale} currentUser={currentUser} isSeller={isSeller} />
-            </div>
-          </section>
-        ) : (
-          <BuyerExchangeList saleId={sale.id} />
-        )}
-      </div>
+      {sale.canExchange && (
+        <div className="mt-14 pc:mt-16">
+          {isSeller ? (
+            <section>
+              <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                <h2 className="font-sans-700 text-xl text-white tablet:text-[28px] pc:text-[30px]">
+                  교환 제시 목록
+                </h2>
+                <p className="font-sans-400 text-sm text-gray-300 tablet:text-base">
+                  교환하실 카드를 눌러 교환할 수 있습니다
+                </p>
+              </div>
+              <div className="mt-5 border-t border-gray-400 tablet:mt-4 pc:mt-5" />
+              <div className="mt-8 tablet:mt-6 pc:mt-8">
+                <ExchangeListView sale={sale} currentUser={currentUser} isSeller={isSeller} />
+              </div>
+            </section>
+          ) : (
+            <BuyerExchangeList saleId={sale.id} />
+          )}
+        </div>
+      )}
 
       {!isSeller && !isSoldOut && (
         <>

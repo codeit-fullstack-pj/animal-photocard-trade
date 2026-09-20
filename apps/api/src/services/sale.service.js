@@ -258,6 +258,8 @@ export async function createExchange({ saleId, offerCardId, message, offerer }) 
       throw new ApiError(403, "SELF_EXCHANGE_NOT_ALLOWED", "자신의 판매글에는 제시할 수 없습니다.");
     if (sale.status !== "ON_SALE")
       throw new ApiError(409, "SALE_NOT_ON_SALE", "판매 중인 판매글이 아닙니다.");
+    if (!sale.canExchange)
+      throw new ApiError(409, "EXCHANGE_NOT_ALLOWED", "교환을 희망하지 않는 판매글입니다.");
 
     // 이미 판매중이거나 교환 제시중인 카드 조회
     const onSale = await saleRepository.findOnSaleByCardId(tx, offerCardId);
