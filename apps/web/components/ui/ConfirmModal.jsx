@@ -10,6 +10,7 @@ export default function ConfirmModal({
   confirmLabel,
   onConfirm,
   isSubmitting,
+  actionsDisabled = false,
   secondaryLabel,
   onSecondary,
 }) {
@@ -46,7 +47,7 @@ export default function ConfirmModal({
             <button
               type="button"
               onClick={onConfirm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || actionsDisabled}
               className="font-sans-600 h-12.5 flex-1 rounded-xs bg-purple-button text-sm text-white disabled:opacity-50 tablet:h-14 tablet:text-base"
             >
               {confirmLabel}
@@ -54,7 +55,7 @@ export default function ConfirmModal({
             <button
               type="button"
               onClick={onSecondary ?? onClose}
-              disabled={isSubmitting}
+              disabled={isSubmitting || actionsDisabled}
               className="font-sans-600 h-12.5 flex-1 rounded-xs border border-white bg-transparent text-sm text-white disabled:opacity-50 tablet:h-14 tablet:text-base"
             >
               {secondaryLabel}
@@ -64,7 +65,7 @@ export default function ConfirmModal({
           <button
             type="button"
             onClick={onConfirm}
-            disabled={isSubmitting}
+            disabled={isSubmitting || actionsDisabled}
             className="font-sans-600 mt-2 h-12.5 w-full rounded-xs bg-purple-button text-sm text-white disabled:opacity-50 tablet:h-14 tablet:text-base"
           >
             {confirmLabel}

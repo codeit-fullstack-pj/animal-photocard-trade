@@ -138,12 +138,17 @@ export default function SaleDetailView({ sale }) {
 
           <div className="mt-4 flex items-center justify-between">
             <span className="font-sans-400 text-base text-white tablet:text-lg">교환희망여부</span>
-            <input
-              type="checkbox"
-              checked={sale.canExchange}
-              readOnly
-              className="size-5 accent-gray-300"
-            />
+            <span
+              role="img"
+              aria-label={sale.canExchange ? "교환 희망" : "교환 희망하지 않음"}
+              className="flex size-5 items-center justify-center rounded-xs border border-gray-300 text-gray-300"
+            >
+              {sale.canExchange && (
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="size-4">
+                  <path d="m4 10 4 4 8-8" stroke="currentColor" strokeWidth="2" />
+                </svg>
+              )}
+            </span>
           </div>
 
           <div className="mt-10 pc:mt-auto">
@@ -165,9 +170,14 @@ export default function SaleDetailView({ sale }) {
       <div className="mt-14 pc:mt-16">
         {isSeller ? (
           <section>
-            <h2 className="font-sans-700 text-xl text-white tablet:text-[28px] pc:text-[30px]">
-              교환 제시 목록
-            </h2>
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+              <h2 className="font-sans-700 text-xl text-white tablet:text-[28px] pc:text-[30px]">
+                교환 제시 목록
+              </h2>
+              <p className="font-sans-400 text-sm text-gray-300 tablet:text-base">
+                교환하실 카드를 눌러 교환할 수 있습니다
+              </p>
+            </div>
             <div className="mt-5 border-t border-gray-400 tablet:mt-4 pc:mt-5" />
             <div className="mt-8 tablet:mt-6 pc:mt-8">
               <ExchangeListView sale={sale} currentUser={currentUser} isSeller={isSeller} />
