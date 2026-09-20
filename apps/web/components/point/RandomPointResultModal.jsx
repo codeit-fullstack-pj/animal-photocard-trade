@@ -33,8 +33,14 @@ export default function RandomPointResultModal({ isOpen, earnedPoint, onClose })
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-4 tablet:bg-black/70">
-      <div className="relative flex h-[541px] w-[345px] flex-col items-center bg-gray-500 text-center tablet:h-[658px] tablet:w-[455px] pc:h-[678px] pc:w-[455px]">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-4 tablet:bg-black/70"
+      onClick={onClose}
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        className="relative flex h-[541px] w-[345px] flex-col items-center bg-gray-500 text-center tablet:h-[658px] tablet:w-[455px] pc:h-[678px] pc:w-[455px]"
+      >
         {/* 랜덤 포인트 결과 모달을  닫음 */}
         <button
           type="button"
