@@ -14,6 +14,7 @@ const MENU_LINKS = [
   { href: "/my-gallery", label: "마이갤러리" },
   { href: "/my-sales", label: "나의 판매 포토관리" },
 ];
+const HEADER_LOGO_CLASSNAME = "h-6 w-24 object-contain tablet:h-8 tablet:w-32 pc:h-10 pc:w-40";
 
 export default function AppHeader() {
   const pathname = usePathname();
@@ -69,7 +70,14 @@ export default function AppHeader() {
                 </button>
 
                 <Link href="/" aria-label="최애 멍냥 홈" className="justify-self-center">
-                  <Image src="/logo.png" alt="최애 멍냥" width={182} height={61} priority />
+                  <Image
+                    src="/logo.png"
+                    alt="최애 멍냥"
+                    width={160}
+                    height={40}
+                    className={HEADER_LOGO_CLASSNAME}
+                    priority
+                  />
                 </Link>
 
                 {!isLoading &&
@@ -115,7 +123,14 @@ export default function AppHeader() {
             {/* 태블릿 이상: 로고(좌) - 사용자 정보/로그인(우) */}
             <div className="hidden h-full items-center justify-between tablet:flex">
               <Link href="/" aria-label="최애 멍냥 홈">
-                <Image src="/logo.png" alt="최애 멍냥" width={182} height={61} priority />
+                <Image
+                  src="/logo.png"
+                  alt="최애 멍냥"
+                  width={160}
+                  height={40}
+                  className={HEADER_LOGO_CLASSNAME}
+                  priority
+                />
               </Link>
 
               {!isLoading &&
