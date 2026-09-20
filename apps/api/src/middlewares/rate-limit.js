@@ -37,3 +37,8 @@ export const saleUpdateRateLimit = rateLimit({
   ...COMMON_OPTIONS,
   max: 60,
 });
+
+export const exchangeActionRateLimit = rateLimit({
+  ...COMMON_OPTIONS,
+  max: 60,
+});

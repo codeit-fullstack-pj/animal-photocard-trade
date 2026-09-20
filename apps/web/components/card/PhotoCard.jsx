@@ -25,9 +25,17 @@ const IMAGE_BOX_HEIGHT = 232;
  *   filterType?: number,
  *   description?: string | null,
  *   score?: { axes: { field: string, value: number }[] },
- * }, status?: string, point?: number, isSoldOut?: boolean, variant?: "owned" | "sale", onClick?: () => void }} props
+ * }, status?: string, point?: number, isSoldOut?: boolean, isExchanged?: boolean, variant?: "owned" | "sale", onClick?: () => void }} props
  */
-export default function PhotoCard({ card, status, point, isSoldOut, variant, onClick }) {
+export default function PhotoCard({
+  card,
+  status,
+  point,
+  isSoldOut,
+  isExchanged,
+  variant,
+  onClick,
+}) {
   const isDot = card.filterType === DOT_FILTER_TYPE;
   const cssFilter = CSS_FILTERS[card.filterType];
   const tagColor = getPrimaryAxisColor(card.category, card.score?.axes);
@@ -77,7 +85,7 @@ export default function PhotoCard({ card, status, point, isSoldOut, variant, onC
           )}
 
           {/* 판매 중은 흰색, 교환 제시 중은 노란색으로 표시 */}
-          {!isSoldOut && status && (
+          {!isSoldOut && !isExchanged && status && (
             <AutoFitText
               className={`font-sans-500 absolute top-3 left-3 z-10 max-w-[calc(100%-1.5rem)] bg-black/50 px-2 py-1.25 text-[12px] ${
                 status === "판매 중" ? "text-white" : "text-[#FFF3A4]"
@@ -87,10 +95,15 @@ export default function PhotoCard({ card, status, point, isSoldOut, variant, onC
             </AutoFitText>
           )}
 
-          {/* 품절 표시 */}
-          {isSoldOut && (
+          {/* 품절 또는 교환 완료 표시 */}
+          {(isSoldOut || isExchanged) && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60">
-              <Image src="/soldout.png" alt="판매 완료" width={190} height={190} />
+              <Image
+                src={isExchanged ? "/exchangedmark.png" : "/soldout.png"}
+                alt={isExchanged ? "교환 완료" : "판매 완료"}
+                width={190}
+                height={190}
+              />
             </div>
           )}
         </div>
