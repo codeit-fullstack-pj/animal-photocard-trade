@@ -1,51 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-
-import { getRemainingCount } from "@/lib/card/api";
+import CreateCardButton from "@/components/gallery/CreateCardButton";
 import MyGalleryCards from "@/components/gallery/MyGalleryCards";
 import MobileHeader from "@/components/ui/MobileHeader";
 import AppHeader from "@/components/ui/AppHeader";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useRemainingCardCount } from "@/hooks/useRemainingCardCount";
 
 const CREATE_BUTTON_CLASSNAME =
   "hidden h-15.25 items-center justify-center rounded-xs font-sans-400 text-base text-white tablet:flex tablet:w-85.5 pc:w-110";
 
-function CreateCardButton({ remainingCount, limit, className }) {
-  return remainingCount > 0 ? (
-    <Link href="/my-gallery/create" className={`${className} bg-purple-button`}>
-      포토카드 생성하기 {remainingCount}/{limit}
-    </Link>
-  ) : (
-    <span aria-disabled="true" className={`${className} cursor-not-allowed bg-[#535353]`}>
-      포토카드 생성하기 {remainingCount}/{limit}
-    </span>
-  );
-}
-
 export default function MyGalleryPage() {
   const { currentUser } = useAuth();
-
-  // 조회 전(또는 실패)에는 0으로 둬서 생성 버튼을 막아둔다 — 확인 안 된 상태에서 눌리게 하는 것보단 안전한 쪽
-  const [remainingCount, setRemainingCount] = useState(0);
-  const [limit, setLimit] = useState(5);
-
-  useEffect(() => {
-    let ignore = false;
-
-    getRemainingCount()
-      .then((result) => {
-        if (ignore) return;
-        setRemainingCount(result.remainingCount);
-        setLimit(result.limit);
-      })
-      .catch(() => {});
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
+  const { remainingCount, limit } = useRemainingCardCount();
 
   return (
     <>
