@@ -54,8 +54,9 @@ export default function RandomPointResultModal({ isOpen, earnedPoint, onClose })
           <Image
             src="/point_logo.png"
             alt="포인트"
-            width={100}
-            height={100}
+            width={640}
+            height={428}
+            sizes="(max-width: 743px) 238px, 320px"
             className="h-[159px] w-[238px] tablet:h-[214px] tablet:w-[320px] pc:h-[214px] pc:w-[320px]"
           />
 
