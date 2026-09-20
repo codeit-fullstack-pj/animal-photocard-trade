@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 
+import ScaledPhotoCard from "@/components/card/ScaledPhotoCard";
+import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 import { fetchMyCards } from "@/lib/gallery/api";
 
-import GalleryCardItem from "./GalleryCardItem";
 import GalleryToolbar from "./GalleryToolbar";
 import Pagination from "./Pagination";
 
@@ -113,7 +114,7 @@ export default function MyGalleryCards({ userName }) {
           <>
             <div className="grid w-full grid-cols-2 justify-items-center gap-3 tablet:gap-5 pc:grid-cols-3">
               {data.items.map((card) => (
-                <GalleryCardItem key={card.id} card={card} />
+                <ScaledPhotoCard key={card.id} {...cardToPhotoCardProps(card)} />
               ))}
             </div>
             <Pagination page={page} totalPages={data.totalPages} onChange={setPage} />

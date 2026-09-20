@@ -3,7 +3,8 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import PhotoCard from "@/components/gallery/PhotoCard";
+import ScaledPhotoCard from "@/components/card/ScaledPhotoCard";
+import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 import MobileHeader from "@/components/ui/MobileHeader";
 import AppHeader from "@/components/ui/AppHeader";
 
@@ -81,8 +82,8 @@ function SuccessContent() {
         </Link>
       </div>
       {card ? (
-        <div className="origin-top scale-80 tablet:scale-100 pc:order-1">
-          <PhotoCard card={card} />
+        <div className="w-full max-w-42 tablet:max-w-90 pc:order-1">
+          <ScaledPhotoCard {...cardToPhotoCardProps(card)} />
         </div>
       ) : (
         <Loading />
