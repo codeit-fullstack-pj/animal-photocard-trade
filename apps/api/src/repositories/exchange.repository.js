@@ -7,11 +7,13 @@ export function findPendingExchangesWithOfferer(tx, saleId) {
     include: { offerCard: { select: { ownerId: true } } },
   });
 }
+
 //판매글에 해당하는 교환 일괄 거절
-export function rejectPendingExchanges(tx, saleId) {
-  return tx.exchange.updateMany({
+export function rejectPendingExchanges(tx, saleId, respondedAt = new Date()) {
+  return tx.exchange.updateManyAndReturn({
     where: { saleId, status: "PENDING" },
-    data: { status: "REJECTED", respondedAt: new Date() },
+    data: { status: "REJECTED", respondedAt },
+    select: { id: true, offerCard: { select: { ownerId: true } } },
   });
 }
 
@@ -20,6 +22,7 @@ export function rejectPendingExchanges(tx, saleId) {
 export function findPendingExchangeByOfferCardId(tx, offerCardId) {
   return tx.exchange.findFirst({ where: { offerCardId, status: "PENDING" } });
 }
+
 // 새 교환 제시 INSERT. 중복은 여기서 안 걸러내고 부분 유니크 인덱스(P2002)가 최종 방어한다
 export function createExchange(tx, { saleId, offerCardId, message }) {
   return tx.exchange.create({
@@ -82,5 +85,37 @@ export function findPendingExchangesBySaleId({ saleId, offererId }) {
       },
     },
     orderBy: { createdAt: "desc" },
+  });
+}
+
+//교환 수락을 위한 조회 함수 (판매ID 및 판매자 정보 포함)
+export function findExchangeForAccept(tx, exchangeId) {
+  return tx.exchange.findUnique({
+    where: { id: exchangeId },
+    select: {
+      id: true,
+      status: true,
+      saleId: true,
+      offerCardId: true,
+      sale: {
+        select: {
+          sellerId: true,
+          cardId: true,
+        },
+      },
+    },
+  });
+}
+
+export function acceptExchangeIfPending(tx, exchangeId, respondedAt) {
+  return tx.exchange.updateMany({
+    where: {
+      id: exchangeId,
+      status: "PENDING",
+    },
+    data: {
+      status: "ACCEPTED",
+      respondedAt,
+    },
   });
 }
