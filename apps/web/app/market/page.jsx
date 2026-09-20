@@ -38,6 +38,9 @@ export default function MarketPage() {
   // 검색
   const [keyword, setKeyword] = useState("");
 
+  // 입력이 멈춘 뒤 300ms 후에만 실제 요청에 반영되는 검색어 (마이갤러리와 동일한 디바운스 방식)
+  const [debouncedKeyword, setDebouncedKeyword] = useState("");
+
   // 실제 적용된 카테고리
   const [categories, setCategories] = useState([]);
 
@@ -102,6 +105,12 @@ export default function MarketPage() {
   // 요청 중복 방지
   const isFetchingRef = useRef(false);
 
+  // 검색어는 입력이 멈춘 뒤 300ms 후에만 요청에 반영
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedKeyword(keyword), 300);
+    return () => clearTimeout(timer);
+  }, [keyword]);
+
   /**
    * 판매 데이터 → MarketCard 형태로 변환
    */
@@ -147,8 +156,8 @@ export default function MarketPage() {
         params.set("category", category);
 
         // 검색어가 있다면 검색 결과 기준으로 카운팅
-        if (keyword.trim()) {
-          params.set("keyword", keyword.trim());
+        if (debouncedKeyword.trim()) {
+          params.set("keyword", debouncedKeyword.trim());
         }
 
         // 품절 포함 여부도 동일하게 적용
@@ -173,7 +182,7 @@ export default function MarketPage() {
         CAT: 0,
       });
     }
-  }, [keyword, isSoldOutIncluded]);
+  }, [debouncedKeyword, isSoldOutIncluded]);
 
   /**
    * ========================================
@@ -208,8 +217,8 @@ export default function MarketPage() {
         // 검색어
         // ========================================
 
-        if (keyword.trim()) {
-          params.set("keyword", keyword.trim());
+        if (debouncedKeyword.trim()) {
+          params.set("keyword", debouncedKeyword.trim());
         }
 
         // ========================================
@@ -288,7 +297,7 @@ export default function MarketPage() {
         setIsLoadingMore(false);
       }
     },
-    [keyword, categories, isSoldOutIncluded, sort, normalizeSale],
+    [debouncedKeyword, categories, isSoldOutIncluded, sort, normalizeSale],
   );
 
   /**
@@ -372,6 +381,7 @@ export default function MarketPage() {
 
     // 검색어 초기화
     setKeyword("");
+    setDebouncedKeyword("");
 
     // 정렬 초기화
     setSort("최근 등록 순");

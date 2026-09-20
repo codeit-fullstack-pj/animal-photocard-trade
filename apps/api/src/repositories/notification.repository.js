@@ -44,10 +44,10 @@ export function markAllRead(userId) {
 }
 
 // 알림 하나를 읽음/안읽음 처리 — where에 userId를 같이 걸어서 본인 것만, updateMany라 없거나 남의 것이면 count 0
-export function setRead(userId, notificationId, isRead) {
+export function setRead(userId, notificationId) {
   return prisma.notification.updateMany({
     where: { id: notificationId, userId, deletedAt: null },
-    data: { isRead },
+    data: { isRead: true },
   });
 }
 

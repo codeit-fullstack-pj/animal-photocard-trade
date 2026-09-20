@@ -255,12 +255,7 @@ export default function MarketFilters({
                   type="checkbox"
                   checked={categories.includes(category.value)}
                   onChange={() => handleCategoryChange(category.value)}
-                  className="
-                    h-[16px]
-                    w-[16px]
-                    cursor-pointer
-                    accent-white
-                  "
+                  className="size-4 shrink-0 accent-purple-button"
                 />
               </label>
             ))}
@@ -290,12 +285,7 @@ export default function MarketFilters({
           type="checkbox"
           checked={soldOut}
           onChange={(event) => setSoldOut(event.target.checked)}
-          className="
-            size-4
-            shrink-0
-            cursor-pointer
-            accent-[#A656F5]
-          "
+          className="size-4 shrink-0 accent-purple-button"
         />
       </label>
 
