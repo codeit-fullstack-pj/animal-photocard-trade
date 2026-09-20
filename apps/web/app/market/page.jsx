@@ -501,11 +501,10 @@ export default function MarketPage() {
           pb-[37px]
 
           tablet:px-[20px]
-          tablet:pt-[110px]
+          tablet:pt-[64px]
           tablet:pb-[224px]
 
           pc:px-0
-          pc:pt-[168px]
           pc:pb-[240px]
         "
       >
