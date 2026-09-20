@@ -27,3 +27,17 @@ export function cancelExchangeProposal(exchangeId) {
     method: "POST",
   });
 }
+
+// POST /exchanges/{exchangeId}/accept
+export function acceptExchangeProposal(exchangeId) {
+  return apiFetch(`/exchanges/${exchangeId}/accept`, {
+    method: "POST",
+  });
+}
+
+// POST /exchanges/{exchangeId}/reject
+export function rejectExchangeProposal(exchangeId) {
+  return apiFetch(`/exchanges/${exchangeId}/reject`, {
+    method: "POST",
+  });
+}
