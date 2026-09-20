@@ -1,11 +1,14 @@
 import { ApiError } from "../lib/api-error.js";
 import { prisma } from "../lib/prisma.js";
+import { broadcastUserChanged } from "../lib/realtime.js";
 import * as exchangeRepository from "../repositories/exchange.repository.js";
 import * as notificationRepository from "../repositories/notification.repository.js";
 
 //교환 제시 취소하기
 export async function cancelExchange({ exchangeId, offerer }) {
-  return prisma.$transaction(async (tx) => {
+  let sellerId;
+
+  const result = await prisma.$transaction(async (tx) => {
     //교환 취소 처리
     const canceled = await exchangeRepository.cancelExchangeIfPending(tx, {
       exchangeId,
@@ -31,9 +34,15 @@ export async function cancelExchange({ exchangeId, offerer }) {
         targetId: exchange.sale.id,
       },
     ]);
+
+    sellerId = exchange.sale.sellerId;
+
     return {
       exchangeId,
       status: exchange.status,
     };
   });
+
+  await broadcastUserChanged(sellerId);
+  return result;
 }

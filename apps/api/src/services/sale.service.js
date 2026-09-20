@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 
 import { ApiError } from "../lib/api-error.js";
 import { prisma } from "../lib/prisma.js";
+import { broadcastUserChanged } from "../lib/realtime.js";
 import * as cardRepository from "../repositories/card.repository.js";
 import * as exchangeRepository from "../repositories/exchange.repository.js";
 import * as notificationRepository from "../repositories/notification.repository.js";
@@ -129,7 +130,10 @@ export async function getSales({
 export async function purchaseCard({ saleId, buyer }) {
   const { id: buyerId, nickname: buyerNickname } = buyer;
 
-  return prisma.$transaction(async (tx) => {
+  // 트랜잭션 커밋 후 실시간 알림을 보낼 대상(판매자, 교환 제시자들) — 트랜잭션 안에서 채워진다
+  let notifyUserIds = [];
+
+  const result = await prisma.$transaction(async (tx) => {
     //선 검증 fail fast [판매글 존재 여부, 구매자와 판매자 일치 여부]
     const sale = await saleRepository.findSaleById(tx, saleId);
 
@@ -210,11 +214,19 @@ export async function purchaseCard({ saleId, buyer }) {
       },
     ]);
 
+    notifyUserIds = [
+      sale.sellerId,
+      ...pendingExchanges.map((exchange) => exchange.offerCard.ownerId),
+    ];
+
     return {
       saleId,
       ...saleUpdate,
     };
   });
+
+  await Promise.all(notifyUserIds.map(broadcastUserChanged));
+  return result;
 }
 
 /**
@@ -223,7 +235,9 @@ export async function purchaseCard({ saleId, buyer }) {
  * 교환 생성 → 알림 생성
  */
 export async function createExchange({ saleId, offerCardId, message, offerer }) {
-  return prisma.$transaction(async (tx) => {
+  let sellerId;
+
+  const result = await prisma.$transaction(async (tx) => {
     //선 검증 fail fast. 아래에서 한번 더 검증
     const saleExists = await saleRepository.findSaleById(tx, saleId);
     if (!saleExists) throw new ApiError(404, "SALE_NOT_FOUND", "판매글을 찾을 수 없습니다.");
@@ -275,12 +289,18 @@ export async function createExchange({ saleId, offerCardId, message, offerer }) 
         targetId: saleId,
       },
     ]);
+
+    sellerId = sale.sellerId;
+
     return {
       exchangeId: exchange.id,
       status: exchange.status,
       createdAt: exchange.createdAt,
     };
   });
+
+  await broadcastUserChanged(sellerId);
+  return result;
 }
 
 //교환 목록 조회 응답 모양
@@ -426,8 +446,10 @@ export async function cancelSale(id, seller) {
   }
 
   const closedAt = new Date();
+  // 트랜잭션 커밋 후 실시간 알림을 보낼 대상(교환 제시자들) — 트랜잭션 안에서 채워진다
+  let offererIds = [];
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     // 알림을 보낼 대상(교환 제시자)은 취소로 상태가 바뀌기 전에 미리 조회해둔다
     const pendingExchanges = await exchangeRepository.findPendingExchangesWithOfferer(tx, id);
 
@@ -450,6 +472,8 @@ export async function cancelSale(id, seller) {
       })),
     );
 
+    offererIds = pendingExchanges.map((exchange) => exchange.offerCard.ownerId);
+
     return {
       id,
       status: "CANCELED",
@@ -457,4 +481,7 @@ export async function cancelSale(id, seller) {
       canceledExchangeCount: exchangeResult.count,
     };
   });
+
+  await Promise.all(offererIds.map(broadcastUserChanged));
+  return result;
 }
