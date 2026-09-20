@@ -30,7 +30,7 @@ export default function SaleDetailView({ sale }) {
   const [toastMessage, setToastMessage] = useState("");
   const router = useRouter();
 
-  const { currentUser } = useAuth();
+  const { currentUser, reloadCurrentUser } = useAuth();
   const isSeller = currentUser?.id === sale.seller.id;
   const cardName = `${sale.card.tag} ${sale.card.name}`;
 
@@ -61,6 +61,8 @@ export default function SaleDetailView({ sale }) {
     setIsPurchasing(true);
     try {
       await purchaseCard(sale.id);
+      // 구매로 차감된 포인트를 헤더 등 전역 사용자 상태에 바로 반영한다.
+      await reloadCurrentUser();
       router.push(`/purchase/success?name=${encodeURIComponent(cardName)}`);
     } catch (error) {
       const code = error?.code ?? "UNKNOWN-ERROR";

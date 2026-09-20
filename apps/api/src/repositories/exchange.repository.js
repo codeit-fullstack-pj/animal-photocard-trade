@@ -15,6 +15,14 @@ export function rejectPendingExchanges(tx, saleId) {
   });
 }
 
+// 판매글 자체가 내려갈 때(cancelSale), 그 판매글에 걸린 교환 제시를 일괄 취소
+export function cancelPendingExchanges(tx, saleId) {
+  return tx.exchange.updateMany({
+    where: { saleId, status: "PENDING" },
+    data: { status: "CANCELED", respondedAt: new Date() },
+  });
+}
+
 // 교환 제시(createExchange) 트랜잭션 전용
 // 이 카드로 status가 PENDING인 Exchange가 있는지 (claim 확인의 나머지 절반)
 export function findPendingExchangeByOfferCardId(tx, offerCardId) {
