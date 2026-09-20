@@ -2,6 +2,7 @@
 
 import { ApiError } from "@/lib/api-client";
 import { getCurrentUser, refreshAccessToken, signout } from "@/lib/auth/api";
+import { getRealtimeClient } from "@/lib/realtime/client";
 import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
@@ -78,6 +79,28 @@ export function AuthProvider({ children }) {
     setCurrentUser(user);
     return user;
   }, [resolveCurrentUser]);
+
+  // 다른 사용자의 행동(구매·교환 제시 등)으로 내 포인트·알림이 바뀌는 경우를 실시간으로 반영한다.
+  // 서버가 /users/me로 내려주는 realtimeChannel(추측 불가능한 채널명)을 구독해서,
+  // "바뀌었다"는 신호만 받으면 현재 사용자 정보를 다시 불러온다 (값 자체는 서버 응답을 신뢰)
+  useEffect(() => {
+    const channelTopic = currentUser?.realtimeChannel;
+    if (!channelTopic) return;
+
+    const supabase = getRealtimeClient();
+    if (!supabase) return;
+
+    const channel = supabase
+      .channel(channelTopic)
+      .on("broadcast", { event: "changed" }, () => {
+        reloadCurrentUser();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser?.realtimeChannel, reloadCurrentUser]);
 
   //앱전체 로그아웃 함수
   const logout = useCallback(async () => {

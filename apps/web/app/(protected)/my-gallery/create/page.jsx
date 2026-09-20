@@ -332,7 +332,7 @@ export default function CreatePage() {
 
                   <div className="flex flex-col gap-2 pc:gap-2.5">
                     <span className="text-base font-bold leading-[normal] text-white pc:text-xl">
-                      포토카드 이름
+                      반려동물 이름
                     </span>
                     <input
                       value={name}
