@@ -81,13 +81,10 @@ export default function MarketPage() {
   // 더 불러올 데이터가 있는지
   const [hasMore, setHasMore] = useState(true);
 
-  // 전체 카드 개수
-  const [totalCount, setTotalCount] = useState(0);
-
   // 카테고리별 카드 개수
-  const [categoryCounts, setCategoryCounts] = useState({
-    DOG: 0,
-    CAT: 0,
+  const [countsBySoldOut, setCountsBySoldOut] = useState({
+    false: { DOG: 0, CAT: 0 }, //품절제외
+    true: { DOG: 0, CAT: 0 }, //품절포함
   });
 
   // ========================================
@@ -146,43 +143,43 @@ export default function MarketPage() {
    */
   const fetchCategoryCounts = useCallback(async () => {
     try {
-      const fetchCount = async (category) => {
+      const fetchCount = async (category, includeSoldOut) => {
         const params = new URLSearchParams();
 
-        // 개수만 필요하므로 1개만 요청
         params.set("limit", "1");
-
-        // 카테고리
         params.set("category", category);
+        params.set("includeSoldOut", String(includeSoldOut));
 
         // 검색어가 있다면 검색 결과 기준으로 카운팅
         if (debouncedKeyword.trim()) {
           params.set("keyword", debouncedKeyword.trim());
         }
 
-        // 품절 포함 여부도 동일하게 적용
-        params.set("includeSoldOut", String(isSoldOutIncluded));
-
         const result = await apiFetch(`/sales?${params.toString()}`);
 
         return typeof result?.totalCount === "number" ? result.totalCount : 0;
       };
 
-      const [dogCount, catCount] = await Promise.all([fetchCount("DOG"), fetchCount("CAT")]);
+      const [dogExcluded, catExcluded, dogIncluded, catIncluded] = await Promise.all([
+        fetchCount("DOG", false),
+        fetchCount("CAT", false),
+        fetchCount("DOG", true),
+        fetchCount("CAT", true),
+      ]);
 
-      setCategoryCounts({
-        DOG: dogCount,
-        CAT: catCount,
+      setCountsBySoldOut({
+        false: { DOG: dogExcluded, CAT: catExcluded },
+        true: { DOG: dogIncluded, CAT: catIncluded },
       });
     } catch (error) {
       console.error("카테고리별 판매 개수 조회 실패:", error);
 
-      setCategoryCounts({
-        DOG: 0,
-        CAT: 0,
+      setCountsBySoldOut({
+        false: { DOG: 0, CAT: 0 },
+        true: { DOG: 0, CAT: 0 },
       });
     }
-  }, [debouncedKeyword, isSoldOutIncluded]);
+  }, [debouncedKeyword]);
 
   /**
    * ========================================
@@ -266,11 +263,6 @@ export default function MarketPage() {
 
         const lists = result?.lists ?? [];
         const newCursor = result?.nextCursor ?? null;
-
-        // 백엔드에서 totalCount를 내려주는 경우 사용
-        if (typeof result?.totalCount === "number") {
-          setTotalCount(result.totalCount);
-        }
 
         const normalizedCards = lists.map(normalizeSale);
 
@@ -572,10 +564,9 @@ export default function MarketPage() {
         setCategories={setTempCategories}
         soldOut={tempIsSoldOutIncluded}
         setSoldOut={setTempIsSoldOutIncluded}
-        totalCount={totalCount}
         onApply={handleApplyMobileFilter}
         onReset={handleResetFilters}
-        categoryCounts={categoryCounts}
+        countsBySoldOut={countsBySoldOut}
       />
 
       {/* ========================================

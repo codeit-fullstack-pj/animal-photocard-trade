@@ -279,7 +279,7 @@ export default function MarketFilters({
           tablet:text-white
         "
       >
-        <span className="whitespace-nowrap">품절 포함</span>
+        <span className="whitespace-nowrap tablet:font-sans-700 tablet:text-[16px]">품절 포함</span>
 
         <input
           type="checkbox"
