@@ -78,7 +78,7 @@ const images = [
     id: "image-001",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-001.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-001.png",
     category: "CAT",
     score: {
       axes: [
@@ -93,7 +93,7 @@ const images = [
     id: "image-002",
     uploaderId: "user-002",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-002.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-002.png",
     category: "DOG",
     score: {
       axes: [
@@ -108,7 +108,7 @@ const images = [
     id: "image-003",
     uploaderId: "user-003",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-003.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-003.png",
     category: "CAT",
     score: {
       axes: [
@@ -123,7 +123,7 @@ const images = [
     id: "image-004",
     uploaderId: "user-004",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-004.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-004.png",
     category: "DOG",
     score: {
       axes: [
@@ -138,7 +138,7 @@ const images = [
     id: "image-005",
     uploaderId: "user-005",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-005.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-005.png",
     category: "CAT",
     score: {
       axes: [
@@ -153,7 +153,7 @@ const images = [
     id: "image-006",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-006.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-006.png",
     category: "DOG",
     score: {
       axes: [
@@ -168,7 +168,7 @@ const images = [
     id: "image-007",
     uploaderId: "user-002",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-007.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-007.png",
     category: "DOG",
     score: {
       axes: [
@@ -183,7 +183,7 @@ const images = [
     id: "image-008",
     uploaderId: "user-003",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-008.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-008.png",
     category: "CAT",
     score: {
       axes: [
@@ -198,7 +198,7 @@ const images = [
     id: "image-009",
     uploaderId: "user-004",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-009.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-009.png",
     category: "DOG",
     score: {
       axes: [
@@ -213,7 +213,7 @@ const images = [
     id: "image-010",
     uploaderId: "user-005",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-010.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-010.png",
     category: "CAT",
     score: {
       axes: [
@@ -228,7 +228,7 @@ const images = [
     id: "image-011",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-011.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-011.png",
     category: "DOG",
     score: {
       axes: [
@@ -243,7 +243,7 @@ const images = [
     id: "image-012",
     uploaderId: "user-002",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-012.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-012.png",
     category: "CAT",
     score: {
       axes: [
@@ -260,7 +260,7 @@ const images = [
     id: "image-013",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-013.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-013.png",
     category: "CAT",
     score: {
       axes: [
@@ -275,7 +275,7 @@ const images = [
     id: "image-014",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-014.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-014.png",
     category: "DOG",
     score: {
       axes: [
@@ -290,7 +290,7 @@ const images = [
     id: "image-015",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-015.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-015.png",
     category: "DOG",
     score: {
       axes: [
@@ -305,7 +305,7 @@ const images = [
     id: "image-016",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-016.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-016.png",
     category: "CAT",
     score: {
       axes: [
@@ -320,7 +320,7 @@ const images = [
     id: "image-017",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-017.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-017.png",
     category: "CAT",
     score: {
       axes: [
@@ -335,7 +335,7 @@ const images = [
     id: "image-018",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-018.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-018.png",
     category: "DOG",
     score: {
       axes: [
@@ -350,7 +350,7 @@ const images = [
     id: "image-019",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-019.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-019.png",
     category: "CAT",
     score: {
       axes: [
@@ -365,7 +365,7 @@ const images = [
     id: "image-020",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-020.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-020.png",
     category: "DOG",
     score: {
       axes: [
@@ -380,7 +380,7 @@ const images = [
     id: "image-021",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-021.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-021.png",
     category: "CAT",
     score: {
       axes: [
@@ -395,7 +395,7 @@ const images = [
     id: "image-022",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-022.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-022.png",
     category: "DOG",
     score: {
       axes: [
@@ -410,7 +410,7 @@ const images = [
     id: "image-023",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-023.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-023.png",
     category: "CAT",
     score: {
       axes: [
@@ -425,7 +425,7 @@ const images = [
     id: "image-024",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-024.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-024.png",
     category: "DOG",
     score: {
       axes: [
@@ -440,7 +440,7 @@ const images = [
     id: "image-025",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-025.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-025.png",
     category: "CAT",
     score: {
       axes: [
@@ -455,7 +455,7 @@ const images = [
     id: "image-026",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-026.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-026.png",
     category: "DOG",
     score: {
       axes: [
@@ -470,7 +470,7 @@ const images = [
     id: "image-027",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-027.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-027.png",
     category: "CAT",
     score: {
       axes: [
@@ -485,7 +485,7 @@ const images = [
     id: "image-028",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-028.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-028.png",
     category: "DOG",
     score: {
       axes: [
@@ -500,7 +500,7 @@ const images = [
     id: "image-029",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-029.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-029.png",
     category: "CAT",
     score: {
       axes: [
@@ -515,7 +515,7 @@ const images = [
     id: "image-030",
     uploaderId: "user-001",
     imageUrl:
-      "https://tgeegyvuyrhwjphdcbsa.supabase.co/storage/v1/object/public/card-images/seed/image-030.png",
+      "https://hlfxvimptyhtxzmdbfmh.supabase.co/storage/v1/object/public/card-images/seed/image-030.png",
     category: "DOG",
     score: {
       axes: [
