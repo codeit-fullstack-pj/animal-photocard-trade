@@ -31,10 +31,9 @@ export default function MobileFilter({
   setCategories,
   soldOut,
   setSoldOut = () => {},
-  totalCount = 0,
-  categoryCounts = {
-    DOG: 0,
-    CAT: 0,
+  countsBySoldOut = {
+    false: { DOG: 0, CAT: 0 },
+    true: { DOG: 0, CAT: 0 },
   },
   onApply,
   showSoldOut = true,
@@ -82,6 +81,7 @@ export default function MobileFilter({
    * 카테고리를 하나도 선택하지 않았으면
    * 강아지 + 고양이 전체 개수를 표시
    */
+  const categoryCounts = countsBySoldOut[String(soldOut)];
   const allCategoryCount = (categoryCounts.DOG ?? 0) + (categoryCounts.CAT ?? 0);
 
   /**
@@ -91,6 +91,13 @@ export default function MobileFilter({
     categories.length === 0
       ? allCategoryCount
       : categories.reduce((total, category) => total + (categoryCounts[category] ?? 0), 0);
+
+  function getCountForCategories(counts) {
+    if (categories.length === 1) {
+      return counts[categories[0]] ?? 0;
+    }
+    return (counts.DOG ?? 0) + (counts.CAT ?? 0);
+  }
 
   return (
     <div className="fixed inset-0 z-50 tablet:hidden">
@@ -298,7 +305,9 @@ export default function MobileFilter({
                       {option.label}
                     </span>
 
-                    <span className="text-[14px] text-[#A4A4A4]">{totalCount}개</span>
+                    <span className="text-[14px] text-[#A4A4A4]">
+                      {getCountForCategories(countsBySoldOut[String(option.value)])}개
+                    </span>
                   </button>
                 );
               })}
