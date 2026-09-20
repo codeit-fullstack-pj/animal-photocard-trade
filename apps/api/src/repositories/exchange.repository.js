@@ -133,7 +133,7 @@ export function findExchangeForReject(tx, exchangeId) {
   });
 }
 
-//교환 업데이트
+// 교환 수락/거절 공용 업데이트 — status만 다르게 넘겨서 accept/reject 양쪽에서 재사용한다
 export function updateExchangeIfPending(tx, exchangeId, status, respondedAt) {
   return tx.exchange.updateMany({
     where: { id: exchangeId, status: "PENDING" },

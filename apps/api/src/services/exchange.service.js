@@ -126,7 +126,7 @@ export async function acceptExchange({ exchangeId, seller }) {
         transfer.toOwnerId,
       );
 
-      if (result.count === 0) {
+      if (result.count !== 1) {
         throw new ApiError(409, transfer.errorCode, transfer.errorMessage);
       }
     }
