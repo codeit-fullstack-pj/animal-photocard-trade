@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 import {
@@ -123,17 +124,18 @@ function NotificationDataLoader({ onUnreadCountChange, children }) {
   }
 
   // 항목 클릭 시 읽음 처리 — 이미 읽은 알림은 되돌릴 수 없으므로 안읽음 상태일 때만 요청한다
-  function handleToggleRead(notification) {
+  async function handleToggleRead(notification) {
     if (notification.isRead) return;
 
-    markNotificationRead(notification.id)
-      .then(() => {
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n)),
-        );
-        onUnreadCountChange((prev) => Math.max(0, (prev ?? 0) - 1));
-      })
-      .catch(() => setError("읽음 상태 변경에 실패했어요"));
+    try {
+      await markNotificationRead(notification.id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n)),
+      );
+      onUnreadCountChange((prev) => Math.max(0, (prev ?? 0) - 1));
+    } catch {
+      setError("읽음 상태 변경에 실패했어요");
+    }
   }
 
   const value = {
@@ -166,7 +168,7 @@ export function NotificationDataProvider({ open, onUnreadCountChange, children }
 }
 
 // 알림 패널의 실제 UI. 데이터는 NotificationDataProvider가 공급하고, 스크롤 감지만 인스턴스별로 갖는다
-function NotificationPanel({ mobile }) {
+function NotificationPanel({ mobile, onNavigate }) {
   const listRef = useRef(null);
   const {
     notifications,
@@ -180,6 +182,13 @@ function NotificationPanel({ mobile }) {
     handleDelete,
     handleToggleRead,
   } = useNotificationData();
+  const router = useRouter();
+
+  async function handleNotificationClick(notification) {
+    await handleToggleRead(notification);
+    onNavigate();
+    router.push(`/market/${encodeURIComponent(notification.targetId)}`);
+  }
 
   // 목록 스크롤 영역이 바닥까지 내려가면(=실제 스크롤이 일어났을 때만) 다음 페이지를 불러온다
   useEffect(() => {
@@ -237,7 +246,7 @@ function NotificationPanel({ mobile }) {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                onClick={() => handleToggleRead(notification)}
+                onClick={() => handleNotificationClick(notification)}
                 className={`font-sans-400 relative flex h-26.75 cursor-pointer flex-col justify-between border-b border-gray-300 p-5 text-sm text-white ${
                   notification.isRead ? "bg-gray-500" : "bg-[#222222]"
                 }`}
@@ -369,7 +378,7 @@ export default function Notification({
         </button>
       )}
 
-      {open && <NotificationPanel mobile={mobile} />}
+      {open && <NotificationPanel mobile={mobile} onNavigate={() => setOpen(false)} />}
     </div>
   );
 }
