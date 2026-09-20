@@ -11,6 +11,7 @@ export default function ConfirmModal({
   onConfirm,
   isSubmitting,
   actionsDisabled = false,
+  errorMessage,
   secondaryLabel,
   onSecondary,
 }) {
@@ -41,6 +42,11 @@ export default function ConfirmModal({
         <p className="font-sans-400 whitespace-pre-line text-sm text-gray-200 tablet:text-base">
           {description}
         </p>
+        {errorMessage && (
+          <p role="alert" className="font-sans-400 text-sm text-red-300 tablet:text-base">
+            {errorMessage}
+          </p>
+        )}
 
         {secondaryLabel ? (
           <div className="mt-2 flex w-full gap-3">
