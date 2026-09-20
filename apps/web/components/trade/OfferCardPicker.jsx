@@ -1,10 +1,12 @@
 "use client";
 
+import CreateCardButton from "@/components/gallery/CreateCardButton";
 import ScaledPhotoCard from "@/components/card/ScaledPhotoCard";
 import { cardToPhotoCardProps } from "@/components/card/toPhotoCardProps";
 import TradeFilter from "@/components/trade/TradeFilter";
 import TradeSearchBar from "@/components/trade/TradeSearchBar";
 import { useInfiniteFetch } from "@/hooks/useInfiniteFetch";
+import { useRemainingCardCount } from "@/hooks/useRemainingCardCount";
 import { fetchMyCardsPage } from "@/lib/gallery/api";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -37,6 +39,7 @@ export default function OfferCardPicker({ onSelect }) {
   );
 
   const categoryCounts = meta.categoryCounts ?? {};
+  const { remainingCount, limit } = useRemainingCardCount();
 
   useEffect(() => {
     const root = scrollRef.current;
@@ -85,9 +88,14 @@ export default function OfferCardPicker({ onSelect }) {
         ) : isLoading && cards.length === 0 ? (
           <p className="flex h-full items-center justify-center text-gray-300">불러오는 중...</p>
         ) : cards.length === 0 ? (
-          <p className="font-sans-400 flex h-full items-center justify-center text-sm text-gray-300">
-            검색결과가 없습니다
-          </p>
+          <div className="flex h-full flex-col items-center justify-center gap-4">
+            <p className="font-sans-400 text-sm text-gray-300">검색결과가 없습니다</p>
+            <CreateCardButton
+              remainingCount={remainingCount}
+              limit={limit}
+              className="flex h-11 items-center justify-center rounded-xs px-5 font-sans-400 text-sm text-white"
+            />
+          </div>
         ) : (
           <ul
             ref={scrollRef}
