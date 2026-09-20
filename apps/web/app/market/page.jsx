@@ -513,7 +513,7 @@ export default function MarketPage() {
         {/* ========================================
             검색 / 필터 / 정렬
         ======================================== */}
-        <section className="mt-3 tablet:mt-4 pc:mt-6">
+        <section className="tablet:mt-4 pc:mt-6">
           <MarketFilters
             keyword={keyword}
             setKeyword={setKeyword}

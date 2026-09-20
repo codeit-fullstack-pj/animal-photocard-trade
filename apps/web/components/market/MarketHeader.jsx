@@ -1,10 +1,10 @@
 export default function MarketHeader({ onOpenSaleModal }) {
   return (
-    <section className="pt-[16px]">
+    <section className="tablet:pt-[16px]">
       <div
         className="
           flex
-          h-[20px]
+          h-0
           items-start
           justify-end
 
