@@ -35,6 +35,7 @@ export default function SaleDetailView({ sale }) {
   const cardName = `${sale.card.tag} ${sale.card.name}`;
 
   const isSoldOut = sale.status === "SOLD_OUT";
+  const isCanceled = sale.status === "CANCELED";
 
   const cardProps = {
     variant: "owned",
@@ -90,6 +91,10 @@ export default function SaleDetailView({ sale }) {
     } finally {
       setIsCanceling(false);
     }
+  }
+
+  function handleCanceledSaleConfirm() {
+    router.push("/market");
   }
 
   function handleCancelOutcomeConfirm() {
@@ -175,23 +180,21 @@ export default function SaleDetailView({ sale }) {
         </div>
       </div>
 
-      {!isSoldOut && (
-        <div className="mt-14 pc:mt-16">
-          {isSeller ? (
-            <section>
-              <h2 className="font-sans-700 text-xl text-white tablet:text-[28px] pc:text-[30px]">
-                교환 제시 목록
-              </h2>
-              <div className="mt-5 border-t border-gray-400 tablet:mt-4 pc:mt-5" />
-              <div className="mt-8 tablet:mt-6 pc:mt-8">
-                <ExchangeListView sale={sale} currentUser={currentUser} isSeller={isSeller} />
-              </div>
-            </section>
-          ) : (
-            <BuyerExchangeList saleId={sale.id} />
-          )}
-        </div>
-      )}
+      <div className="mt-14 pc:mt-16">
+        {isSeller ? (
+          <section>
+            <h2 className="font-sans-700 text-xl text-white tablet:text-[28px] pc:text-[30px]">
+              교환 제시 목록
+            </h2>
+            <div className="mt-5 border-t border-gray-400 tablet:mt-4 pc:mt-5" />
+            <div className="mt-8 tablet:mt-6 pc:mt-8">
+              <ExchangeListView sale={sale} currentUser={currentUser} isSeller={isSeller} />
+            </div>
+          </section>
+        ) : (
+          <BuyerExchangeList saleId={sale.id} />
+        )}
+      </div>
 
       {!isSeller && !isSoldOut && (
         <>
@@ -248,6 +251,15 @@ export default function SaleDetailView({ sale }) {
         description="게시글이 성공적으로 삭제되었습니다."
         confirmLabel="확인"
         onConfirm={handleCancelOutcomeConfirm}
+      />
+
+      <ConfirmModal
+        isOpen={isCanceled}
+        onClose={handleCanceledSaleConfirm}
+        title="알림"
+        description="해당 카드는 판매가 취소되었습니다."
+        confirmLabel="확인"
+        onConfirm={handleCanceledSaleConfirm}
       />
     </main>
   );
