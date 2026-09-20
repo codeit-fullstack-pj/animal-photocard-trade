@@ -115,15 +115,28 @@ export function findExchangeForAccept(tx, exchangeId) {
   });
 }
 
-export function acceptExchangeIfPending(tx, exchangeId, respondedAt) {
+//교환 거절을 위한 조회 함수 (판매자 확인, 제시자 알림 정보 포함)
+export function findExchangeForReject(tx, exchangeId) {
+  return tx.exchange.findUnique({
+    where: { id: exchangeId },
+    select: {
+      id: true,
+      saleId: true,
+      offerCard: { select: { ownerId: true } },
+      sale: {
+        select: {
+          sellerId: true,
+          card: { select: { tag: true, name: true } },
+        },
+      },
+    },
+  });
+}
+
+//교환 업데이트
+export function updateExchangeIfPending(tx, exchangeId, status, respondedAt) {
   return tx.exchange.updateMany({
-    where: {
-      id: exchangeId,
-      status: "PENDING",
-    },
-    data: {
-      status: "ACCEPTED",
-      respondedAt,
-    },
+    where: { id: exchangeId, status: "PENDING" },
+    data: { status, respondedAt },
   });
 }

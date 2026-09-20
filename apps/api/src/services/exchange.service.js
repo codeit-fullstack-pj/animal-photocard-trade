@@ -49,7 +49,7 @@ export async function cancelExchange({ exchangeId, offerer }) {
   return result;
 }
 
-//판매자 입장에서 제안자의 교환 수락을 누르는 순간
+//판매자 입장에서 제안자의 교환 수락
 export async function acceptExchange({ exchangeId, seller }) {
   return prisma.$transaction(async (tx) => {
     //교환건의 존재 여부, 수락 권한 체크
@@ -90,7 +90,12 @@ export async function acceptExchange({ exchangeId, seller }) {
 
     //교환 수락 처리
     const respondedAt = new Date();
-    const accepted = await exchangeRepository.acceptExchangeIfPending(tx, exchangeId, respondedAt);
+    const accepted = await exchangeRepository.updateExchangeIfPending(
+      tx,
+      exchangeId,
+      "ACCEPTED",
+      respondedAt,
+    );
     if (accepted.count !== 1) {
       throw new ApiError(409, "EXCHANGE_ALREADY_PROCESSED", "이미 처리된 교환 제시입니다.");
     }
@@ -121,7 +126,7 @@ export async function acceptExchange({ exchangeId, seller }) {
         transfer.toOwnerId,
       );
 
-      if (result.count !== 1) {
+      if (result.count === 0) {
         throw new ApiError(409, transfer.errorCode, transfer.errorMessage);
       }
     }
@@ -149,6 +154,42 @@ export async function acceptExchange({ exchangeId, seller }) {
     return {
       id: exchangeId,
       status: "ACCEPTED",
+      respondedAt,
+    };
+  });
+}
+
+//교환 거절
+export async function rejectExchange({ exchangeId, seller }) {
+  return prisma.$transaction(async (tx) => {
+    const exchange = await exchangeRepository.findExchangeForReject(tx, exchangeId);
+
+    if (!exchange) throw new ApiError(404, "EXCHANGE_NOT_FOUND", "교환 제시를 찾을 수 없습니다.");
+    if (exchange.sale.sellerId !== seller.id)
+      throw new ApiError(403, "FORBIDDEN", "해당 교환 제시를 거절할 권한이 없습니다.");
+
+    const respondedAt = new Date();
+    const rejected = await exchangeRepository.updateExchangeIfPending(
+      tx,
+      exchangeId,
+      "REJECTED",
+      respondedAt,
+    );
+
+    if (rejected.count === 0)
+      throw new ApiError(409, "EXCHANGE_ALREADY_PROCESSED", "이미 처리된 교환 제시입니다.");
+
+    await notificationRepository.createManyNotifications(tx, [
+      {
+        userId: exchange.offerCard.ownerId,
+        type: "EXCHANGE_REJECTED",
+        content: `'${exchange.sale.card.tag} ${exchange.sale.card.name}'에 제안한 교환이 거절되었습니다.`,
+        targetId: exchange.saleId,
+      },
+    ]);
+    return {
+      id: exchangeId,
+      status: "REJECTED",
       respondedAt,
     };
   });
