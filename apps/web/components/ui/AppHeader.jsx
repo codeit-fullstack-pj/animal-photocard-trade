@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 import Profile from "@/components/ui/Profile";
 import Notification, { NotificationDataProvider } from "@/components/ui/Notification";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { useRouter } from "next/navigation";
 
 const MENU_LINKS = [
   { href: "/market", label: "마켓플레이스" },
@@ -16,6 +16,7 @@ const MENU_LINKS = [
 ];
 
 export default function AppHeader() {
+  const pathname = usePathname();
   const router = useRouter();
   const { currentUser, isLoading, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -183,16 +184,20 @@ export default function AppHeader() {
 
             {currentUser && (
               <nav className="mt-[16px] flex flex-col gap-[16px]">
-                {MENU_LINKS.map(({ href, label }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={closeMenu}
-                    className="font-sans-500 text-[14px] text-white"
-                  >
-                    {label}
-                  </Link>
-                ))}
+                {MENU_LINKS.map(({ href, label }) => {
+                  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={closeMenu}
+                      aria-current={isActive ? "page" : undefined}
+                      className={`font-sans-500 text-[14px] ${isActive ? "text-purple-button" : "text-white"}`}
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
               </nav>
             )}
 

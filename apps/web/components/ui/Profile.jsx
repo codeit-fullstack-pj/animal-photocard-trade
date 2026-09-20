@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 /**
  * 닉네임을 누르면 그 바로 아래에 붙는 프로필 드롭다운. Dropdown.jsx와 같은 패턴
@@ -9,8 +10,10 @@ import Link from "next/link";
  * @param {{ currentUser: { nickname?: string, point?: number } }} props
  */
 export default function Profile({ currentUser }) {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
+  const isCurrentPage = (href) => pathname === href || pathname.startsWith(`${href}/`);
 
   useEffect(() => {
     if (!open) return;
@@ -65,21 +68,24 @@ export default function Profile({ currentUser }) {
               <Link
                 href="/market"
                 onClick={() => setOpen(false)}
-                className="font-sans-700 text-sm text-gray-200 hover:text-white"
+                aria-current={isCurrentPage("/market") ? "page" : undefined}
+                className={`font-sans-700 text-sm ${isCurrentPage("/market") ? "text-purple-button" : "text-gray-200 hover:text-white"}`}
               >
                 마켓플레이스
               </Link>
               <Link
                 href="/my-gallery"
                 onClick={() => setOpen(false)}
-                className="font-sans-700 text-sm text-gray-200 hover:text-white"
+                aria-current={isCurrentPage("/my-gallery") ? "page" : undefined}
+                className={`font-sans-700 text-sm ${isCurrentPage("/my-gallery") ? "text-purple-button" : "text-gray-200 hover:text-white"}`}
               >
                 마이갤러리
               </Link>
               <Link
                 href="/my-sales"
                 onClick={() => setOpen(false)}
-                className="font-sans-700 text-sm text-gray-200 hover:text-white"
+                aria-current={isCurrentPage("/my-sales") ? "page" : undefined}
+                className={`font-sans-700 text-sm ${isCurrentPage("/my-sales") ? "text-purple-button" : "text-gray-200 hover:text-white"}`}
               >
                 나의 거래 포토카드
               </Link>
