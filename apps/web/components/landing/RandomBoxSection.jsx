@@ -5,7 +5,7 @@ import SectionHeading from "./SectionHeading";
 
 export default function RandomBoxSection() {
   return (
-    <section className="content-auto relative overflow-clip pt-16 pb-12 lg:min-h-[56.25rem] lg:pt-36 lg:pb-16">
+    <section className="content-auto relative overflow-clip pt-16 pb-12 lg:min-h-[calc(var(--landing-rem)*56.25)] lg:pt-36 lg:pb-16">
       {/* 아래로 갈수록 진해지는 올리브색 배경 */}
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 h-[75%] bg-[linear-gradient(to_bottom,rgba(59,64,25,0)_0%,#0F0F0F_10%,#262900_100%)]"
@@ -28,7 +28,7 @@ export default function RandomBoxSection() {
         className="pointer-events-none absolute opacity-15 top-[40%] -right-[4%] w-[22%] rotate-[10deg] sm:w-[16%] md:top-[48%] md:right-[-1%] lg:top-[43%] lg:right-[20%] lg:w-[13%]"
       />
 
-      <div className="relative mx-auto w-full max-w-[67.5rem] px-[8%] sm:px-[7%] lg:w-[56%] lg:px-0">
+      <div className="relative mx-auto w-full max-w-[calc(var(--landing-rem)*67.5)] px-[8%] sm:px-[7%] lg:w-[56%] lg:px-0">
         <SectionHeading subtitle={"하루에 한 번 주어지는 랜덤 상자를 열고,\n포인트를 획득하세요"}>
           랜덤 상자로 <span className="text-main">포인트 받자!</span>{" "}
           <span className="font-emoji">🎉</span>
